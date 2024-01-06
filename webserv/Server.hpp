@@ -1,13 +1,15 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <string>
-#include <map>
 #include "Request.hpp"
+#include <map>
+#include <string>
 
 #define BUF_SIZE 512
 #define MAX_EVENTS 50
 
+namespace ft
+{
 class Server
 {
 public:
@@ -15,6 +17,7 @@ public:
 	Server(int port);
 	~Server();
 
+	void initServer();
 	void startServer();
 	void connectClient(int serv_sock);
 	void disconnectClient(int socketfd);
@@ -27,10 +30,10 @@ public:
 private:
 	int port;
 	int kq;
+	int serv_sock;
 	std::string serverName;
 	std::map<int, ft::Request> Requests;
 };
-
-
+} // namespace ft
 
 #endif

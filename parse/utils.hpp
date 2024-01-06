@@ -2,8 +2,9 @@
 #define UTILS_HPP
 
 #include <string>
-namespace ft{
-    bool isSpaceIncluded(const std::string& str);
+namespace ft
+{
+bool isSpaceIncluded(const std::string &str);
 
 }
 
