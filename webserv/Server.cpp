@@ -21,15 +21,14 @@ Server::~Server()
 
 void Server::startServer()
 {
-	int serv_sock, clnt_sock;
-	struct sockaddr_in serv_adr, clnt_adr;
-	socklen_t adr_sz;
-	int str_len, i;
+	int serv_sock;
+	struct sockaddr_in serv_adr;
+	int str_len;
 	char buf[BUF_SIZE];
 
 	struct kevent event_list[MAX_EVENTS];
 	struct kevent event;
-	int kq, ret;
+	int ret;
 
 	serv_sock = socket(PF_INET, SOCK_STREAM, 0);
 	memset(&serv_adr, 0, sizeof(serv_adr));
@@ -59,6 +58,7 @@ void Server::startServer()
 
 	while (1)
 	{
+		// 연결된 후 입력이 오랫동안 없는 경우 생각하기
 		int events = kevent(kq, NULL, 0, event_list, MAX_EVENTS, NULL);
 		if (events == -1)
 		{
@@ -66,39 +66,41 @@ void Server::startServer()
 			break;
 		}
 
-		for (int i=0; i<events; i++)
+		for (int i=0; i < events; i++)
 		{
 			if (event_list[i].ident == serv_sock)
 			{
-				adr_sz = sizeof(clnt_adr);
-				clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_adr, &adr_sz);
-				EV_SET(&event, clnt_sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
-				ret = kevent(kq, &event, 1, NULL, 0, NULL);
-
-				std::pair<int, ft::Request> p;
-				p.first = clnt_sock;
-				Requests.insert(p);
-
-				std::cout << "connected client: " << clnt_sock << std::endl;
+				connectClient(serv_sock);
 			}
 			else
 			{
-				str_len = read(event_list[i].ident, buf, BUF_SIZE);
+				// str_len = read(event_list[i].ident, buf, BUF_SIZE);
+				str_len = recv(event_list[i].ident, buf, BUF_SIZE, MSG_PEEK);
 				if (str_len == 0)
 				{
-					EV_SET(&event, event_list[i].ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-					ret = kevent(kq, &event, 1, NULL, 0, NULL);
-					close(event_list[i].ident);
-
-					Requests.erase(event_list[i].ident);
-
-					std::cout << "closed client: " << event_list[i].ident << std::endl;
+					disconnectClient(event_list[i].ident);
 				}
 				else
 				{
+					std::string temp = buf;
+					int idx = temp.find('\n');
+					str_len = recv(event_list[i].ident, buf, idx + 1, MSG_DONTWAIT);
 					std::string line = buf;
+
 					ft::Request &request = (*Requests.find(event_list[i].ident)).second;
-					request.parseFields(line);
+					try
+					{
+						request.parse(line);
+					}
+					catch(const ft::Request::httpException& e)
+					{
+						std::cerr << e.errCode << std::endl;
+						// client에게 오류메시지 보내기
+						disconnectClient(event_list[i].ident);
+						continue;
+					}
+
+						//respoen
 					request.printFields();
 					std::cout<< std::endl;
 
@@ -109,4 +111,35 @@ void Server::startServer()
 	}
 	close(serv_sock);
 	close(kq);
+}
+
+void Server::connectClient(int serv_sock)
+{
+	int clnt_sock;
+	struct sockaddr_in clnt_adr;
+	socklen_t adr_sz;
+	struct kevent event;
+
+	adr_sz = sizeof(clnt_adr);
+	clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_adr, &adr_sz);
+	EV_SET(&event, clnt_sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	kevent(kq, &event, 1, NULL, 0, NULL);
+
+	std::pair<int, ft::Request> p;
+	p.first = clnt_sock;
+	Requests.insert(p);
+
+	std::cout << "connected client: " << clnt_sock << std::endl;
+}
+
+void Server::disconnectClient(int socketfd)
+{
+	struct kevent event;
+	EV_SET(&event, socketfd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+	kevent(kq, &event, 1, NULL, 0, NULL);
+	close(socketfd);
+
+	Requests.erase(socketfd);
+
+	std::cout << "closed client: " << socketfd << std::endl;
 }

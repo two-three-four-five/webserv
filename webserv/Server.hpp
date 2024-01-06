@@ -16,6 +16,8 @@ public:
 	~Server();
 
 	void startServer();
+	void connectClient(int serv_sock);
+	void disconnectClient(int socketfd);
 	/*
 		string -> Request
 		parseRequest
@@ -24,6 +26,7 @@ public:
 	*/
 private:
 	int port;
+	int kq;
 	std::string serverName;
 	std::map<int, ft::Request> Requests;
 };
