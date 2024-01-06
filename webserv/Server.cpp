@@ -25,7 +25,6 @@ Server::~Server()
 void Server::initServer()
 {
 	struct sockaddr_in serv_adr;
-
 	struct kevent event;
 	int ret;
 

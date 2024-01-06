@@ -1,6 +1,7 @@
 #include <iostream>
-#include "Request.hpp"
-#include "webserv/Server.hpp"
+
+#include "Response.hpp"
+#include "Server.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -10,6 +11,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	ft::Server *myServer = new ft::Server(atoi(argv[1]));
-	myServer->startServer();
+	// myServer->startServer();
+	ft::Response response(argv[1]);
+	std::cout << response.toString();
 	return 0;
 }
