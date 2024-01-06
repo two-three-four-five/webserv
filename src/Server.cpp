@@ -151,4 +151,41 @@ void Server::disconnectClient(int socketfd)
 
 	std::cout << "closed client: " << socketfd << std::endl;
 }
+
+std::string Server::callCGI(const std::string &scriptPath,
+							const std::string &queryString)
+{
+	/* 예시
+	// std::string home_path = getenv("HOME");
+	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
+	// std::string queryString = "first=1&second=2";
+	*/
+	char *argv[] = {(char *)scriptPath.c_str(), (char *)queryString.c_str(),
+					nullptr};
+	char *envp[] = {nullptr};
+
+	int fd[2];
+	pipe(fd);
+	if (fork() == 0)
+	{
+		close(fd[0]);
+		dup2(fd[1], STDOUT_FILENO);
+		close(fd[1]);
+		execve(scriptPath.c_str(), argv, envp);
+		perror("execve");
+	}
+	else
+	{
+		char buffer[4096];
+		ssize_t bytes_read;
+		std::ostringstream output;
+
+		close(fd[1]);
+		while ((bytes_read = read(fd[0], buffer, sizeof(buffer))) > 0)
+			output.write(buffer, bytes_read);
+		close(fd[0]);
+		return (output.str());
+	}
+}
+
 } // namespace ft

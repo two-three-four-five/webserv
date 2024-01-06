@@ -21,6 +21,8 @@ public:
 	void startServer();
 	void connectClient(int serv_sock);
 	void disconnectClient(int socketfd);
+	std::string callCGI(const std::string &scriptPath,
+						const std::string &queryString);
 	/*
 		string -> Request
 		parseRequest

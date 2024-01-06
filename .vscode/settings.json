@@ -62,7 +62,11 @@
 		"typeinfo": "cpp",
 		"unordered_map": "cpp",
 		"utility": "cpp",
-		"vector": "cpp"
+		"vector": "cpp",
+		"deque": "cpp",
+		"fstream": "cpp",
+		"iomanip": "cpp",
+		"stack": "cpp"
 	},
 	"C_Cpp.default.cppStandard": "c++98",
     "cpplint.cpplintPath": "/opt/homebrew/lib/python3.9/site-packages/cpplint.py",
