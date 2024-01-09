@@ -94,3 +94,8 @@ dkms.conf
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,c++,c
+
+.DS_Store
+tester
+cgi_tester
+webserv
