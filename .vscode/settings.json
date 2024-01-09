@@ -1,4 +1,12 @@
 {
+	// C++ Formatting options
+	"C_Cpp.default.cppStandard": "c++98",
+	"editor.defaultFormatter": "ms-vscode.cpptools",
+	"editor.formatOnSave": true,
+	"clang-format.language.c.enable": false,
+	"C_Cpp.clang_format_fallbackStyle": "{BasedOnStyle: Microsoft, UseTab: Always, AlwaysBreakTemplateDeclarations: Yes, SpacesInAngles: Leave, AccessModifierOffset: -4, AllowShortFunctionsOnASingleLine: All, ColumnLimit : 120}",
+
+	// Header
 	"files.associations": {
 		"string": "cpp",
 		"map": "cpp",
@@ -68,10 +76,5 @@
 		"iomanip": "cpp",
 		"stack": "cpp"
 	},
-	"C_Cpp.default.cppStandard": "c++98",
-    "cpplint.cpplintPath": "/opt/homebrew/lib/python3.9/site-packages/cpplint.py",
-    "editor.defaultFormatter": "ms-vscode.cpptools",
-    "editor.formatOnSave": true,
-    "clang-format.language.c.enable": false,
-    "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Microsoft, UseTab: Always, AccessModifierOffset: -4, ColumnLimit : 80}",
+	
 }
