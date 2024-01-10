@@ -11,8 +11,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	ft::Server *myServer = new ft::Server(atoi(argv[1]));
-	// myServer->startServer();
-	ft::Response response(argv[1]);
-	std::cout << response.toString();
+	myServer->startServer();
+	// ft::Response response(argv[1]);
+	// std::cout << response.toString();
 	return 0;
 }

@@ -10,17 +10,11 @@
 namespace ft
 {
 
-Server::Server()
-{
-}
+Server::Server() {}
 
-Server::Server(int port) : port(port)
-{
-}
+Server::Server(int port) : port(port) {}
 
-Server::~Server()
-{
-}
+Server::~Server() {}
 
 void Server::initServer()
 {
@@ -58,7 +52,8 @@ void Server::initServer()
 void Server::startServer()
 {
 	int str_len;
-	char buf[BUF_SIZE];
+	char peekBuf[BUF_SIZE];
+	char readBuf[BUF_SIZE];
 	struct kevent event_list[MAX_EVENTS];
 
 	initServer();
@@ -80,25 +75,26 @@ void Server::startServer()
 			}
 			else
 			{
-				// str_len = read(event_list[i].ident, buf, BUF_SIZE);
-				str_len = recv(event_list[i].ident, buf, BUF_SIZE, MSG_PEEK);
+				memset(peekBuf, 0, sizeof(peekBuf));
+				str_len = recv(event_list[i].ident, peekBuf, BUF_SIZE, MSG_PEEK | MSG_DONTWAIT);
+
 				if (str_len == 0)
 				{
 					disconnectClient(event_list[i].ident);
 				}
 				else
 				{
-					std::string temp = buf;
-					int idx = temp.find('\n');
-					str_len =
-						recv(event_list[i].ident, buf, idx + 1, MSG_DONTWAIT);
-					std::string line = buf;
-
-					ft::Request &request =
-						(*Requests.find(event_list[i].ident)).second;
+					int idx = static_cast<std::string>(peekBuf).find('\n');
+					read(event_list[i].ident, readBuf, idx + 1);
+					ft::Request &request = (*Requests.find(event_list[i].ident)).second;
 					try
 					{
-						request.parse(line);
+						memset(readBuf, 0, sizeof(readBuf));
+						if (request.parse(static_cast<std::string>(readBuf)) == PARSE_END)
+						{
+							request.printMessage();
+							disconnectClient(event_list[i].ident);
+						}
 					}
 					catch (const ft::Request::httpException &e)
 					{
@@ -107,11 +103,6 @@ void Server::startServer()
 						disconnectClient(event_list[i].ident);
 						continue;
 					}
-
-					// respoen
-					request.printFields();
-					std::cout << std::endl;
-
 					// write(event_list[i].ident, buf, str_len);
 				}
 			}
@@ -152,16 +143,14 @@ void Server::disconnectClient(int socketfd)
 	std::cout << "closed client: " << socketfd << std::endl;
 }
 
-std::string Server::callCGI(const std::string &scriptPath,
-							const std::string &queryString)
+std::string Server::callCGI(const std::string &scriptPath, const std::string &queryString)
 {
 	/* 예시
 	// std::string home_path = getenv("HOME");
 	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
 	// std::string queryString = "first=1&second=2";
 	*/
-	char *argv[] = {(char *)scriptPath.c_str(), (char *)queryString.c_str(),
-					nullptr};
+	char *argv[] = {(char *)scriptPath.c_str(), (char *)queryString.c_str(), nullptr};
 	char *envp[] = {nullptr};
 
 	int fd[2];

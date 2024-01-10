@@ -74,7 +74,12 @@
 		"deque": "cpp",
 		"fstream": "cpp",
 		"iomanip": "cpp",
-		"stack": "cpp"
+		"stack": "cpp",
+		"__bits": "cpp",
+		"clocale": "cpp",
+		"compare": "cpp",
+		"concepts": "cpp",
+		"variant": "cpp"
 	},
 	
 }

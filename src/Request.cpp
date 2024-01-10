@@ -4,16 +4,16 @@
 
 namespace ft
 {
-Request::Request() : status(CREATED)
-{
-}
+Request::Request() : status(CREATED) { status = HEADER; }
+// 임시로 시작부분바꿈
 
-void Request::parse(const std::string &request)
+int Request::parse(const std::string &request)
 {
 	if (status == CREATED)
 		parseStartLine(request);
 	else if (status == HEADER)
 		parseFields(request);
+	return (status);
 }
 
 void Request::parseStartLine(const std::string &request)
@@ -44,36 +44,58 @@ void Request::parseStartLine(const std::string &request)
 	status = HEADER;
 }
 
+void Request::parseLine(const std::string &fieldLine)
+{
+	std::istringstream iss(fieldLine);
+	std::string key, value;
+
+	std::getline(iss, key, ":");
+	std::getline(iss >> std::ws, value);
+	if (isSpaceIncluded(key) || value.empty())
+		; // error
+	message[key].push_back(value);
+}
+
 void Request::parseFields(const std::string &request)
 {
 	std::istringstream requestStream(request);
-	std::pair<std::string, std::string> field;
 	std::string line;
+	std::string key, value;
 
 	while (requestStream.good())
 	{
 		std::getline(requestStream, line);
-
+		// if (line == "\n" || line == "")
+		// {
+		// 	status = PARSE_END;
+		// 	return;
+		// }
 		std::istringstream lineStream(line);
-		std::getline(lineStream, field.first, ':');		   // field name
-		std::getline(lineStream >> std::ws, field.second); // field value
+		std::getline(lineStream, key, ':');			// field name
+		std::getline(lineStream >> std::ws, value); // field value
 		// field name과 ':' 사이에 띄어쓰기가 있는지 || 라인에 :가 없어서
-		// field.second가 비었는지
-		if (isSpaceIncluded(field.first) || field.second.empty())
+		// value가 비었는지
+		if (isSpaceIncluded(key) || value.empty())
 			continue; // throw error
-		fields.insert(field);
-		field.first = "";
-		field.second = "";
+		message[key].push_back(value);
+		// std::cout << "1 " << key << " " << value << std::endl;
+		// std::cout << "2 " << message[key][0] << std::endl;
+		// key = "";
+		// value = "";
 	}
 }
 
-void Request::printFields()
+void Request::printMessage()
 {
-	for (std::map<std::string, std::string>::iterator it = fields.begin();
-		 it != fields.end(); ++it)
+	int i = 0;
+	for (std::map<std::string, std::vector<std::string> >::iterator it = message.begin(); it != message.end(); it++)
 	{
-		std::cout << "Field Name : " << it->first
-				  << "            Field Value : " << it->second << '\n';
+		std::cout << it->first << ": " << std::flush;
+		for (std::vector<std::string>::iterator vecIt = it->second.begin(); vecIt != it->second.end(); vecIt++)
+		{
+			std::cout << *vecIt << ", " << std::flush;
+		}
+		// std::cout << std::endl;
 	}
 };
 

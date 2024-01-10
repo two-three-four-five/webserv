@@ -7,6 +7,7 @@
 
 #define BUF_SIZE 512
 #define MAX_EVENTS 50
+#define PARSE_END 5
 
 namespace ft
 {
@@ -21,8 +22,7 @@ public:
 	void startServer();
 	void connectClient(int serv_sock);
 	void disconnectClient(int socketfd);
-	std::string callCGI(const std::string &scriptPath,
-						const std::string &queryString);
+	std::string callCGI(const std::string &scriptPath, const std::string &queryString);
 	/*
 		string -> Request
 		parseRequest
