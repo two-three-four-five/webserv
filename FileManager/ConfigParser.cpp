@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:12:28 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/10 15:19:36 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:34:08 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,80 +26,95 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &other)
 
 ConfigParser::~ConfigParser() {}
 
+void ConfigParser::printConfig(config_t config)
+{
+	std::cout << "[key] : [value]" << std::endl;
+	for (config_t::iterator it = config.begin(); it != config.end(); it++)
+	{
+		std::cout << "[";
+		for (size_t i = 0; i < (*it).first.size(); i++)
+			std::cout << (*it).first.at(i) << ".";
+		std::cout << "]";
+
+		std::cout << " : [" << (*it).second << "]" << std::endl;
+	}
+}
+
 ConfigFile ConfigParser::parse(std::string filename)
 {
+	const std::string meta = "# \t{};";
+
 	ConfigFile configFile;
+
+	std::vector<std::string> directive, waiting;
+	std::vector<size_t> indexes;
+	std::string front;
+	size_t min = 0;
 
 	File file = FileManager::openFile(filename);
 
-	std::vector<std::string> directive;
-	std::vector<std::string> stack;
-	int parameter = -1;
 	for (size_t i = 0; i < file.contents.size(); i++)
 	{
-		// 1. find out what is this part
-		// 2. do something
-		// 3. update line
 		std::string line = file.contents.at(i);
 		while (line.size())
 		{
-			std::cout << line << std::endl;
-			std::vector<size_t> its;
-			its.push_back(line.find(' '));
-			its.push_back(line.find('{'));
-			its.push_back(line.find('}'));
-			its.push_back(line.find(';'));
-			its.push_back(line.find('#'));
-			its.push_back(line.find('\t'));
-			its.push_back(std::string::npos);
+			indexes.clear();
+			for (size_t j = 0; j < meta.size(); j++)
+				indexes.push_back(line.find(meta.at(j)));
+			indexes.push_back(std::string::npos);
 
-			size_t meta = *std::min_element(its.begin(), its.end());
-			std::string part = line.substr(0, meta);
+			min = *std::min_element(indexes.begin(), indexes.end());
+			front = line.substr(0, min);
 
-			switch (line[meta])
+			switch (line[min])
 			{
 			case '#':
-				if (!part.empty())
-					stack.push_back(part);
+				if (!front.empty())
+					waiting.push_back(front);
 				line.clear();
-				meta = -1;
+				min = -1;
 				break;
+
 			case ' ':
 			case '\t':
-				if (!part.empty())
-					stack.push_back(part);
+				if (!front.empty())
+					waiting.push_back(front);
 				break;
 
 			case '{':
-				if (!part.empty())
-					stack.push_back(part);
-
-				if (!stack.empty())
-					directive.push_back(stack.at(0));
-				stack.clear();
+				if (!front.empty())
+					waiting.push_back(front);
+				if (!waiting.empty())
+				{
+					std::string blockWaiting;
+					for (size_t j = 0; j < waiting.size(); j++)
+						blockWaiting += waiting.at(j) + " ";
+					directive.push_back(blockWaiting.substr(0, blockWaiting.size() - 1));
+				}
+				waiting.clear();
 				break;
+
 			case '}':
-				if (!part.empty() || !stack.empty())
-					exit(1); // error
+				if (!front.empty() || !waiting.empty())
+					exit(1); // TODO: ERROR
 				directive.pop_back();
 				break;
+
 			case ';':
-				if (!part.empty())
-					stack.push_back(part);
-
-				if (!stack.empty())
-					directive.push_back(stack.at(0));
-				for (size_t i = 1; i < stack.size(); i++)
-					configFile.config.insert(std::make_pair(directive, stack.at(i)));
-
-				stack.clear();
+				if (!front.empty())
+					waiting.push_back(front);
+				if (!waiting.empty())
+					directive.push_back(waiting.at(0));
+				for (size_t i = 1; i < waiting.size(); i++)
+					configFile.config.insert(std::make_pair(directive, waiting.at(i)));
+				waiting.clear();
 				directive.pop_back();
-
 				break;
+
 			default:
 				break;
 			};
-			line = line.substr(meta + 1, line.size() - (meta + 1));
+			line = line.substr(min + 1, line.size() - (min + 1));
 		}
 	}
 	return configFile;

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 15:01:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/10 15:04:29 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:31:14 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	ConfigFile configFile = ConfigParser::parse(argv[1]);
-	config_t::iterator it = configFile.config.begin();
-	for (; it != configFile.config.end(); it++)
-	{
-		std::cout << "key: ";
-		for (size_t i = 0; i < (*it).first.size(); i++)
-			std::cout << (*it).first.at(i) << " ";
-		std::cout << "value: " << (*it).second << std::endl;
-	}
+	ConfigParser::printConfig(configFile.config);
 
 	return 0;
 }
