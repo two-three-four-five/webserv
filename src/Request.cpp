@@ -4,22 +4,23 @@
 
 namespace ft
 {
-Request::Request() : status(CREATED) { status = HEADER; }
-// 임시로 시작부분바꿈
+Request::Request() : status(CREATED) {}
 
 int Request::parse(const std::string &request)
 {
 	if (status == CREATED)
 		parseStartLine(request);
 	else if (status == HEADER)
-		parseFields(request);
+		parseLine(request);
+	else if (status == BODY)
+		parseBody(request);
 	return (status);
 }
 
 void Request::parseStartLine(const std::string &request)
 {
 	std::istringstream requestStream(request);
-	std::string httpVersion;
+	std::string method, requestTarget, httpVersion;
 
 	// GET /index.html HTTP/1.1
 	requestStream >> method >> requestTarget >> httpVersion;
@@ -40,63 +41,65 @@ void Request::parseStartLine(const std::string &request)
 		if (httpVersion.substr(5) != "1.1")
 			throw httpException(505); // throw 505 HTTP version not supported
 	}
-
+	message["method"].push_back(method);
+	message["target"].push_back(requestTarget);
 	status = HEADER;
 }
 
 void Request::parseLine(const std::string &fieldLine)
 {
+	if (fieldLine == "\r\n")
+	{
+		std::cout << "Header field end" << std::endl;
+		status = BODY;
+		return;
+	}
 	std::istringstream iss(fieldLine);
 	std::string key, value;
 
-	std::getline(iss, key, ":");
-	std::getline(iss >> std::ws, value);
-	if (isSpaceIncluded(key) || value.empty())
+	std::getline(iss, key, ':');
+	if (isSpaceIncluded(key))
 		; // error
-	message[key].push_back(value);
+	while (std::getline(iss >> std::ws, value, ','))
+	{
+		if (value.empty())
+			; // error
+		if (value[value.length() - 1] == '\n')
+			value = value.substr(0, value.length() - 2);
+		message[key].push_back(value);
+	}
 }
 
-void Request::parseFields(const std::string &request)
+void Request::parseBody(const std::string &line)
 {
-	std::istringstream requestStream(request);
-	std::string line;
-	std::string key, value;
-
-	while (requestStream.good())
+	if (line == "\r\n")
 	{
-		std::getline(requestStream, line);
-		// if (line == "\n" || line == "")
-		// {
-		// 	status = PARSE_END;
-		// 	return;
-		// }
-		std::istringstream lineStream(line);
-		std::getline(lineStream, key, ':');			// field name
-		std::getline(lineStream >> std::ws, value); // field value
-		// field name과 ':' 사이에 띄어쓰기가 있는지 || 라인에 :가 없어서
-		// value가 비었는지
-		if (isSpaceIncluded(key) || value.empty())
-			continue; // throw error
-		message[key].push_back(value);
-		// std::cout << "1 " << key << " " << value << std::endl;
-		// std::cout << "2 " << message[key][0] << std::endl;
-		// key = "";
-		// value = "";
+		std::cout << "Body end" << std::endl;
+		std::ostringstream oss;
+		for (std::vector<std::string>::iterator it = message["body"].begin(); it != message["body"].end(); it++)
+			oss << *it;
+		message["body"].clear();
+		message["body"].push_back(oss.str());
+		status = TRAILER;
+		std::cout << message["body"].at(0);
+		return;
 	}
+	message["body"].push_back(line);
 }
 
 void Request::printMessage()
 {
-	int i = 0;
 	for (std::map<std::string, std::vector<std::string> >::iterator it = message.begin(); it != message.end(); it++)
 	{
-		std::cout << it->first << ": " << std::flush;
+		std::cout << it->first << ": ";
 		for (std::vector<std::string>::iterator vecIt = it->second.begin(); vecIt != it->second.end(); vecIt++)
 		{
-			std::cout << *vecIt << ", " << std::flush;
+			std::cout << *vecIt << ". ";
 		}
-		// std::cout << std::endl;
+		std::cout << std::endl;
 	}
-};
+}
+
+std::map<std::string, std::vector<std::string> > &Request::getMessage() { return (message); }
 
 } // namespace ft

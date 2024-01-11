@@ -8,6 +8,7 @@
 #define TRAILER 4
 #define PARSE_END 5
 
+#include <fstream>
 #include <map>
 #include <sstream>
 #include <string>
@@ -31,8 +32,9 @@ public:
 	int parse(const std::string &request);
 	void parseStartLine(const std::string &request);
 	void parseLine(const std::string &fieldLine);
-	void parseFields(const std::string &request);
+	void parseBody(const std::string &body);
 	void printMessage();
+	std::map<std::string, std::vector<std::string> > &getMessage();
 
 	class httpException : public std::exception
 	{

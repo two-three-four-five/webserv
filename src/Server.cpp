@@ -85,15 +85,20 @@ void Server::startServer()
 				else
 				{
 					int idx = static_cast<std::string>(peekBuf).find('\n');
+					memset(readBuf, 0, sizeof(readBuf));
 					read(event_list[i].ident, readBuf, idx + 1);
 					ft::Request &request = (*Requests.find(event_list[i].ident)).second;
 					try
 					{
-						memset(readBuf, 0, sizeof(readBuf));
-						if (request.parse(static_cast<std::string>(readBuf)) == PARSE_END)
+						// 일단 TRAILER로 해놓음. 추후에 PARSE_END로 바꾸어야함
+						if (request.parse(static_cast<std::string>(readBuf)) == TRAILER)
 						{
-							request.printMessage();
-							disconnectClient(event_list[i].ident);
+							std::string response = makeResponse(request.getMessage());
+							std::cout << response << std::endl;
+							// request.printMessage();
+							// if (method)
+							// callCGI("mycgi.py")
+							// send response
 						}
 					}
 					catch (const ft::Request::httpException &e)
@@ -143,17 +148,50 @@ void Server::disconnectClient(int socketfd)
 	std::cout << "closed client: " << socketfd << std::endl;
 }
 
-std::string Server::callCGI(const std::string &scriptPath, const std::string &queryString)
+std::string Server::makeResponse(std::map<std::string, std::vector<std::string> > &message)
+{
+	std::ostringstream oss;
+	std::string method = message["method"].at(0);
+
+	if (method == "GET")
+	{
+		std::ifstream file("www" + message["target"].at(0));
+
+		if (file.is_open())
+		{
+			std::string line;
+			while (std::getline(file, line))
+			{
+				oss << line << std::endl;
+			}
+			file.close();
+		}
+		else
+		{
+			std::cerr << "Unable to open file: " << std::endl;
+		}
+		return (oss.str());
+	}
+	else if (method == "POST")
+	{
+		callCGI("mycgi.py");
+	}
+}
+
+std::string Server::callCGI(const std::string &scriptPath)
 {
 	/* 예시
 	// std::string home_path = getenv("HOME");
 	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
 	// std::string queryString = "first=1&second=2";
 	*/
-	char *argv[] = {(char *)scriptPath.c_str(), (char *)queryString.c_str(), nullptr};
+	char *argv[] = {(char *)scriptPath.c_str(), nullptr};
 	char *envp[] = {nullptr};
 
+	// char *argv[] = makeArgv();
+	// char *envp[] = makeEnvp();
 	int fd[2];
+
 	pipe(fd);
 	if (fork() == 0)
 	{
