@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/11 14:29:57 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/11 20:25:47 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,12 @@ public:
 	~ConfigParser();
 
 	static void printConfig(config_t config);
-	static ConfigFile parse(std::string filename);
+	static config_t parse(std::string filename);
+
+private:
+	static const std::string meta;
+
+	static config_t parseSingleFile(std::string filename);
 };
 
 #endif

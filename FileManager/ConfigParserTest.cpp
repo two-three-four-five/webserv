@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 15:01:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/11 14:31:14 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/11 20:17:16 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ int main(int argc, char **argv)
 		std::cout << "Usage: test filename" << std::endl;
 		return 1;
 	}
-	ConfigFile configFile = ConfigParser::parse(argv[1]);
-	ConfigParser::printConfig(configFile.config);
+	config_t config = ConfigParser::parse(argv[1]);
+	ConfigParser::printConfig(config);
 
 	return 0;
 }
