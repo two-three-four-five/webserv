@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 17:07:37 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/09 10:40:42 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/12 21:10:00 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,32 @@ FileManager &FileManager::operator=(const FileManager &other)
 	if (this != &other)
 		;
 	return *this;
+}
+
+bool FileManager::isExist(std::string filename)
+{
+	if (filename.empty())
+		return true;
+	else
+		return access(filename.c_str(), F_OK) == 0;
+}
+
+bool FileManager::isDirectory(std::string filename)
+{
+	int fd = open(filename.c_str(), O_DIRECTORY);
+	close(fd);
+
+	return fd >= 0;
+}
+
+bool FileManager::isReadable(std::string filename)
+{
+	return isExist(filename) && (access(filename.c_str(), R_OK) == 0);
+}
+
+bool FileManager::isFile(std::string filename)
+{
+	return isExist(filename) && !isDirectory(filename) && isReadable(filename);
 }
 
 File FileManager::openFile(std::string filename)
