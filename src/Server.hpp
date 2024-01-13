@@ -23,6 +23,8 @@ public:
 	void disconnectClient(int socketfd);
 	std::string callCGI(const std::string &scriptPath);
 	std::string makeResponse(std::map<std::string, std::vector<std::string> > &message);
+	std::string makeGetResponse(std::map<std::string, std::vector<std::string> > &message);
+	std::string makeBody(std::map<std::string, std::vector<std::string> > &message);
 	/*
 		string -> Request
 		parseRequest

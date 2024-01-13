@@ -41,6 +41,8 @@ void Request::parseStartLine(const std::string &request)
 		if (httpVersion.substr(5) != "1.1")
 			throw httpException(505); // throw 505 HTTP version not supported
 	}
+	if (requestTarget == "/")
+		requestTarget = "/index.html";
 	message["method"].push_back(method);
 	message["target"].push_back(requestTarget);
 	status = HEADER;
@@ -51,7 +53,10 @@ void Request::parseLine(const std::string &fieldLine)
 	if (fieldLine == "\r\n")
 	{
 		std::cout << "Header field end" << std::endl;
-		status = BODY;
+		if (message["method"][0] == "GET")
+			status = TRAILER;
+		else
+			status = BODY;
 		return;
 	}
 	std::istringstream iss(fieldLine);

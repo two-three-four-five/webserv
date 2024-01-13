@@ -94,8 +94,7 @@ void Server::startServer()
 						if (request.parse(static_cast<std::string>(readBuf)) == TRAILER)
 						{
 							std::string response = makeResponse(request.getMessage());
-							std::cout << response << std::endl;
-							// request.printMessage();
+							send(event_list[i].ident, response.c_str(), response.length(), 0);
 							// if (method)
 							// callCGI("mycgi.py")
 							// send response
@@ -148,29 +147,55 @@ void Server::disconnectClient(int socketfd)
 	std::cout << "closed client: " << socketfd << std::endl;
 }
 
-std::string Server::makeResponse(std::map<std::string, std::vector<std::string> > &message)
+std::string Server::makeGetResponse(std::map<std::string, std::vector<std::string> > &message)
+{
+	/*
+	Server: nginx/1.25.3
+	Date: Sat, 13 Jan 2024 07:13:54 GMT
+	Content-Type: text/html
+	Content-Length: 615
+	Last-Modified: Tue, 24 Oct 2023 13:46:52 GMT
+	Connection: keep-alive
+	ETag: "6537cacc-267"
+	Accept-Ranges: bytes
+	*/
+	std::ostringstream oss;
+	std::string body = makeBody(message);
+
+	oss << "HTTP/1.1 200 OK\n";
+	oss << "Content-Type: text/html"
+		<< "\n";
+	oss << "Content-Length: " << body.length() << "\n";
+	oss << body;
+
+	return (oss.str());
+}
+
+std::string Server::makeBody(std::map<std::string, std::vector<std::string> > &message)
 {
 	std::ostringstream oss;
+	std::ifstream file("www" + message["target"].at(0));
+
+	if (file.is_open())
+	{
+		std::string line;
+		while (std::getline(file, line))
+		{
+			oss << line << std::endl;
+		}
+		file.close();
+	}
+	return (oss.str());
+}
+
+std::string Server::makeResponse(std::map<std::string, std::vector<std::string> > &message)
+{
+
 	std::string method = message["method"].at(0);
 
 	if (method == "GET")
 	{
-		std::ifstream file("www" + message["target"].at(0));
-
-		if (file.is_open())
-		{
-			std::string line;
-			while (std::getline(file, line))
-			{
-				oss << line << std::endl;
-			}
-			file.close();
-		}
-		else
-		{
-			std::cerr << "Unable to open file: " << std::endl;
-		}
-		return (oss.str());
+		return (makeGetResponse(message));
 	}
 	else if (method == "POST")
 	{
