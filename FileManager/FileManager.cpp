@@ -6,11 +6,13 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 17:07:37 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/12 21:10:00 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/13 11:53:21 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "FileManager.hpp"
+
+using namespace Hafserv;
 
 FileManager::FileManager() {}
 
