@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 16:50:04 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 01:32:36 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 01:43:54 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,14 +48,12 @@ struct Directory : public File
 class FileManager
 {
 public:
-	static bool isExist(std::string filename);
-	static bool isDirectory(std::string filename);
-	static bool isReadable(std::string filename);
-	static bool isFile(std::string filename);
+	static bool isExist(const std::string &filename);
+	static bool isDirectory(const std::string &filename);
+	static bool isReadable(const std::string &filename);
+	static bool isRegularFile(const std::string &filename);
 
-	static RegularFile openFile(std::string filename);
-	static void printFileInfo(RegularFile file);
-	static void printFileContents(RegularFile file);
+	static RegularFile readRegularFile(const std::string &filename) throw(); // throw if not regular file
 
 private:
 	FileManager();

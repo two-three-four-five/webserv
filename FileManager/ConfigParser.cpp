@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:12:28 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 01:34:08 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 01:44:22 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ const std::string ConfigParser::meta = " \t{};#";
 
 ConfigParser::ConfigParser() {}
 
-Config ConfigParser::parse(std::string filename)
+Config ConfigParser::parse(const std::string &filename)
 {
 	Config config = Config();
 	config.name = "config";
@@ -52,7 +52,7 @@ Config ConfigParser::parse(std::string filename)
 	std::string front;
 	size_t min = -1;
 
-	RegularFile file = FileManager::openFile(filename);
+	RegularFile file = FileManager::readRegularFile(filename);
 	for (size_t i = 0; i < file.contents.size(); i++)
 	{
 		for (std::string line = file.contents.at(i); line.size(); line = line.substr(min + 1, line.size() - (min + 1)))

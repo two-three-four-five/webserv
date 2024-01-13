@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 01:13:29 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 01:44:14 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ struct Config
 class ConfigParser
 {
 public:
-	static Config parse(std::string filename);
+	static Config parse(const std::string &filename);
 
 private:
 	ConfigParser();
