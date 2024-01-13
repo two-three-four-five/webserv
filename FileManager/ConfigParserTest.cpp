@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 15:01:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 11:56:38 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 00:56:03 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,7 @@ int main(int argc, char **argv)
 		std::cout << "Usage: test filename" << std::endl;
 		return 1;
 	}
-	Hafserv::config_t config = Hafserv::ConfigParser::parse(argv[1]);
-	Hafserv::ConfigParser::printConfig(config);
-
+	Hafserv::Config config = Hafserv::ConfigParser::parse(argv[1]);
+	config.print();
 	return 0;
 }
