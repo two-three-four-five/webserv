@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:12:28 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 20:30:49 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 01:20:59 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,28 +14,26 @@
 
 using namespace Hafserv;
 
-const std::string ConfigParser::meta = "# \t{};";
-
-ConfigParser::ConfigParser() {}
-
-void ConfigParser::printConfig(Config config)
+void Config::print() const
 {
-	std::cout << "name : " << config.name << std::endl;
-	std::cout << "\tpara : ";
-	for (size_t i = 0; i < config.options.size(); i++)
-		std::cout << config.options.at(i) << " ";
+	std::cout << name << " ";
+	for (size_t i = 0; i < parameters.size(); i++)
+		std::cout << parameters.at(i) << " ";
 	std::cout << std::endl;
 
-	std::cout << "\tvalues : " << std::endl;
-	for (auto it = config.values.begin(); it != config.values.end(); it++)
+	for (directives_t::const_iterator it = directives.begin(); it != directives.end(); it++)
 		std::cout << "\t[" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
 
-	for (size_t i = 0; i < config.subBlocks.size(); i++)
+	for (size_t i = 0; i < subBlocks.size(); i++)
 	{
-		std::cout << std::endl;
-		printConfig(config.subBlocks.at(i));
+		std::cout << std::endl << name << "." << std::endl;
+		subBlocks.at(i).print();
 	}
 }
+
+const std::string ConfigParser::meta = " \t{};#";
+
+ConfigParser::ConfigParser() {}
 
 Config ConfigParser::parse(std::string filename)
 {
@@ -52,13 +50,12 @@ Config ConfigParser::parse(std::string filename)
 	std::vector<std::string> waiting;
 	std::vector<size_t> indexes;
 	std::string front;
-	size_t min = 0;
+	size_t min = -1;
 
 	File file = FileManager::openFile(filename);
 	for (size_t i = 0; i < file.contents.size(); i++)
 	{
-		std::string line = file.contents.at(i);
-		while (line.size())
+		for (std::string line = file.contents.at(i); line.size(); line = line.substr(min + 1, line.size() - (min + 1)))
 		{
 			indexes.clear();
 			for (size_t j = 0; j < meta.size(); j++)
@@ -70,17 +67,7 @@ Config ConfigParser::parse(std::string filename)
 
 			switch (line[min])
 			{
-			case '#':
-				if (!front.empty())
-					waiting.push_back(front);
-				line.clear();
-				min = -1;
-				break;
-
 			case ' ':
-				if (!front.empty())
-					waiting.push_back(front);
-				break;
 			case '\t':
 				if (!front.empty())
 					waiting.push_back(front);
@@ -95,14 +82,9 @@ Config ConfigParser::parse(std::string filename)
 					newConfig.name = *waiting.begin();
 
 					for (size_t j = 1; j < waiting.size(); j++)
-						newConfig.options.push_back(waiting.at(j));
+						newConfig.parameters.push_back(waiting.at(j));
 
-					// newConfig.options.insert(newConfig.options.end(), waiting.begin()++, wating.end());
 					(*history.back()).subBlocks.push_back(newConfig);
-
-					// printConfig(newConfig);
-					// printConfig((*history.back()).subBlocks.back());
-
 					history.push_back(--(*history.back()).subBlocks.end());
 				}
 				waiting.clear();
@@ -120,10 +102,8 @@ Config ConfigParser::parse(std::string filename)
 				if (!waiting.empty())
 				{
 					for (size_t j = 1; j < waiting.size(); j++)
-						(*history.back()).values.insert(std::make_pair(waiting.at(0), waiting.at(j)));
-					// curr->values.insert(std::make_pair(waiting.at(0), waiting.at(j)));
+						(*history.back()).directives.insert(std::make_pair(waiting.at(0), waiting.at(j)));
 				}
-
 				waiting.clear();
 				break;
 
@@ -133,7 +113,6 @@ Config ConfigParser::parse(std::string filename)
 				min = line.size() - 1;
 				break;
 			};
-			line = line.substr(min + 1, line.size() - (min + 1));
 		}
 	}
 	return config;

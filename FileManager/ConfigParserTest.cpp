@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 15:01:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 19:26:04 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 00:56:03 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,6 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	Hafserv::Config config = Hafserv::ConfigParser::parse(argv[1]);
-	Hafserv::ConfigParser::printConfig(config);
+	config.print();
 	return 0;
 }

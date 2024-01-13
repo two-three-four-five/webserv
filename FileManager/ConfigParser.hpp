@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 19:20:48 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 01:13:29 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,24 +23,22 @@
 namespace Hafserv
 {
 
-typedef std::string directive_t;
-typedef std::string parameter_t;
-// typedef std::multimap<directive_t, parameter_t> config_t;
-
 struct Config
 {
-public:
-	directive_t name;
-	std::vector<parameter_t> options;
+	typedef std::vector<std::string> parameters_t;
+	typedef std::multimap<std::string, std::string> directives_t;
 
-	std::multimap<directive_t, parameter_t> values;
+	std::string name;
+	std::vector<std::string> parameters;
+	std::multimap<std::string, std::string> directives;
 	std::vector<Config> subBlocks;
+
+	void print() const;
 };
 
 class ConfigParser
 {
 public:
-	static void printConfig(Config config);
 	static Config parse(std::string filename);
 
 private:
