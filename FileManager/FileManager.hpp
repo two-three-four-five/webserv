@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 16:50:04 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/12 21:10:55 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/13 11:52:50 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
+
+namespace Hafserv
+{
 
 struct File
 {
@@ -41,11 +44,14 @@ public:
 	static bool isDirectory(std::string filename);
 	static bool isReadable(std::string filename);
 	static bool isFile(std::string filename);
+
 	static File openFile(std::string filename);
 	static void printFileInfo(File file);
 	static void printFileContents(File file);
 
 private:
 };
+
+} // namespace Hafserv
 
 #endif
