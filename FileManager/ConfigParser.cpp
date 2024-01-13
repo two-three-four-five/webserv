@@ -6,11 +6,13 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:12:28 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/11 20:55:54 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/13 11:56:26 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigParser.hpp"
+
+using namespace Hafserv;
 
 const std::string ConfigParser::meta = "# \t{};";
 

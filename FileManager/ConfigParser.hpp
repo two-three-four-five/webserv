@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/11 20:25:47 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/13 11:56:04 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,16 +19,8 @@
 #include <map>
 #include <string>
 
-/*
- * directives can belong to some level of contexts.
- * contexts and directive are represented as directive_t
- *
- * directives can have 0 or more parameters.
- * parameters are saved in config_t as values.
- *
- * because there can be various parameters,
- * config_t is designed with multimap.
- */
+namespace Hafserv
+{
 
 typedef std::vector<std::string> directive_t;
 typedef std::string parameter_t;
@@ -55,5 +47,7 @@ private:
 
 	static config_t parseSingleFile(std::string filename);
 };
+
+} // namespace Hafserv
 
 #endif
