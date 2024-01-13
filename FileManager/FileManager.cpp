@@ -6,13 +6,26 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 17:07:37 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 12:42:26 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 01:33:10 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "FileManager.hpp"
 
 using namespace Hafserv;
+
+void RegularFile::printProperty() const
+{
+	std::cout << "Filename: " << name << std::endl;
+	std::cout << "Extension: " << extention << std::endl;
+	std::cout << "Contents-length: " << contents.size() << std::endl;
+}
+
+void RegularFile::print() const
+{
+	for (size_t i = 0; i < contents.size(); i++)
+		std::cout << contents[i] << std::endl;
+}
 
 FileManager::FileManager() {}
 
@@ -42,9 +55,9 @@ bool FileManager::isFile(std::string filename)
 	return isExist(filename) && !isDirectory(filename) && isReadable(filename);
 }
 
-File FileManager::openFile(std::string filename)
+RegularFile FileManager::openFile(std::string filename)
 {
-	File file = File();
+	RegularFile file = RegularFile();
 	file.name = filename;
 	if (filename.rfind('.') != std::string::npos)
 		file.extention = filename.substr(filename.rfind('.') + 1, filename.size() - filename.rfind('.'));
@@ -62,20 +75,4 @@ File FileManager::openFile(std::string filename)
 	fs.close();
 	file.isValid = true;
 	return file;
-}
-
-void FileManager::printFileInfo(File file)
-{
-	std::cout << "Filename: " << file.name << std::endl;
-	std::cout << "Extension: " << file.extention << std::endl;
-	std::cout << "Contents-length: " << file.contents.size() << std::endl;
-
-	std::cout << "Contents:" << std::endl;
-	printFileContents(file);
-}
-
-void FileManager::printFileContents(File file)
-{
-	for (size_t i = 0; i < file.contents.size(); i++)
-		std::cout << file.contents[i] << std::endl;
 }

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 21:30:38 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 12:29:44 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 01:33:30 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	Hafserv::File file = Hafserv::FileManager::openFile(argv[1]);
-	Hafserv::FileManager::printFileInfo(file);
+	Hafserv::RegularFile file = Hafserv::FileManager::openFile(argv[1]);
+	file.printProperty();
+	file.print();
+
 	return 0;
 }
