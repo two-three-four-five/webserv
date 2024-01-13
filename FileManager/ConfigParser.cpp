@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:12:28 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 11:56:26 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/13 20:30:49 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,90 +18,48 @@ const std::string ConfigParser::meta = "# \t{};";
 
 ConfigParser::ConfigParser() {}
 
-ConfigParser::ConfigParser(const ConfigParser &other) {}
-
-ConfigParser &ConfigParser::operator=(const ConfigParser &other)
+void ConfigParser::printConfig(Config config)
 {
-	if (this != &other)
+	std::cout << "name : " << config.name << std::endl;
+	std::cout << "\tpara : ";
+	for (size_t i = 0; i < config.options.size(); i++)
+		std::cout << config.options.at(i) << " ";
+	std::cout << std::endl;
+
+	std::cout << "\tvalues : " << std::endl;
+	for (auto it = config.values.begin(); it != config.values.end(); it++)
+		std::cout << "\t[" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
+
+	for (size_t i = 0; i < config.subBlocks.size(); i++)
 	{
-	}
-	return *this;
-}
-
-ConfigParser::~ConfigParser() {}
-
-void ConfigParser::printConfig(config_t config)
-{
-	std::cout << "[key] : [value]" << std::endl;
-	for (config_t::iterator it = config.begin(); it != config.end(); it++)
-	{
-		std::cout << "[";
-		for (size_t i = 0; i < (*it).first.size(); i++)
-			std::cout << (*it).first.at(i) << ".";
-		std::cout << "]";
-
-		std::cout << " : [" << (*it).second << "]" << std::endl;
+		std::cout << std::endl;
+		printConfig(config.subBlocks.at(i));
 	}
 }
 
-static bool hasIncludeInKey(config_t config)
+Config ConfigParser::parse(std::string filename)
 {
+	Config config = Config();
+	config.name = "config";
 
-	for (config_t::iterator it = config.begin(); it != config.end(); it++)
-		for (size_t j = 0; j < (*it).first.size(); j++)
-			if ((*it).first.at(j) == "include")
-				return true;
-	return false;
-}
+	Config main = Config();
+	main.name = "main";
+	config.subBlocks.push_back(main);
 
-config_t ConfigParser::parse(std::string filename)
-{
-	config_t config;
-	config = parseSingleFile(filename);
-	// check syntax;
+	std::vector<std::vector<Config>::iterator> history;
+	history.push_back(config.subBlocks.begin());
 
-	while (hasIncludeInKey(config))
-	{
-		config_t::iterator include;
-		for (config_t::iterator it = config.begin(); it != config.end(); it++)
-			for (size_t j = 0; j < (*it).first.size(); j++)
-				if ((*it).first.at(j) == "include")
-					include = it;
-
-		config_t fileConfig = parseSingleFile((*include).second);
-
-		directive_t directive = (*include).first;
-		directive.pop_back();
-		for (config_t::iterator it = fileConfig.begin(); it != fileConfig.end(); it++)
-		{
-			directive_t newDirective = directive;
-			newDirective.insert(newDirective.end(), (*it).first.begin(), (*it).first.end());
-			config.insert(std::make_pair(newDirective, (*it).second));
-		}
-		config.erase(include);
-		// check syntax
-	}
-	return config;
-}
-
-config_t ConfigParser::parseSingleFile(std::string filename)
-{
-	config_t config;
-
-	std::vector<std::string> directive, waiting;
+	std::vector<std::string> waiting;
 	std::vector<size_t> indexes;
 	std::string front;
 	size_t min = 0;
 
 	File file = FileManager::openFile(filename);
-
 	for (size_t i = 0; i < file.contents.size(); i++)
 	{
 		std::string line = file.contents.at(i);
-		std::cout << line << std::endl;
 		while (line.size())
 		{
-			std::cout << line << std::endl;
 			indexes.clear();
 			for (size_t j = 0; j < meta.size(); j++)
 				indexes.push_back(line.find(meta.at(j)));
@@ -120,6 +78,9 @@ config_t ConfigParser::parseSingleFile(std::string filename)
 				break;
 
 			case ' ':
+				if (!front.empty())
+					waiting.push_back(front);
+				break;
 			case '\t':
 				if (!front.empty())
 					waiting.push_back(front);
@@ -130,10 +91,19 @@ config_t ConfigParser::parseSingleFile(std::string filename)
 					waiting.push_back(front);
 				if (!waiting.empty())
 				{
-					std::string blockWaiting;
-					for (size_t j = 0; j < waiting.size(); j++)
-						blockWaiting += waiting.at(j) + " ";
-					directive.push_back(blockWaiting.substr(0, blockWaiting.size() - 1));
+					Config newConfig = Config();
+					newConfig.name = *waiting.begin();
+
+					for (size_t j = 1; j < waiting.size(); j++)
+						newConfig.options.push_back(waiting.at(j));
+
+					// newConfig.options.insert(newConfig.options.end(), waiting.begin()++, wating.end());
+					(*history.back()).subBlocks.push_back(newConfig);
+
+					// printConfig(newConfig);
+					// printConfig((*history.back()).subBlocks.back());
+
+					history.push_back(--(*history.back()).subBlocks.end());
 				}
 				waiting.clear();
 				break;
@@ -141,22 +111,23 @@ config_t ConfigParser::parseSingleFile(std::string filename)
 			case '}':
 				if (!front.empty() || !waiting.empty())
 					exit(1); // TODO: ERROR
-				directive.pop_back();
+				history.pop_back();
 				break;
 
 			case ';':
 				if (!front.empty())
 					waiting.push_back(front);
 				if (!waiting.empty())
-					directive.push_back(waiting.at(0));
-				for (size_t i = 1; i < waiting.size(); i++)
-					config.insert(std::make_pair(directive, waiting.at(i)));
+				{
+					for (size_t j = 1; j < waiting.size(); j++)
+						(*history.back()).values.insert(std::make_pair(waiting.at(0), waiting.at(j)));
+					// curr->values.insert(std::make_pair(waiting.at(0), waiting.at(j)));
+				}
+
 				waiting.clear();
-				directive.pop_back();
 				break;
 
 			default:
-				std::cout << line << std::endl;
 				if (!front.empty())
 					waiting.push_back(front);
 				min = line.size() - 1;
