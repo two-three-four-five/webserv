@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 17:07:37 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 12:23:50 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/13 12:42:26 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,6 @@
 using namespace Hafserv;
 
 FileManager::FileManager() {}
-
-FileManager::FileManager(const FileManager &other) {}
-
-FileManager::~FileManager() {}
-
-FileManager &FileManager::operator=(const FileManager &other)
-{
-	if (this != &other)
-		;
-	return *this;
-}
 
 bool FileManager::isExist(std::string filename)
 {

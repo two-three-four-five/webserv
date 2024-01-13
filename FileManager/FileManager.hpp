@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 16:50:04 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 11:52:50 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/13 17:56:18 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,6 @@ struct File
 class FileManager
 {
 public:
-	FileManager();
-	FileManager(const FileManager &other);
-	~FileManager();
-	FileManager &operator=(const FileManager &other);
-
 	static bool isExist(std::string filename);
 	static bool isDirectory(std::string filename);
 	static bool isReadable(std::string filename);
@@ -50,6 +45,7 @@ public:
 	static void printFileContents(File file);
 
 private:
+	FileManager();
 };
 
 } // namespace Hafserv
