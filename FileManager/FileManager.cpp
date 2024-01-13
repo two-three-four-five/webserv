@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 17:07:37 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 11:53:21 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/13 12:23:50 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ File FileManager::openFile(std::string filename)
 		file.extention = filename.substr(filename.rfind('.') + 1, filename.size() - filename.rfind('.'));
 
 	std::fstream fs;
-	fs.open(filename, std::fstream::in);
+	fs.open(filename.c_str(), std::fstream::in);
 	if (!fs.is_open())
 		return file;
 	// TODO: check that file is directory
