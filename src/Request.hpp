@@ -6,10 +6,13 @@
 #define HEADER 2
 #define BODY 3
 #define TRAILER 4
+#define PARSE_END 5
 
+#include <fstream>
 #include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace ft
 {
@@ -21,24 +24,24 @@ private:
 	int errCode;
 	std::string method;
 	std::string requestTarget;
-	std::map<std::string, std::string> fields;
+	// std::map<std::string, std::string> fields;
+	std::map<std::string, std::vector<std::string> > message;
 
 public:
 	Request();
-	void parse(const std::string &request);
+	int parse(const std::string &request);
 	void parseStartLine(const std::string &request);
-	void parseFields(const std::string &request);
-	void printFields();
+	void parseLine(const std::string &fieldLine);
+	void parseBody(const std::string &body);
+	void printMessage();
+	std::map<std::string, std::vector<std::string> > &getMessage();
 
 	class httpException : public std::exception
 	{
 	public:
 		int errCode;
 		httpException(int errCode) : errCode(errCode){};
-		virtual const char *what() const throw()
-		{
-			return "HTTP ERROR";
-		}
+		virtual const char *what() const throw() { return "HTTP ERROR"; }
 	};
 };
 } // namespace ft

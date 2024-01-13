@@ -10,17 +10,11 @@
 namespace ft
 {
 
-Server::Server()
-{
-}
+Server::Server() {}
 
-Server::Server(int port) : port(port)
-{
-}
+Server::Server(int port) : port(port) {}
 
-Server::~Server()
-{
-}
+Server::~Server() {}
 
 void Server::initServer()
 {
@@ -58,7 +52,8 @@ void Server::initServer()
 void Server::startServer()
 {
 	int str_len;
-	char buf[BUF_SIZE];
+	char peekBuf[BUF_SIZE];
+	char readBuf[BUF_SIZE];
 	struct kevent event_list[MAX_EVENTS];
 
 	initServer();
@@ -80,25 +75,31 @@ void Server::startServer()
 			}
 			else
 			{
-				// str_len = read(event_list[i].ident, buf, BUF_SIZE);
-				str_len = recv(event_list[i].ident, buf, BUF_SIZE, MSG_PEEK);
+				memset(peekBuf, 0, sizeof(peekBuf));
+				str_len = recv(event_list[i].ident, peekBuf, BUF_SIZE, MSG_PEEK | MSG_DONTWAIT);
+
 				if (str_len == 0)
 				{
 					disconnectClient(event_list[i].ident);
 				}
 				else
 				{
-					std::string temp = buf;
-					int idx = temp.find('\n');
-					str_len =
-						recv(event_list[i].ident, buf, idx + 1, MSG_DONTWAIT);
-					std::string line = buf;
-
-					ft::Request &request =
-						(*Requests.find(event_list[i].ident)).second;
+					int idx = static_cast<std::string>(peekBuf).find('\n');
+					memset(readBuf, 0, sizeof(readBuf));
+					read(event_list[i].ident, readBuf, idx + 1);
+					ft::Request &request = (*Requests.find(event_list[i].ident)).second;
 					try
 					{
-						request.parse(line);
+						// 일단 TRAILER로 해놓음. 추후에 PARSE_END로 바꾸어야함
+						if (request.parse(static_cast<std::string>(readBuf)) == TRAILER)
+						{
+							request.printMessage();
+							std::string response = makeResponse(request.getMessage());
+							send(event_list[i].ident, response.c_str(), response.length(), 0);
+							// if (method)
+							// callCGI("mycgi.py")
+							// send response
+						}
 					}
 					catch (const ft::Request::httpException &e)
 					{
@@ -107,11 +108,6 @@ void Server::startServer()
 						disconnectClient(event_list[i].ident);
 						continue;
 					}
-
-					// respoen
-					request.printFields();
-					std::cout << std::endl;
-
 					// write(event_list[i].ident, buf, str_len);
 				}
 			}
@@ -152,19 +148,78 @@ void Server::disconnectClient(int socketfd)
 	std::cout << "closed client: " << socketfd << std::endl;
 }
 
-std::string Server::callCGI(const std::string &scriptPath,
-							const std::string &queryString)
+std::string Server::makeGetResponse(std::map<std::string, std::vector<std::string> > &message)
+{
+	/*
+	Server: nginx/1.25.3
+	Date: Sat, 13 Jan 2024 07:13:54 GMT
+	Content-Type: text/html
+	Content-Length: 615
+	Last-Modified: Tue, 24 Oct 2023 13:46:52 GMT
+	Connection: keep-alive
+	ETag: "6537cacc-267"
+	Accept-Ranges: bytes
+	*/
+	std::ostringstream oss;
+	std::string body = makeBody(message);
+
+	oss << "HTTP/1.1 200 OK\n";
+	if (message.find("Content-Type") == message.end())
+		oss << "Content-Type: text/html\n";
+	else
+		oss << "Content-Type: " << message["Content-Type"][0] << "\n";
+	oss << "Content-Length: " << body.length() << "\n";
+	oss << body;
+
+	return (oss.str());
+}
+
+std::string Server::makeBody(std::map<std::string, std::vector<std::string> > &message)
+{
+	std::ostringstream oss;
+	std::ifstream file("www" + message["target"].at(0));
+
+	if (file.is_open())
+	{
+		std::string line;
+		while (std::getline(file, line))
+		{
+			oss << line << std::endl;
+		}
+		file.close();
+	}
+	return (oss.str());
+}
+
+std::string Server::makeResponse(std::map<std::string, std::vector<std::string> > &message)
+{
+
+	std::string method = message["method"].at(0);
+
+	if (method == "GET")
+	{
+		return (makeGetResponse(message));
+	}
+	else if (method == "POST")
+	{
+		callCGI("mycgi.py");
+	}
+}
+
+std::string Server::callCGI(const std::string &scriptPath)
 {
 	/* 예시
 	// std::string home_path = getenv("HOME");
 	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
 	// std::string queryString = "first=1&second=2";
 	*/
-	char *argv[] = {(char *)scriptPath.c_str(), (char *)queryString.c_str(),
-					nullptr};
+	char *argv[] = {(char *)scriptPath.c_str(), nullptr};
 	char *envp[] = {nullptr};
 
+	// char *argv[] = makeArgv();
+	// char *envp[] = makeEnvp();
 	int fd[2];
+
 	pipe(fd);
 	if (fork() == 0)
 	{
