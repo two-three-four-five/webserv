@@ -93,6 +93,7 @@ void Server::startServer()
 						// 일단 TRAILER로 해놓음. 추후에 PARSE_END로 바꾸어야함
 						if (request.parse(static_cast<std::string>(readBuf)) == TRAILER)
 						{
+							request.printMessage();
 							std::string response = makeResponse(request.getMessage());
 							send(event_list[i].ident, response.c_str(), response.length(), 0);
 							// if (method)
@@ -163,8 +164,10 @@ std::string Server::makeGetResponse(std::map<std::string, std::vector<std::strin
 	std::string body = makeBody(message);
 
 	oss << "HTTP/1.1 200 OK\n";
-	oss << "Content-Type: text/html"
-		<< "\n";
+	if (message.find("Content-Type") == message.end())
+		oss << "Content-Type: text/html\n";
+	else
+		oss << "Content-Type: " << message["Content-Type"][0] << "\n";
 	oss << "Content-Length: " << body.length() << "\n";
 	oss << body;
 
