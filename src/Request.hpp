@@ -24,6 +24,7 @@ private:
 	int errCode;
 	std::string method;
 	std::string requestTarget;
+	std::string boundary;
 	// std::map<std::string, std::string> fields;
 	std::map<std::string, std::vector<std::string> > message;
 

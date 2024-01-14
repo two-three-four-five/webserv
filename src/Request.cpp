@@ -53,6 +53,7 @@ void Request::parseLine(const std::string &fieldLine)
 	if (fieldLine == "\r\n")
 	{
 		std::cout << "Header field end" << std::endl;
+		setBoundary();
 		if (message["method"][0] == "GET")
 			status = TRAILER;
 		else
@@ -77,20 +78,23 @@ void Request::parseLine(const std::string &fieldLine)
 
 void Request::parseBody(const std::string &line)
 {
-	if (line == "\r\n")
-	{
-		std::cout << "Body end" << std::endl;
-		std::ostringstream oss;
-		for (std::vector<std::string>::iterator it = message["body"].begin(); it != message["body"].end(); it++)
-			oss << *it;
-		message["body"].clear();
-		message["body"].push_back(oss.str());
-		status = TRAILER;
-		std::cout << message["body"].at(0);
-		return;
-	}
+
+	// if (line == "\r\n")
+	// {
+	// 	std::cout << "Body end" << std::endl;
+	// 	std::ostringstream oss;
+	// 	for (std::vector<std::string>::iterator it = message["body"].begin(); it != message["body"].end(); it++)
+	// 		oss << *it;
+	// 	message["body"].clear();
+	// 	message["body"].push_back(oss.str());
+	// 	status = TRAILER;
+	// 	return;
+	// }
+	std::cout << "body : " << line;
 	message["body"].push_back(line);
 }
+
+void setBoundary();
 
 void Request::printMessage()
 {

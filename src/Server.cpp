@@ -94,6 +94,7 @@ void Server::startServer()
 						if (request.parse(static_cast<std::string>(readBuf)) == TRAILER)
 						{
 							request.printMessage();
+							// respsone = respsone(request);
 							std::string response = makeResponse(request.getMessage());
 							send(event_list[i].ident, response.c_str(), response.length(), 0);
 							// if (method)
@@ -177,7 +178,7 @@ std::string Server::makeGetResponse(std::map<std::string, std::vector<std::strin
 std::string Server::makeBody(std::map<std::string, std::vector<std::string> > &message)
 {
 	std::ostringstream oss;
-	std::ifstream file("www" + message["target"].at(0));
+	std::ifstream file("www" + message["target"].front());
 
 	if (file.is_open())
 	{
@@ -194,7 +195,7 @@ std::string Server::makeBody(std::map<std::string, std::vector<std::string> > &m
 std::string Server::makeResponse(std::map<std::string, std::vector<std::string> > &message)
 {
 
-	std::string method = message["method"].at(0);
+	std::string method = message["method"].front();
 
 	if (method == "GET")
 	{
