@@ -32,7 +32,7 @@ public:
 	Request();
 	int parse(const std::string &request);
 	void parseStartLine(const std::string &request);
-	void parseLine(const std::string &fieldLine);
+	void parseFieldLine(const std::string &fieldLine);
 	void parseBody(const std::string &body);
 	void printMessage();
 	std::map<std::string, std::vector<std::string> > &getMessage();

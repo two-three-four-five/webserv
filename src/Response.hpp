@@ -17,10 +17,12 @@ public:
 	std::string makeGetResponse(const Request &request);
 	std::string makeBody(const std::string &requestTarget);
 	std::string &getResponse();
+	std::string setBoundary(std::map<std::string, std::vector<std::string> > &message);
 
 private:
 	std::string statusCode;
 	std::string response;
+	std::string boundary;
 	friend class Request;
 };
 

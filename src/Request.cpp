@@ -11,7 +11,7 @@ int Request::parse(const std::string &request)
 	if (status == CREATED)
 		parseStartLine(request);
 	else if (status == HEADER)
-		parseLine(request);
+		parseFieldLine(request);
 	else if (status == BODY)
 		parseBody(request);
 	return (status);
@@ -46,7 +46,7 @@ void Request::parseStartLine(const std::string &request)
 	status = HEADER;
 }
 
-void Request::parseLine(const std::string &fieldLine)
+void Request::parseFieldLine(const std::string &fieldLine)
 {
 	if (fieldLine == "\r\n")
 	{
@@ -75,7 +75,6 @@ void Request::parseLine(const std::string &fieldLine)
 
 void Request::parseBody(const std::string &line)
 {
-
 	// if (line == "\r\n")
 	// {
 	// 	std::cout << "Body end" << std::endl;

@@ -25,6 +25,7 @@ Response::Response(const Request &request)
 	}
 	else if (request.method == "POST")
 	{
+		setBoundary(request.message);
 		// callCGI();
 	}
 }
@@ -74,8 +75,6 @@ std::string Response::makeBody(const std::string &requestTarget)
 	return (oss.str());
 }
 
-std::string &Response::getResponse() { return (response); }
-
 std::string Response::callCGI(const std::string &scriptPath)
 {
 	/* 예시
@@ -113,5 +112,23 @@ std::string Response::callCGI(const std::string &scriptPath)
 	}
 	return (NULL);
 }
+
+std::string Response::setBoundary(std::map<std::string, std::vector<std::string> > &message)
+{
+	std::string contentType = message["Content-Type"].front();
+	std::string str;
+	std::istringstream iss(contentType);
+	// Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymPT9dBQpTyN8gwce.
+
+	std::getline(iss >> std::ws, str, ';');
+	if (iss.eof())
+		boundary = "\r\n";
+	else
+	{
+		std::getline(iss >> std::ws, str, '')
+	}
+}
+
+std::string &Response::getResponse() { return (response); }
 
 } // namespace ft
