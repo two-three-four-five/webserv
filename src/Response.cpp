@@ -1,50 +1,117 @@
 #include "Response.hpp"
 
 #include <iostream>
+#include <sstream>
+#include <unistd.h>
 
 namespace ft
 {
-Response::Response()
+Response::Response(const Request &request)
 {
-}
-
-Response::Response(std::string statusCode) : statusCode(statusCode)
-{
-	/* temp headers */
-	headers.push_back("server: NWS");
-	headers.push_back("date: Sat, 06 Jan 2024 11:54:12 GMT");
-	headers.push_back("content-type: text/html");
-	headers.push_back("location: http://www.naver.com/");
-	headers.push_back("vary: Accept-Encoding,User-Agent");
-	headers.push_back("referrer-policy:unsafe-url");
-}
-
-Response::~Response()
-{
-}
-
-std::string Response::toString()
-{
-	std::string response;
-
-	response = "HTTP/1.1 " + statusCode + "\r\n"; // reason-phrase
-	if (headers.size() > 0)
+	// /* temp headers */
+	// headers.push_back("server: NWS");
+	// headers.push_back("date: Sat, 06 Jan 2024 11:54:12 GMT");
+	// headers.push_back("content-type: text/html");
+	// headers.push_back("location: http://www.naver.com/");
+	// headers.push_back("vary: Accept-Encoding,User-Agent");
+	// headers.push_back("referrer-policy:unsafe-url");
+	if (request.errCode != 200)
 	{
-		for (std::vector<std::string>::iterator it = headers.begin();
-			 it != headers.end(); it++)
-			response += *it + "\r\n";
-		response += "\r\n";
+		// generate error response
 	}
-	if (body.length() > 0)
-		response += body;
-	if (trailers.size() > 0)
+	if (request.method == "GET")
 	{
-		for (std::vector<std::string>::iterator it = trailers.begin();
-			 it != trailers.end(); it++)
-			response += *it + "\r\n";
-		response += "\r\n";
+		response = makeGetResponse(request);
 	}
-	return response;
+	else if (request.method == "POST")
+	{
+		// callCGI();
+	}
+}
+
+Response::~Response() {}
+
+std::string Response::makeGetResponse(const Request &request)
+{
+	/*
+	Server: nginx/1.25.3
+	Date: Sat, 13 Jan 2024 07:13:54 GMT
+	Content-Type: text/html
+	Content-Length: 615
+	Last-Modified: Tue, 24 Oct 2023 13:46:52 GMT
+	Connection: keep-alive
+	ETag: "6537cacc-267"
+	Accept-Ranges: bytes
+	*/
+	std::ostringstream oss;
+	std::string body = makeBody(request.requestTarget);
+
+	oss << "HTTP/1.1 200 OK\n";
+	if (request.message.find("Content-Type") == request.message.end())
+		oss << "Content-Type: text/html\n";
+	else
+		oss << "Content-Type: " << request.message.at("Content-Type")[0] << "\n";
+	oss << "Content-Length: " << body.length() << "\n\n";
+	oss << body;
+
+	return (oss.str());
+}
+
+std::string Response::makeBody(const std::string &requestTarget)
+{
+	std::ostringstream oss;
+	std::ifstream file("www" + requestTarget);
+
+	if (file.is_open())
+	{
+		std::string line;
+		while (std::getline(file, line))
+		{
+			oss << line << std::endl;
+		}
+		file.close();
+	}
+	return (oss.str());
+}
+
+std::string &Response::getResponse() { return (response); }
+
+std::string Response::callCGI(const std::string &scriptPath)
+{
+	/* 예시
+	// std::string home_path = getenv("HOME");
+	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
+	// std::string queryString = "first=1&second=2";
+	*/
+	char *argv[] = {(char *)scriptPath.c_str(), nullptr};
+	char *envp[] = {nullptr};
+
+	// char *argv[] = makeArgv();
+	// char *envp[] = makeEnvp();
+	int fd[2];
+
+	pipe(fd);
+	if (fork() == 0)
+	{
+		close(fd[0]);
+		dup2(fd[1], STDOUT_FILENO);
+		close(fd[1]);
+		execve(scriptPath.c_str(), argv, envp);
+		perror("execve");
+	}
+	else
+	{
+		char buffer[4096];
+		ssize_t bytes_read;
+		std::ostringstream output;
+
+		close(fd[1]);
+		while ((bytes_read = read(fd[0], buffer, sizeof(buffer))) > 0)
+			output.write(buffer, bytes_read);
+		close(fd[0]);
+		return (output.str());
+	}
+	return (NULL);
 }
 
 } // namespace ft

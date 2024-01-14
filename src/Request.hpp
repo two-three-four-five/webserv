@@ -43,6 +43,7 @@ public:
 		httpException(int errCode) : errCode(errCode){};
 		virtual const char *what() const throw() { return "HTTP ERROR"; }
 	};
+	friend class Response;
 };
 } // namespace ft
 
