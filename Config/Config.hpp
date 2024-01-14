@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ConfigParser.hpp                                   :+:      :+:    :+:   */
+/*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 01:44:14 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 16:53:40 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIGPARSER_HPP
-#define CONFIGPARSER_HPP
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
 
-#include "FileManager.hpp"
+#include "RegularFile.hpp"
 #include <algorithm>
 #include <list>
 #include <map>
@@ -22,29 +22,29 @@
 
 namespace Hafserv
 {
-
-struct Config
+class Config
 {
+public:
 	typedef std::vector<std::string> parameters_t;
 	typedef std::multimap<std::string, std::string> directives_t;
+	typedef std::vector<Config> subblocks_t;
 
+	Config();
+	Config(const Config &other);
+	Config(const std::string &filename);
+	Config &operator=(const Config &other);
+	virtual ~Config() throw();
+
+	void print() const;
+
+private:
+	static const std::string meta;
+
+	// TODO: error code
 	std::string name;
 	std::vector<std::string> parameters;
 	std::multimap<std::string, std::string> directives;
 	std::vector<Config> subBlocks;
-
-	void print() const;
-};
-
-class ConfigParser
-{
-public:
-	static Config parse(const std::string &filename);
-
-private:
-	ConfigParser();
-
-	static const std::string meta;
 };
 
 } // namespace Hafserv

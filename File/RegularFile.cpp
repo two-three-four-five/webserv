@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:46:48 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 13:50:55 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 16:21:08 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,3 +75,9 @@ void RegularFile::print() const
 	for (size_t i = 0; i < contents.size(); i++)
 		std::cout << contents[i] << std::endl;
 }
+
+size_t RegularFile::getContentsSize() const { return contents.size(); }
+
+const std::string &RegularFile::getExtension() const { return extension; }
+
+const std::string &RegularFile::getline(size_t lineNum) const { return contents.at(lineNum); }
