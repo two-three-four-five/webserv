@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/13 11:56:04 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 01:44:14 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,34 +18,33 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 namespace Hafserv
 {
 
-typedef std::vector<std::string> directive_t;
-typedef std::string parameter_t;
-typedef std::multimap<directive_t, parameter_t> config_t;
-
-struct ConfigFile
+struct Config
 {
-	config_t config;
+	typedef std::vector<std::string> parameters_t;
+	typedef std::multimap<std::string, std::string> directives_t;
+
+	std::string name;
+	std::vector<std::string> parameters;
+	std::multimap<std::string, std::string> directives;
+	std::vector<Config> subBlocks;
+
+	void print() const;
 };
 
 class ConfigParser
 {
 public:
-	ConfigParser();
-	ConfigParser(const ConfigParser &other);
-	ConfigParser &operator=(const ConfigParser &other);
-	~ConfigParser();
-
-	static void printConfig(config_t config);
-	static config_t parse(std::string filename);
+	static Config parse(const std::string &filename);
 
 private:
-	static const std::string meta;
+	ConfigParser();
 
-	static config_t parseSingleFile(std::string filename);
+	static const std::string meta;
 };
 
 } // namespace Hafserv

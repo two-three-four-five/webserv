@@ -1,5 +1,5 @@
-SRCS = $(wildcard src/*.cpp) main.cpp
-		# $(wildcard */*.cpp)
+SRCS = $(wildcard *.cpp) \
+		$(wildcard src/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
 NAME = webserv
 # CXXFLAGS = -Wall -Wextra -Werror -std=c++98

@@ -1,6 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
+#include <Request.hpp>
 #include <string>
 #include <vector>
 
@@ -10,16 +11,17 @@ class Response
 {
 public:
 	Response();
-	Response(std::string statusCode);
+	Response(const Request &request);
 	~Response();
-
-	std::string toString();
+	std::string callCGI(const std::string &scriptPath);
+	std::string makeGetResponse(const Request &request);
+	std::string makeBody(const std::string &requestTarget);
+	std::string &getResponse();
 
 private:
 	std::string statusCode;
-	std::vector<std::string> headers;
-	std::string body;
-	std::vector<std::string> trailers;
+	std::string response;
+	friend class Request;
 };
 
 } // namespace ft
