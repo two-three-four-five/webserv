@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "Response.hpp"
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -93,12 +94,9 @@ void Server::startServer()
 						// 일단 TRAILER로 해놓음. 추후에 PARSE_END로 바꾸어야함
 						if (request.parse(static_cast<std::string>(readBuf)) == TRAILER)
 						{
-							request.printMessage();
-							std::string response = makeResponse(request.getMessage());
-							send(event_list[i].ident, response.c_str(), response.length(), 0);
-							// if (method)
-							// callCGI("mycgi.py")
-							// send response
+							ft::Response response(request);
+							std::string responseString = response.getResponse();
+							send(event_list[i].ident, responseString.c_str(), responseString.length(), 0);
 						}
 					}
 					catch (const ft::Request::httpException &e)
@@ -146,101 +144,6 @@ void Server::disconnectClient(int socketfd)
 	Requests.erase(socketfd);
 
 	std::cout << "closed client: " << socketfd << std::endl;
-}
-
-std::string Server::makeGetResponse(std::map<std::string, std::vector<std::string> > &message)
-{
-	/*
-	Server: nginx/1.25.3
-	Date: Sat, 13 Jan 2024 07:13:54 GMT
-	Content-Type: text/html
-	Content-Length: 615
-	Last-Modified: Tue, 24 Oct 2023 13:46:52 GMT
-	Connection: keep-alive
-	ETag: "6537cacc-267"
-	Accept-Ranges: bytes
-	*/
-	std::ostringstream oss;
-	std::string body = makeBody(message);
-
-	oss << "HTTP/1.1 200 OK\n";
-	if (message.find("Content-Type") == message.end())
-		oss << "Content-Type: text/html\n";
-	else
-		oss << "Content-Type: " << message["Content-Type"][0] << "\n";
-	oss << "Content-Length: " << body.length() << "\n";
-	oss << body;
-
-	return (oss.str());
-}
-
-std::string Server::makeBody(std::map<std::string, std::vector<std::string> > &message)
-{
-	std::ostringstream oss;
-	std::ifstream file("www" + message["target"].at(0));
-
-	if (file.is_open())
-	{
-		std::string line;
-		while (std::getline(file, line))
-		{
-			oss << line << std::endl;
-		}
-		file.close();
-	}
-	return (oss.str());
-}
-
-std::string Server::makeResponse(std::map<std::string, std::vector<std::string> > &message)
-{
-
-	std::string method = message["method"].at(0);
-
-	if (method == "GET")
-	{
-		return (makeGetResponse(message));
-	}
-	else if (method == "POST")
-	{
-		callCGI("mycgi.py");
-	}
-}
-
-std::string Server::callCGI(const std::string &scriptPath)
-{
-	/* 예시
-	// std::string home_path = getenv("HOME");
-	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
-	// std::string queryString = "first=1&second=2";
-	*/
-	char *argv[] = {(char *)scriptPath.c_str(), nullptr};
-	char *envp[] = {nullptr};
-
-	// char *argv[] = makeArgv();
-	// char *envp[] = makeEnvp();
-	int fd[2];
-
-	pipe(fd);
-	if (fork() == 0)
-	{
-		close(fd[0]);
-		dup2(fd[1], STDOUT_FILENO);
-		close(fd[1]);
-		execve(scriptPath.c_str(), argv, envp);
-		perror("execve");
-	}
-	else
-	{
-		char buffer[4096];
-		ssize_t bytes_read;
-		std::ostringstream output;
-
-		close(fd[1]);
-		while ((bytes_read = read(fd[0], buffer, sizeof(buffer))) > 0)
-			output.write(buffer, bytes_read);
-		close(fd[0]);
-		return (output.str());
-	}
 }
 
 } // namespace ft

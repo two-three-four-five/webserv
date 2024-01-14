@@ -4,7 +4,7 @@
 
 namespace ft
 {
-Request::Request() : status(CREATED) {}
+Request::Request() : status(CREATED), errCode(200) {}
 
 int Request::parse(const std::string &request)
 {
@@ -20,7 +20,7 @@ int Request::parse(const std::string &request)
 void Request::parseStartLine(const std::string &request)
 {
 	std::istringstream requestStream(request);
-	std::string method, requestTarget, httpVersion;
+	std::string httpVersion;
 
 	// GET /index.html HTTP/1.1
 	requestStream >> method >> requestTarget >> httpVersion;
@@ -43,8 +43,6 @@ void Request::parseStartLine(const std::string &request)
 	}
 	if (requestTarget == "/")
 		requestTarget = "/index.html";
-	message["method"].push_back(method);
-	message["target"].push_back(requestTarget);
 	status = HEADER;
 }
 
@@ -53,7 +51,7 @@ void Request::parseLine(const std::string &fieldLine)
 	if (fieldLine == "\r\n")
 	{
 		std::cout << "Header field end" << std::endl;
-		if (message["method"][0] == "GET")
+		if (method == "GET")
 			status = TRAILER;
 		else
 			status = BODY;
