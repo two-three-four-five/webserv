@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   FileManager.hpp                                    :+:      :+:    :+:   */
+/*   AFile.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/08 16:50:04 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 01:43:54 by gyoon            ###   ########.fr       */
+/*   Created: 2024/01/14 13:44:36 by gyoon             #+#    #+#             */
+/*   Updated: 2024/01/14 13:45:16 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FILEMANAGER_HPP
-#define FILEMANAGER_HPP
+#ifndef AFILE_HPP
+#define AFILE_HPP
 
 #include <fcntl.h>
 #include <fstream>
@@ -20,43 +20,37 @@
 #include <unistd.h>
 #include <vector>
 
-#include <dirent.h>
-
 namespace Hafserv
 {
-
-struct File
-{
-	bool isValid; // -> int errno like not exist, no permission ...
-	std::string name;
-};
-
-struct RegularFile : public File
-{
-	std::string extention;
-	std::vector<std::string> contents;
-
-	void printProperty() const;
-	void print() const;
-};
-
-struct Directory : public File
-{
-	DIR *info;
-};
-
-class FileManager
+class AFile
 {
 public:
+	enum FileCode
+	{
+		UNKNOWN_ERROR = -1,
+		NOT_EXIST = 0,
+		REGULAR_FILE = 1,
+		IS_A_DIRECTORY = 2,
+		PERMISSION_DENIED = 3,
+	};
+
+	AFile();
+	AFile(const AFile &other);
+	AFile(const std::string &filename);
+	AFile &operator=(const AFile &other);
+	virtual ~AFile();
+
 	static bool isExist(const std::string &filename);
 	static bool isDirectory(const std::string &filename);
 	static bool isReadable(const std::string &filename);
 	static bool isRegularFile(const std::string &filename);
 
-	static RegularFile readRegularFile(const std::string &filename) throw(); // throw if not regular file
+	virtual void printProperty() const = 0;
+	virtual void print() const = 0;
 
-private:
-	FileManager();
+protected:
+	int code;
+	std::string name;
 };
 
 } // namespace Hafserv
