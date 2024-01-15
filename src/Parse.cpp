@@ -1,21 +1,4 @@
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-
-bool readParameters(std::vector<std::string> &vec, std::string &str, std::string::iterator &it);
-bool readToken(std::vector<std::string> &vec, std::string &str, std::string::iterator &it);
-bool readParameter(std::vector<std::string> &vec, std::string &str, std::string::iterator &it);
-bool readPadding(std::string::iterator &it);
-bool isTokenChar(const char &ch);
-
-void printVector(std::vector<std::string> &vec)
-{
-	for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); it++)
-	{
-		std::cout << *it << "   ";
-	}
-}
+#include "Parse.hpp"
 
 std::vector<std::string> parseContentType(std::string &str)
 {
@@ -29,9 +12,19 @@ std::vector<std::string> parseContentType(std::string &str)
 	}
 	else
 	{
-		// throw error
+		vec.clear();
 		return (vec);
 	}
+}
+
+bool readTokenOrQuote(std::vector<std::string> &vec, std::string &str, std::string::iterator &it)
+{
+	if (*it == '\"')
+	{
+		return (readQuote(vec, str, ++it));
+	}
+	else
+		return (readToken(vec, str, it));
 }
 
 bool readToken(std::vector<std::string> &vec, std::string &str, std::string::iterator &it)
@@ -52,7 +45,36 @@ bool isTokenChar(const char &ch)
 		return (false);
 }
 
-void readTokenOrQuote(std::vector<std::string> &vec, std::string &str, std::string::iterator &it) {}
+bool readQuote(std::vector<std::string> &vec, std::string &str, std::string::iterator &it)
+{
+	std::string::iterator initIt = it;
+	std::string quotedStr;
+
+	while (isQdtext(*it) || (*it == '\\' && isQuotedPair(*(++it))))
+	{
+		std::cout << *it << std::endl;
+		quotedStr += *it;
+		it++;
+	}
+	vec.push_back(quotedStr);
+	return (*(++it) == '\"');
+}
+
+bool isQdtext(const unsigned char &ch)
+{
+	if (ch == HTAB || ch == SP || ch == '!' || (35 <= ch && ch <= 91) || (93 <= ch && ch <= 126) || ch > 127)
+		return (true);
+	else
+		return (false);
+}
+
+bool isQuotedPair(const unsigned char &ch)
+{
+	if (ch == HTAB || ch == SP || (33 <= ch && ch <= 126) || ch > 127)
+		return (true);
+	else
+		return (false);
+}
 
 bool readParameters(std::vector<std::string> &vec, std::string &str, std::string::iterator &it)
 {
@@ -60,9 +82,8 @@ bool readParameters(std::vector<std::string> &vec, std::string &str, std::string
 
 	while (str.end() - it != 2 && *it != '\r' && *(it + 1) != '\n')
 	{
-		if (!readPadding(it))
+		if (!(readOWS(it) && *(it++) == ';' && readOWS(it) && readParameter(vec, str, it)))
 			return (false);
-		readParameter(vec, str, it);
 	}
 	return (true);
 }
@@ -72,19 +93,30 @@ bool readParameter(std::vector<std::string> &vec, std::string &str, std::string:
 	readToken(vec, str, it);
 	if (*it++ != '=')
 		return (false);
-	readToken(vec, str, it);
+	readTokenOrQuote(vec, str, it);
 	return (true);
 }
 
-bool readPadding(std::string::iterator &it)
+bool readOWS(std::string::iterator &it)
 {
-	int cntSemicolon = 0;
-
-	while (*it == ' ' || *it == '	' || *it == ';')
-	{
-		if (*it == ';')
-			cntSemicolon++;
+	while (*it == SP || *it == HTAB)
 		it++;
+	return (true);
+}
+
+bool readRWS(std::string::iterator &it)
+{
+	std::string::iterator initIt = it;
+
+	while (*it == SP || *it == HTAB)
+		it++;
+	return (initIt != it);
+}
+
+void printVector(std::vector<std::string> &vec)
+{
+	for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); it++)
+	{
+		std::cout << "|" << *it << "|   ";
 	}
-	return (cntSemicolon == 1);
 }
