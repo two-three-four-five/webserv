@@ -15,7 +15,7 @@ Response::Response(const Request &request)
 	// headers.push_back("location: http://www.naver.com/");
 	// headers.push_back("vary: Accept-Encoding,User-Agent");
 	// headers.push_back("referrer-policy:unsafe-url");
-	if (request.errCode != 200)
+	if (request.statusCode != 200)
 	{
 		// generate error response
 	}
@@ -25,7 +25,6 @@ Response::Response(const Request &request)
 	}
 	else if (request.method == "POST")
 	{
-		setBoundary(request.message);
 		// callCGI();
 	}
 }
@@ -48,10 +47,10 @@ std::string Response::makeGetResponse(const Request &request)
 	std::string body = makeBody(request.requestTarget);
 
 	oss << "HTTP/1.1 200 OK\n";
-	if (request.message.find("Content-Type") == request.message.end())
+	if (request.fields.find("Content-Type") == request.fields.end())
 		oss << "Content-Type: text/html\n";
 	else
-		oss << "Content-Type: " << request.message.at("Content-Type")[0] << "\n";
+		oss << "Content-Type: " << request.fields.at("Content-Type")[0] << "\n";
 	oss << "Content-Length: " << body.length() << "\n\n";
 	oss << body;
 
@@ -125,7 +124,7 @@ std::string Response::setBoundary(std::map<std::string, std::vector<std::string>
 		boundary = "\r\n";
 	else
 	{
-		std::getline(iss >> std::ws, str, '')
+		std::getline(iss >> std::ws, str, ' ');
 	}
 }
 

@@ -20,13 +20,15 @@ namespace ft
 class Request
 {
 private:
-	int status;
-	int errCode;
+	int parseStatus;
+	int statusCode;
+	bool inBoundary;
 	std::string method;
 	std::string requestTarget;
 	std::string boundary;
-	// std::map<std::string, std::string> fields;
-	std::map<std::string, std::vector<std::string> > message;
+	std::map<std::string, std::string> fields;
+	std::vector<std::string> body;
+	// std::map<std::string, std::vector<std::string> > message;
 
 public:
 	Request();
@@ -34,8 +36,8 @@ public:
 	void parseStartLine(const std::string &request);
 	void parseFieldLine(const std::string &fieldLine);
 	void parseBody(const std::string &body);
-	void printMessage();
-	std::map<std::string, std::vector<std::string> > &getMessage();
+	// void printMessage();
+	// std::map<std::string, std::vector<std::string> > &getMessage();
 
 	class httpException : public std::exception
 	{
