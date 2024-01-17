@@ -6,7 +6,7 @@
 
 namespace ft
 {
-Response::Response(const Request &request)
+Response::Response(Request &request) : request(request)
 {
 	// /* temp headers */
 	// headers.push_back("server: NWS");
@@ -15,6 +15,9 @@ Response::Response(const Request &request)
 	// headers.push_back("location: http://www.naver.com/");
 	// headers.push_back("vary: Accept-Encoding,User-Agent");
 	// headers.push_back("referrer-policy:unsafe-url");
+
+	request.printRequest();
+
 	if (request.statusCode != 200)
 	{
 		// generate error response
@@ -25,7 +28,7 @@ Response::Response(const Request &request)
 	}
 	else if (request.method == "POST")
 	{
-		// callCGI();
+		response = callCGI("./mycgi.sh");
 	}
 }
 
@@ -82,10 +85,10 @@ std::string Response::callCGI(const std::string &scriptPath)
 	// std::string queryString = "first=1&second=2";
 	*/
 	char *argv[] = {(char *)scriptPath.c_str(), nullptr};
-	char *envp[] = {nullptr};
+	// char *envp[] = {nullptr};
 
 	// char *argv[] = makeArgv();
-	// char *envp[] = makeEnvp();
+	char **envp = makeEnvp();
 	int fd[2];
 
 	pipe(fd);
@@ -95,7 +98,7 @@ std::string Response::callCGI(const std::string &scriptPath)
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[1]);
 		execve(scriptPath.c_str(), argv, envp);
-		perror("execve");
+		perror(scriptPath.c_str());
 	}
 	else
 	{
@@ -112,20 +115,48 @@ std::string Response::callCGI(const std::string &scriptPath)
 	return (NULL);
 }
 
-std::string Response::setBoundary(std::map<std::string, std::vector<std::string> > &message)
-{
-	std::string contentType = message["Content-Type"].front();
-	std::string str;
-	std::istringstream iss(contentType);
-	// Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymPT9dBQpTyN8gwce.
+// std::string Response::setBoundary(std::map<std::string, std::vector<std::string> > &message)
+// {
+// 	std::string contentType = message["Content-Type"].front();
+// 	std::string str;
+// 	std::istringstream iss(contentType);
+// 	// Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymPT9dBQpTyN8gwce.
 
-	std::getline(iss >> std::ws, str, ';');
-	if (iss.eof())
-		boundary = "\r\n";
-	else
+// 	std::getline(iss >> std::ws, str, ';');
+// 	if (iss.eof())
+// 		boundary = "\r\n";
+// 	else
+// 	{
+// 		std::getline(iss >> std::ws, str, ' ');
+// 	}
+// }
+
+char **Response::makeEnvp()
+{
+	std::vector<std::string> envVec;
+	std::string requestMethod("REQUEST_METHOD=");
+	requestMethod += request.method;
+	envVec.push_back(requestMethod);
+	if (request.fields.find("content-type") != request.fields.end())
 	{
-		std::getline(iss >> std::ws, str, ' ');
+		std::string contentType("CONTENT_TYPE=");
+		contentType += (*request.fields.find("content-type")).second;
+		envVec.push_back(contentType);
+	};
+	std::stringstream ss;
+	ss << request.body[0].length();
+	std::string contentLength("CONTENT_LENGTH=");
+	contentLength += ss.str();
+	char **envp = new char *[envVec.size() + 1];
+	for (size_t i = 0; i < envVec.size(); i++)
+	{
+		const char *envString = envVec[i].c_str();
+		char *env = new char[envVec[i].length() + 1];
+		std::strcpy(env, envString);
+		envp[i] = env;
 	}
+	envp[envVec.size() - 1] = NULL;
+	return envp;
 }
 
 std::string &Response::getResponse() { return (response); }

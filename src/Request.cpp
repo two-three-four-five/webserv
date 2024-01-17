@@ -63,7 +63,7 @@ void Request::parseFieldLine(const std::string &fieldLine)
 {
 	if (fieldLine == "\r\n")
 	{
-		std::cout << "Header field end" << std::endl;
+		// std::cout << "Header field end" << std::endl;
 		if (method == "GET")
 			parseStatus = PARSE_END;
 		else
@@ -101,16 +101,26 @@ void Request::parseBody(const std::string &line)
 	if ((inBoundary == false && line == "\r\n") ||
 		ContentType.size() == 4 && line.compare("--" + ContentType[3] + "--\r\n") == 0)
 	{
-		std::cout << "Body end" << std::endl;
+		// std::cout << "Body end" << std::endl;
 		std::ostringstream oss;
 		for (std::vector<std::string>::iterator it = body.begin(); it != body.end(); it++)
 			oss << *it;
 		body.clear();
 		body.push_back(oss.str());
-		std::cout << body[0];
+		// std::cout << body[0];
 		parseStatus = PARSE_END;
 		return;
 	}
+}
+
+void Request::printRequest()
+{
+	std::cout << "<-------request------->" << std::endl;
+	std::cout << method << " " << requestTarget << " HTTP/1.1\r\n";
+	for (std::map<std::string, std::string>::iterator it = fields.begin(); it != fields.end(); it++)
+		std::cout << (*it).first << ": " << (*it).second << "\r\n";
+	if (method == "POST")
+		std::cout << body[0] << "\r\n";
 }
 
 // void Request::printMessage()

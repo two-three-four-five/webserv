@@ -38,14 +38,7 @@ public:
 	void parseBody(const std::string &body);
 	// void printMessage();
 	// std::map<std::string, std::vector<std::string> > &getMessage();
-
-	class httpException : public std::exception
-	{
-	public:
-		int errCode;
-		httpException(int errCode) : errCode(errCode){};
-		virtual const char *what() const throw() { return "HTTP ERROR"; }
-	};
+	void printRequest();
 	friend class Response;
 };
 } // namespace ft

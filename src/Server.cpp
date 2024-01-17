@@ -96,13 +96,14 @@ void Server::startServer()
 						{
 							ft::Response response(request);
 							std::string responseString = response.getResponse();
+							std::cout << "<-------response------->" << std::endl << responseString;
 							send(event_list[i].ident, responseString.c_str(), responseString.length(), 0);
 							disconnectClient(event_list[i].ident);
 						}
 					}
-					catch (const ft::Request::httpException &e)
+					catch (const std::exception &e)
 					{
-						std::cerr << e.errCode << std::endl;
+						std::cerr << e.what() << std::endl;
 						// client에게 오류메시지 보내기
 						disconnectClient(event_list[i].ident);
 						continue;
