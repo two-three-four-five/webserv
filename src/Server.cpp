@@ -96,7 +96,7 @@ void Server::startServer()
 						{
 							ft::Response response(request);
 							std::string responseString = response.getResponse();
-							std::cout << "<-------response------->" << std::endl << responseString;
+							// std::cout << "<-------response------->" << std::endl << responseString;
 							send(event_list[i].ident, responseString.c_str(), responseString.length(), 0);
 							disconnectClient(event_list[i].ident);
 						}

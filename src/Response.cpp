@@ -16,7 +16,7 @@ Response::Response(Request &request) : request(request)
 	// headers.push_back("vary: Accept-Encoding,User-Agent");
 	// headers.push_back("referrer-policy:unsafe-url");
 
-	request.printRequest();
+	// request.printRequest();
 
 	if (request.statusCode != 200)
 	{
@@ -84,19 +84,26 @@ std::string Response::callCGI(const std::string &scriptPath)
 	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
 	// std::string queryString = "first=1&second=2";
 	*/
-	char *argv[] = {(char *)scriptPath.c_str(), nullptr};
+	char *argv[] = {(char *)scriptPath.c_str(), NULL};
 	// char *envp[] = {nullptr};
 
 	// char *argv[] = makeArgv();
 	char **envp = makeEnvp();
-	int fd[2];
 
-	pipe(fd);
-	if (fork() == 0)
+	int outward_fd[2];
+	int inward_fd[2];
+
+	pipe(outward_fd);
+	pipe(inward_fd);
+	int pid = fork();
+	if (pid == 0)
 	{
-		close(fd[0]);
-		dup2(fd[1], STDOUT_FILENO);
-		close(fd[1]);
+		close(outward_fd[0]);
+		close(inward_fd[1]);
+		dup2(outward_fd[1], STDOUT_FILENO);
+		dup2(inward_fd[0], STDIN_FILENO);
+		close(outward_fd[1]);
+		close(inward_fd[0]);
 		execve(scriptPath.c_str(), argv, envp);
 		perror(scriptPath.c_str());
 	}
@@ -106,10 +113,16 @@ std::string Response::callCGI(const std::string &scriptPath)
 		ssize_t bytes_read;
 		std::ostringstream output;
 
-		close(fd[1]);
-		while ((bytes_read = read(fd[0], buffer, sizeof(buffer))) > 0)
+		output << "HTTP/1.1 200 OK\n";
+		close(outward_fd[1]);
+		close(inward_fd[0]);
+		write(inward_fd[1], request.body[0].c_str(), request.body[0].length());
+		int status;
+		waitpid(pid, &status, 0);
+		while ((bytes_read = read(outward_fd[0], buffer, sizeof(buffer))) > 0)
 			output.write(buffer, bytes_read);
-		close(fd[0]);
+		close(outward_fd[0]);
+		close(inward_fd[1]);
 		return (output.str());
 	}
 	return (NULL);
@@ -147,6 +160,7 @@ char **Response::makeEnvp()
 	ss << request.body[0].length();
 	std::string contentLength("CONTENT_LENGTH=");
 	contentLength += ss.str();
+	envVec.push_back(contentLength);
 	char **envp = new char *[envVec.size() + 1];
 	for (size_t i = 0; i < envVec.size(); i++)
 	{
@@ -155,7 +169,7 @@ char **Response::makeEnvp()
 		std::strcpy(env, envString);
 		envp[i] = env;
 	}
-	envp[envVec.size() - 1] = NULL;
+	envp[envVec.size()] = NULL;
 	return envp;
 }
 

@@ -86,6 +86,7 @@ void Request::parseFieldLine(const std::string &fieldLine)
 			; // error ( NOT ERROR MAYBE )
 		if (value[value.length() - 1] == '\n')
 			value = value.substr(0, value.length() - 2);
+		stringToLower(key);
 		fields[key] = value;
 	}
 }
