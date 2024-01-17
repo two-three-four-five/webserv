@@ -53,8 +53,8 @@ void Server::initServer()
 void Server::startServer()
 {
 	int str_len;
-	char peekBuf[BUF_SIZE];
-	char readBuf[BUF_SIZE];
+	char peekBuf[BUF_SIZE + 1];
+	char readBuf[BUF_SIZE + 1];
 	struct kevent event_list[MAX_EVENTS];
 
 	initServer();
@@ -92,11 +92,12 @@ void Server::startServer()
 					try
 					{
 						// 일단 TRAILER로 해놓음. 추후에 PARSE_END로 바꾸어야함
-						if (request.parse(static_cast<std::string>(readBuf)) == TRAILER)
+						if (request.parse(static_cast<std::string>(readBuf)) == PARSE_END)
 						{
 							ft::Response response(request);
 							std::string responseString = response.getResponse();
 							send(event_list[i].ident, responseString.c_str(), responseString.length(), 0);
+							disconnectClient(event_list[i].ident);
 						}
 					}
 					catch (const ft::Request::httpException &e)
