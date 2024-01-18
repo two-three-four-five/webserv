@@ -1,7 +1,7 @@
 #include "utils.hpp"
 #include <string>
 
-namespace ft
+namespace Hafserv
 {
 bool isSpaceIncluded(const std::string &str)
 {
@@ -12,9 +12,9 @@ bool isSpaceIncluded(const std::string &str)
 	}
 	return (false);
 };
-} // namespace ft
+} // namespace Hafserv
 
-void ft::stringToLower(std::string &str)
+void Hafserv::stringToLower(std::string &str)
 {
 	for (int i = 0; i < str.length(); i++)
 	{
