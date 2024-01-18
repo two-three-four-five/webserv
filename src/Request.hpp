@@ -36,9 +36,11 @@ public:
 	void parseStartLine(const std::string &request);
 	void parseFieldLine(const std::string &fieldLine);
 	void parseBody(const std::string &body);
+	std::string getRawRequest();
 	// void printMessage();
 	// std::map<std::string, std::vector<std::string> > &getMessage();
 	void printRequest();
+	void printBody();
 	friend class Response;
 };
 } // namespace ft

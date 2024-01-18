@@ -93,9 +93,16 @@ void Request::parseFieldLine(const std::string &fieldLine)
 
 void Request::parseBody(const std::string &line)
 {
+	// https://www.rfc-editor.org/rfc/rfc9112.html#name-message-body-length
+	// have to deal with transfer-encoding & content-length
+	// content-length presents
+	if (fields.find("content-length") != fields.end())
+	{
+	}
+
 	body.push_back(line);
 
-	std::vector<std::string> ContentType = parseContentType(fields["Content-Type"]);
+	std::vector<std::string> ContentType = parseContentType(fields["content-type"]);
 	if (ContentType.size() == 4 && line.compare("--" + ContentType[3] + "\r\n") == 0)
 		inBoundary = true;
 
@@ -114,6 +121,18 @@ void Request::parseBody(const std::string &line)
 	}
 }
 
+std::string Request::getRawRequest()
+{
+	std::stringstream ss;
+
+	ss << method << " " << requestTarget << " HTTP/1.1\r\n";
+	for (std::map<std::string, std::string>::iterator it = fields.begin(); it != fields.end(); it++)
+		ss << (*it).first << ": " << (*it).second << "\r\n";
+	if (method == "POST")
+		ss << "\r\n" << body[0] << "\r\n";
+	return ss.str();
+}
+
 void Request::printRequest()
 {
 	std::cout << "<-------request------->" << std::endl;
@@ -121,7 +140,16 @@ void Request::printRequest()
 	for (std::map<std::string, std::string>::iterator it = fields.begin(); it != fields.end(); it++)
 		std::cout << (*it).first << ": " << (*it).second << "\r\n";
 	if (method == "POST")
-		std::cout << body[0] << "\r\n";
+		std::cout << "\r\n" << body[0] << "\r\n";
+	std::cout << "<-----request end----->" << std::endl;
+}
+
+void Request::printBody()
+{
+	for (int i = 0; i < body.size(); i++)
+	{
+		std::cout << "body[" << i << "]:" << std::endl << body[i] << std::endl;
+	}
 }
 
 // void Request::printMessage()
