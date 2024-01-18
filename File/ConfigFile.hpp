@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Config.hpp                                         :+:      :+:    :+:   */
+/*   ConfigFile.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 16:53:40 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/18 13:38:23 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,18 +22,18 @@
 
 namespace Hafserv
 {
-class Config
+class ConfigFile // TODO: inherits public RegularFile in the future
 {
 public:
 	typedef std::vector<std::string> parameters_t;
 	typedef std::multimap<std::string, std::string> directives_t;
-	typedef std::vector<Config> subblocks_t;
+	typedef std::vector<ConfigFile> subblocks_t;
 
-	Config();
-	Config(const Config &other);
-	Config(const std::string &filename);
-	Config &operator=(const Config &other);
-	virtual ~Config() throw();
+	ConfigFile();
+	ConfigFile(const ConfigFile &other);
+	ConfigFile(const std::string &filename);
+	ConfigFile &operator=(const ConfigFile &other);
+	virtual ~ConfigFile() throw();
 
 	void print() const;
 
@@ -44,7 +44,7 @@ private:
 	std::string name;
 	std::vector<std::string> parameters;
 	std::multimap<std::string, std::string> directives;
-	std::vector<Config> subBlocks;
+	std::vector<ConfigFile> subBlocks;
 };
 
 } // namespace Hafserv

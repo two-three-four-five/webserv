@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Config.cpp                                         :+:      :+:    :+:   */
+/*   ConfigFile.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,27 +10,27 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Config.hpp"
+#include "ConfigFile.hpp"
 
 using namespace Hafserv;
 
-const std::string Config::meta = " \t{};#";
+const std::string ConfigFile::meta = " \t{};#";
 
-Config::Config() : name("") {}
+ConfigFile::ConfigFile() : name("") {}
 
-Config::Config(const Config &other)
+ConfigFile::ConfigFile(const ConfigFile &other)
 	: name(other.name), parameters(parameters_t(other.parameters)), directives(directives_t(other.directives)),
 	  subBlocks(subblocks_t(other.subBlocks))
 {
 }
 
-Config::Config(const std::string &filename) : name("head")
+ConfigFile::ConfigFile(const std::string &filename) : name("head")
 {
-	Config main = Config();
+	ConfigFile main = ConfigFile();
 	main.name = "main";
 	subBlocks.push_back(main);
 
-	std::vector<std::vector<Config>::iterator> history;
+	std::vector<std::vector<ConfigFile>::iterator> history;
 	history.push_back(subBlocks.begin());
 
 	std::vector<std::string> waiting;
@@ -64,7 +64,7 @@ Config::Config(const std::string &filename) : name("head")
 					waiting.push_back(front);
 				if (!waiting.empty())
 				{
-					Config newConfig = Config();
+					ConfigFile newConfig = ConfigFile();
 					newConfig.name = *waiting.begin();
 
 					for (size_t j = 1; j < waiting.size(); j++)
@@ -103,7 +103,7 @@ Config::Config(const std::string &filename) : name("head")
 	}
 }
 
-Config &Config::operator=(const Config &other)
+ConfigFile &ConfigFile::operator=(const ConfigFile &other)
 {
 	if (this != &other)
 	{
@@ -115,9 +115,9 @@ Config &Config::operator=(const Config &other)
 	return *this;
 }
 
-Config::~Config() throw() {}
+ConfigFile::~ConfigFile() throw() {}
 
-void Config::print() const
+void ConfigFile::print() const
 {
 	std::cout << name << " ";
 	for (size_t i = 0; i < parameters.size(); i++)
