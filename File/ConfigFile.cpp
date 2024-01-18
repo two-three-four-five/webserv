@@ -1,61 +1,47 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ConfigParser.cpp                                   :+:      :+:    :+:   */
+/*   ConfigFile.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:12:28 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 01:44:22 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 16:48:40 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ConfigParser.hpp"
+#include "ConfigFile.hpp"
 
 using namespace Hafserv;
 
-void Config::print() const
+const std::string ConfigFile::meta = " \t{};#";
+
+ConfigFile::ConfigFile() : name("") {}
+
+ConfigFile::ConfigFile(const ConfigFile &other)
+	: name(other.name), parameters(parameters_t(other.parameters)), directives(directives_t(other.directives)),
+	  subBlocks(subblocks_t(other.subBlocks))
 {
-	std::cout << name << " ";
-	for (size_t i = 0; i < parameters.size(); i++)
-		std::cout << parameters.at(i) << " ";
-	std::cout << std::endl;
-
-	for (directives_t::const_iterator it = directives.begin(); it != directives.end(); it++)
-		std::cout << "\t[" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
-
-	for (size_t i = 0; i < subBlocks.size(); i++)
-	{
-		std::cout << std::endl << name << "." << std::endl;
-		subBlocks.at(i).print();
-	}
 }
 
-const std::string ConfigParser::meta = " \t{};#";
-
-ConfigParser::ConfigParser() {}
-
-Config ConfigParser::parse(const std::string &filename)
+ConfigFile::ConfigFile(const std::string &filename) : name("head")
 {
-	Config config = Config();
-	config.name = "config";
-
-	Config main = Config();
+	ConfigFile main = ConfigFile();
 	main.name = "main";
-	config.subBlocks.push_back(main);
+	subBlocks.push_back(main);
 
-	std::vector<std::vector<Config>::iterator> history;
-	history.push_back(config.subBlocks.begin());
+	std::vector<std::vector<ConfigFile>::iterator> history;
+	history.push_back(subBlocks.begin());
 
 	std::vector<std::string> waiting;
 	std::vector<size_t> indexes;
-	std::string front;
+	std::string line, front;
 	size_t min = -1;
 
-	RegularFile file = FileManager::readRegularFile(filename);
-	for (size_t i = 0; i < file.contents.size(); i++)
+	RegularFile file = RegularFile(filename);
+	for (size_t i = 0; i < file.getContentsSize(); i++)
 	{
-		for (std::string line = file.contents.at(i); line.size(); line = line.substr(min + 1, line.size() - (min + 1)))
+		for (line = file.getline(i); line.size(); line = line.substr(min + 1, line.size() - (min + 1)))
 		{
 			indexes.clear();
 			for (size_t j = 0; j < meta.size(); j++)
@@ -78,7 +64,7 @@ Config ConfigParser::parse(const std::string &filename)
 					waiting.push_back(front);
 				if (!waiting.empty())
 				{
-					Config newConfig = Config();
+					ConfigFile newConfig = ConfigFile();
 					newConfig.name = *waiting.begin();
 
 					for (size_t j = 1; j < waiting.size(); j++)
@@ -115,5 +101,35 @@ Config ConfigParser::parse(const std::string &filename)
 			};
 		}
 	}
-	return config;
+}
+
+ConfigFile &ConfigFile::operator=(const ConfigFile &other)
+{
+	if (this != &other)
+	{
+		name = other.name;
+		parameters = parameters_t(other.parameters);
+		directives = directives_t(other.directives);
+		subBlocks = subblocks_t(other.subBlocks);
+	}
+	return *this;
+}
+
+ConfigFile::~ConfigFile() throw() {}
+
+void ConfigFile::print() const
+{
+	std::cout << name << " ";
+	for (size_t i = 0; i < parameters.size(); i++)
+		std::cout << parameters.at(i) << " ";
+	std::cout << std::endl;
+
+	for (directives_t::const_iterator it = directives.begin(); it != directives.end(); it++)
+		std::cout << "    [" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
+
+	for (size_t i = 0; i < subBlocks.size(); i++)
+	{
+		std::cout << std::endl << name << ".";
+		subBlocks.at(i).print();
+	}
 }

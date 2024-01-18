@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:44:36 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 13:45:16 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 16:18:52 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ public:
 	static bool isReadable(const std::string &filename);
 	static bool isRegularFile(const std::string &filename);
 
+	int getCode() const;
+	const std::string &getName() const;
 	virtual void printProperty() const = 0;
 	virtual void print() const = 0;
 
