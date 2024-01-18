@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/18 13:40:48 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/18 16:42:31 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,14 +37,15 @@ public:
 
 	void print() const;
 
-private:
-	static const std::string meta;
-
-	// TODO: error code
 	std::string name;
 	std::vector<std::string> parameters;
 	std::multimap<std::string, std::string> directives;
 	std::vector<ConfigFile> subBlocks;
+
+private:
+	static const std::string meta;
+
+	// TODO: error code
 };
 
 } // namespace Hafserv
