@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:46:33 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 13:51:20 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/14 16:19:39 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,3 +69,7 @@ bool AFile::isRegularFile(const std::string &filename)
 {
 	return isExist(filename) && !isDirectory(filename) && isReadable(filename);
 }
+
+int AFile::getCode() const { return code; }
+
+const std::string &AFile::getName() const { return name; }
