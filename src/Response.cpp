@@ -6,7 +6,7 @@
 
 namespace ft
 {
-Response::Response(const Request &request)
+Response::Response(Request &request) : request(request)
 {
 	// /* temp headers */
 	// headers.push_back("server: NWS");
@@ -15,7 +15,10 @@ Response::Response(const Request &request)
 	// headers.push_back("location: http://www.naver.com/");
 	// headers.push_back("vary: Accept-Encoding,User-Agent");
 	// headers.push_back("referrer-policy:unsafe-url");
-	if (request.errCode != 200)
+
+	request.printRequest();
+
+	if (request.statusCode != 200)
 	{
 		// generate error response
 	}
@@ -25,7 +28,7 @@ Response::Response(const Request &request)
 	}
 	else if (request.method == "POST")
 	{
-		// callCGI();
+		response = callCGI("./cgi-bin" + request.requestTarget);
 	}
 }
 
@@ -47,10 +50,10 @@ std::string Response::makeGetResponse(const Request &request)
 	std::string body = makeBody(request.requestTarget);
 
 	oss << "HTTP/1.1 200 OK\n";
-	if (request.message.find("Content-Type") == request.message.end())
+	if (request.fields.find("content-type") == request.fields.end())
 		oss << "Content-Type: text/html\n";
 	else
-		oss << "Content-Type: " << request.message.at("Content-Type")[0] << "\n";
+		oss << "Content-Type: " << request.fields.at("content-type")[0] << "\n";
 	oss << "Content-Length: " << body.length() << "\n\n";
 	oss << body;
 
@@ -74,8 +77,6 @@ std::string Response::makeBody(const std::string &requestTarget)
 	return (oss.str());
 }
 
-std::string &Response::getResponse() { return (response); }
-
 std::string Response::callCGI(const std::string &scriptPath)
 {
 	/* 예시
@@ -83,21 +84,28 @@ std::string Response::callCGI(const std::string &scriptPath)
 	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
 	// std::string queryString = "first=1&second=2";
 	*/
-	char *argv[] = {(char *)scriptPath.c_str(), nullptr};
-	char *envp[] = {nullptr};
+	char *argv[] = {(char *)scriptPath.c_str(), NULL};
+	// char *envp[] = {nullptr};
 
 	// char *argv[] = makeArgv();
-	// char *envp[] = makeEnvp();
-	int fd[2];
+	char **envp = makeEnvp();
 
-	pipe(fd);
-	if (fork() == 0)
+	int outward_fd[2];
+	int inward_fd[2];
+
+	pipe(outward_fd);
+	pipe(inward_fd);
+	int pid = fork();
+	if (pid == 0)
 	{
-		close(fd[0]);
-		dup2(fd[1], STDOUT_FILENO);
-		close(fd[1]);
+		close(outward_fd[0]);
+		close(inward_fd[1]);
+		dup2(outward_fd[1], STDOUT_FILENO);
+		dup2(inward_fd[0], STDIN_FILENO);
+		close(outward_fd[1]);
+		close(inward_fd[0]);
 		execve(scriptPath.c_str(), argv, envp);
-		perror("execve");
+		perror(scriptPath.c_str());
 	}
 	else
 	{
@@ -105,13 +113,66 @@ std::string Response::callCGI(const std::string &scriptPath)
 		ssize_t bytes_read;
 		std::ostringstream output;
 
-		close(fd[1]);
-		while ((bytes_read = read(fd[0], buffer, sizeof(buffer))) > 0)
+		output << "HTTP/1.1 200 OK\n";
+		close(outward_fd[1]);
+		close(inward_fd[0]);
+		write(inward_fd[1], request.body[0].c_str(), request.body[0].length());
+		int status;
+		while (!waitpid(pid, &status, WNOHANG) && (bytes_read = read(outward_fd[0], buffer, sizeof(buffer))) > 0)
 			output.write(buffer, bytes_read);
-		close(fd[0]);
+		close(outward_fd[0]);
+		close(inward_fd[1]);
 		return (output.str());
 	}
 	return (NULL);
 }
+
+// std::string Response::setBoundary(std::map<std::string, std::vector<std::string> > &message)
+// {
+// 	std::string contentType = message["Content-Type"].front();
+// 	std::string str;
+// 	std::istringstream iss(contentType);
+// 	// Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymPT9dBQpTyN8gwce.
+
+// 	std::getline(iss >> std::ws, str, ';');
+// 	if (iss.eof())
+// 		boundary = "\r\n";
+// 	else
+// 	{
+// 		std::getline(iss >> std::ws, str, ' ');
+// 	}
+// }
+
+char **Response::makeEnvp()
+{
+	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
+	std::vector<std::string> envVec;
+	std::string requestMethod("REQUEST_METHOD=");
+	requestMethod += request.method;
+	envVec.push_back(requestMethod);
+	if (request.fields.find("content-type") != request.fields.end())
+	{
+		std::string contentType("CONTENT_TYPE=");
+		contentType += (*request.fields.find("content-type")).second;
+		envVec.push_back(contentType);
+	};
+	std::stringstream ss;
+	ss << request.body[0].length();
+	std::string contentLength("CONTENT_LENGTH=");
+	contentLength += ss.str();
+	envVec.push_back(contentLength);
+	char **envp = new char *[envVec.size() + 1];
+	for (size_t i = 0; i < envVec.size(); i++)
+	{
+		const char *envString = envVec[i].c_str();
+		char *env = new char[envVec[i].length() + 1];
+		std::strcpy(env, envString);
+		envp[i] = env;
+	}
+	envp[envVec.size()] = NULL;
+	return envp;
+}
+
+std::string &Response::getResponse() { return (response); }
 
 } // namespace ft

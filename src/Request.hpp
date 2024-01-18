@@ -20,29 +20,27 @@ namespace ft
 class Request
 {
 private:
-	int status;
-	int errCode;
+	int parseStatus;
+	int statusCode;
+	bool inBoundary;
 	std::string method;
 	std::string requestTarget;
-	// std::map<std::string, std::string> fields;
-	std::map<std::string, std::vector<std::string> > message;
+	std::string boundary;
+	std::map<std::string, std::string> fields;
+	std::vector<std::string> body;
+	// std::map<std::string, std::vector<std::string> > message;
 
 public:
 	Request();
 	int parse(const std::string &request);
 	void parseStartLine(const std::string &request);
-	void parseLine(const std::string &fieldLine);
+	void parseFieldLine(const std::string &fieldLine);
 	void parseBody(const std::string &body);
-	void printMessage();
-	std::map<std::string, std::vector<std::string> > &getMessage();
-
-	class httpException : public std::exception
-	{
-	public:
-		int errCode;
-		httpException(int errCode) : errCode(errCode){};
-		virtual const char *what() const throw() { return "HTTP ERROR"; }
-	};
+	std::string getRawRequest();
+	// void printMessage();
+	// std::map<std::string, std::vector<std::string> > &getMessage();
+	void printRequest();
+	void printBody();
 	friend class Response;
 };
 } // namespace ft

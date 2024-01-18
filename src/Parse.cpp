@@ -7,7 +7,6 @@ std::vector<std::string> parseContentType(std::string &str)
 
 	if (readToken(vec, str, it) && (*it++ == '/') && readToken(vec, str, it) && readParameters(vec, str, it))
 	{
-		printVector(vec);
 		return (vec);
 	}
 	else
@@ -80,7 +79,7 @@ bool readParameters(std::vector<std::string> &vec, std::string &str, std::string
 {
 	std::string name, value;
 
-	while (str.end() - it != 2 && *it != '\r' && *(it + 1) != '\n')
+	while (str.end() != it)
 	{
 		if (!(readOWS(it) && *(it++) == ';' && readOWS(it) && readParameter(vec, str, it)))
 			return (false);
@@ -93,8 +92,7 @@ bool readParameter(std::vector<std::string> &vec, std::string &str, std::string:
 	readToken(vec, str, it);
 	if (*it++ != '=')
 		return (false);
-	readTokenOrQuote(vec, str, it);
-	return (true);
+	return (readTokenOrQuote(vec, str, it));
 }
 
 bool readOWS(std::string::iterator &it)

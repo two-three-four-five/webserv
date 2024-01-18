@@ -1,20 +1,21 @@
 #include "Request.hpp"
+#include "Parse.hpp"
 #include "utils.hpp"
 #include <iostream>
 
 namespace ft
 {
-Request::Request() : status(CREATED), errCode(200) {}
+Request::Request() : parseStatus(CREATED), statusCode(200), inBoundary(false) {}
 
 int Request::parse(const std::string &request)
 {
-	if (status == CREATED)
+	if (parseStatus == CREATED)
 		parseStartLine(request);
-	else if (status == HEADER)
-		parseLine(request);
-	else if (status == BODY)
+	else if (parseStatus == HEADER)
+		parseFieldLine(request);
+	else if (parseStatus == BODY)
 		parseBody(request);
-	return (status);
+	return (parseStatus);
 }
 
 void Request::parseStartLine(const std::string &request)
@@ -23,12 +24,16 @@ void Request::parseStartLine(const std::string &request)
 	std::string httpVersion;
 
 	// GET /index.html HTTP/1.1
-	requestStream >> method >> requestTarget >> httpVersion;
-	// if (!requestStream.eof())
-	// 	throw new httpException(400); //throw 400 bad request
+	std::getline(requestStream, method, ' ');
+	std::getline(requestStream, requestTarget, ' ');
+	std::getline(requestStream, httpVersion, '\r');
 
 	if (httpVersion.find("HTTP/") != 0)
-		throw httpException(400); // throw 400 bad request
+	{
+		statusCode = 400;
+		parseStatus = PARSE_END;
+		return;
+	} // 400 Bad Request
 	else
 	{
 		std::istringstream iss(httpVersion.substr(5));
@@ -36,25 +41,33 @@ void Request::parseStartLine(const std::string &request)
 
 		iss >> ver;
 		if (iss.fail() || !iss.eof())
-			throw httpException(400); // throw 400 bad request
+		{
+			statusCode = 400;
+			parseStatus = PARSE_END;
+			return;
+		} // 400 Bad Request
 
 		if (httpVersion.substr(5) != "1.1")
-			throw httpException(505); // throw 505 HTTP version not supported
+		{
+			statusCode = 505;
+			parseStatus = PARSE_END;
+			return;
+		} // 505 HTTP version not supported
 	}
 	if (requestTarget == "/")
-		requestTarget = "/index.html";
-	status = HEADER;
+		requestTarget = "/index.html"; // from Config
+	parseStatus = HEADER;
 }
 
-void Request::parseLine(const std::string &fieldLine)
+void Request::parseFieldLine(const std::string &fieldLine)
 {
 	if (fieldLine == "\r\n")
 	{
-		std::cout << "Header field end" << std::endl;
+		// std::cout << "Header field end" << std::endl;
 		if (method == "GET")
-			status = TRAILER;
+			parseStatus = PARSE_END;
 		else
-			status = BODY;
+			parseStatus = BODY;
 		return;
 	}
 	std::istringstream iss(fieldLine);
@@ -62,47 +75,96 @@ void Request::parseLine(const std::string &fieldLine)
 
 	std::getline(iss, key, ':');
 	if (isSpaceIncluded(key))
-		; // error
+	{
+		statusCode = 400;
+		parseStatus = PARSE_END;
+		return;
+	} // 400 Bad Request
 	while (std::getline(iss >> std::ws, value, ','))
 	{
 		if (value.empty())
-			; // error
+			; // error ( NOT ERROR MAYBE )
 		if (value[value.length() - 1] == '\n')
 			value = value.substr(0, value.length() - 2);
-		message[key].push_back(value);
+		stringToLower(key);
+		fields[key] = value;
 	}
 }
 
 void Request::parseBody(const std::string &line)
 {
-	if (line == "\r\n")
+	// https://www.rfc-editor.org/rfc/rfc9112.html#name-message-body-length
+	// have to deal with transfer-encoding & content-length
+	// content-length presents
+	if (fields.find("content-length") != fields.end())
 	{
-		std::cout << "Body end" << std::endl;
+	}
+
+	body.push_back(line);
+
+	std::vector<std::string> ContentType = parseContentType(fields["content-type"]);
+	if (ContentType.size() == 4 && line.compare("--" + ContentType[3] + "\r\n") == 0)
+		inBoundary = true;
+
+	if ((inBoundary == false && line == "\r\n") ||
+		ContentType.size() == 4 && line.compare("--" + ContentType[3] + "--\r\n") == 0)
+	{
+		// std::cout << "Body end" << std::endl;
 		std::ostringstream oss;
-		for (std::vector<std::string>::iterator it = message["body"].begin(); it != message["body"].end(); it++)
+		for (std::vector<std::string>::iterator it = body.begin(); it != body.end(); it++)
 			oss << *it;
-		message["body"].clear();
-		message["body"].push_back(oss.str());
-		status = TRAILER;
-		std::cout << message["body"].at(0);
+		body.clear();
+		body.push_back(oss.str());
+		// std::cout << body[0];
+		parseStatus = PARSE_END;
 		return;
 	}
-	message["body"].push_back(line);
 }
 
-void Request::printMessage()
+std::string Request::getRawRequest()
 {
-	for (std::map<std::string, std::vector<std::string> >::iterator it = message.begin(); it != message.end(); it++)
+	std::stringstream ss;
+
+	ss << method << " " << requestTarget << " HTTP/1.1\r\n";
+	for (std::map<std::string, std::string>::iterator it = fields.begin(); it != fields.end(); it++)
+		ss << (*it).first << ": " << (*it).second << "\r\n";
+	if (method == "POST")
+		ss << "\r\n" << body[0] << "\r\n";
+	return ss.str();
+}
+
+void Request::printRequest()
+{
+	std::cout << "<-------request------->" << std::endl;
+	std::cout << method << " " << requestTarget << " HTTP/1.1\r\n";
+	for (std::map<std::string, std::string>::iterator it = fields.begin(); it != fields.end(); it++)
+		std::cout << (*it).first << ": " << (*it).second << "\r\n";
+	if (method == "POST")
+		std::cout << "\r\n" << body[0] << "\r\n";
+	std::cout << "<-----request end----->" << std::endl;
+}
+
+void Request::printBody()
+{
+	for (int i = 0; i < body.size(); i++)
 	{
-		std::cout << it->first << ": ";
-		for (std::vector<std::string>::iterator vecIt = it->second.begin(); vecIt != it->second.end(); vecIt++)
-		{
-			std::cout << *vecIt << ". ";
-		}
-		std::cout << std::endl;
+		std::cout << "body[" << i << "]:" << std::endl << body[i] << std::endl;
 	}
 }
 
-std::map<std::string, std::vector<std::string> > &Request::getMessage() { return (message); }
+// void Request::printMessage()
+// {
+// 	for (std::map<std::string, std::vector<std::string> >::iterator it = message.begin(); it != message.end(); it++)
+// 	{
+// 		std::cout << it->first << ": ";
+// 		for (std::vector<std::string>::iterator vecIt = it->second.begin(); vecIt != it->second.end(); vecIt++)
+// 		{
+// 			std::cout << *vecIt << ". ";
+// 		}
+// 		std::cout << std::endl;
+// 	}
+// }
+
+// std::map<std::string, std::vector<std::string> > &Request::getMessage() { return (message); }
 
 } // namespace ft
