@@ -6,12 +6,12 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/18 13:38:23 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/18 13:40:48 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIG_HPP
-#define CONFIG_HPP
+#ifndef CONFIGFILE_HPP
+#define CONFIGFILE_HPP
 
 #include "RegularFile.hpp"
 #include <algorithm>
