@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace ft
+namespace Hafserv
 {
 
 class Request
@@ -43,7 +43,7 @@ public:
 	void printBody();
 	friend class Response;
 };
-} // namespace ft
+} // namespace Hafserv
 
 /*
 	스타트라인 파싱

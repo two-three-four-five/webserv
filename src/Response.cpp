@@ -4,7 +4,7 @@
 #include <sstream>
 #include <unistd.h>
 
-namespace ft
+namespace Hafserv
 {
 Response::Response(Request &request) : request(request)
 {
@@ -175,4 +175,4 @@ char **Response::makeEnvp()
 
 std::string &Response::getResponse() { return (response); }
 
-} // namespace ft
+} // namespace Hafserv

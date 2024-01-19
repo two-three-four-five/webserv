@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include "Response.hpp"
-#include "Server.hpp"
+#include "Webserv.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -10,9 +9,12 @@ int main(int argc, char *argv[])
 		std::cerr << "Usage: " << argv[0] << " <port>" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	ft::Server *myServer = new ft::Server(atoi(argv[1]));
-	myServer->startServer();
-	// ft::Response response(argv[1]);
-	// std::cout << response.toString();
+	Hafserv::Webserv webserv;
+	Hafserv::Server *myServer = new Hafserv::Server(atoi(argv[1]));
+	// Hafserv::Server *myServer2 = new Hafserv::Server(atoi(argv[1]) + 1);
+
+	webserv.addServer(myServer);
+	// webserv.addServer(myServer2);
+	webserv.runWebserv();
 	return 0;
 }

@@ -8,7 +8,7 @@
 #define BUF_SIZE 512
 #define MAX_EVENTS 50
 
-namespace ft
+namespace Hafserv
 {
 class Server
 {
@@ -17,10 +17,9 @@ public:
 	Server(int port);
 	~Server();
 
-	void initServer();
-	void startServer();
-	void connectClient(int serv_sock);
-	void disconnectClient(int socketfd);
+	int getPort();
+	int getServSock();
+	void setServSock(int serv_sock);
 	/*
 		string -> Request
 		parseRequest
@@ -32,8 +31,8 @@ private:
 	int kq;
 	int serv_sock;
 	std::string serverName;
-	std::map<int, ft::Request> Requests;
+	std::map<int, Hafserv::Request> Requests;
 };
-} // namespace ft
+} // namespace Hafserv
 
 #endif

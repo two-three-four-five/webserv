@@ -2,12 +2,12 @@
 #define UTILS_HPP
 
 #include <string>
-namespace ft
+namespace Hafserv
 {
 
 bool isSpaceIncluded(const std::string &str);
 void stringToLower(std::string &str);
 
-} // namespace ft
+} // namespace Hafserv
 
 #endif
