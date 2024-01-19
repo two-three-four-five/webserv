@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerConfigTest.cpp                               :+:      :+:    :+:   */
+/*   WebservConfigTest.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:01:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/18 22:45:42 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/19 17:12:45 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ServerConfig.hpp"
 #include "ConfigFile.hpp"
+#include "ServerConfig.hpp"
 #include <iostream>
 
 int main(int argc, char **argv)
@@ -22,12 +22,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	Hafserv::ConfigFile configFile = Hafserv::ConfigFile(argv[1]);
+	Hafserv::ServerConfig config = Hafserv::ServerConfig(configFile.subBlocks.at(0).subBlocks.at(0));
 
-	Hafserv::ServerConfig sconf0 = Hafserv::ServerConfig(configFile.subBlocks.at(0).subBlocks.at(0));
-	Hafserv::ServerConfig sconf1 = Hafserv::ServerConfig(configFile.subBlocks.at(0).subBlocks.at(1));
-
-	sconf0.print();
-	sconf1.print();
+	std::cout << config << std::endl;
 
 	return 0;
 }
