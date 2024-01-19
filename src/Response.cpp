@@ -6,6 +6,7 @@
 
 namespace Hafserv
 {
+
 Response::Response(Request &request) : request(request)
 {
 	// /* temp headers */
@@ -24,7 +25,14 @@ Response::Response(Request &request) : request(request)
 	}
 	if (request.method == "GET")
 	{
-		response = makeGetResponse(request);
+		if (isFileExists("www" + request.requestTarget))
+		{
+			response = makeGetResponse(request);
+		}
+		else
+		{
+			response = makeErrorResponse("404");
+		}
 	}
 	else if (request.method == "POST")
 	{
@@ -47,10 +55,12 @@ std::string Response::makeGetResponse(const Request &request)
 	Accept-Ranges: bytes
 	*/
 	std::ostringstream oss;
-	std::string body = makeBody(request.requestTarget);
+	std::string body = makeBody("www" + request.requestTarget);
 
 	oss << "HTTP/1.1 200 OK\n";
-	if (request.fields.find("content-type") == request.fields.end())
+	if (request.requestTarget.substr(request.requestTarget.rfind('.') + 1) == "css")
+		oss << "Content-Type: text/css\n";
+	else if (request.fields.find("content-type") == request.fields.end())
 		oss << "Content-Type: text/html\n";
 	else
 		oss << "Content-Type: " << request.fields.at("content-type")[0] << "\n";
@@ -60,10 +70,23 @@ std::string Response::makeGetResponse(const Request &request)
 	return (oss.str());
 }
 
+std::string Response::makeErrorResponse(std::string statusCode)
+{
+	std::ostringstream oss;
+	std::string body = makeBody("./html/" + statusCode + ".html");
+
+	oss << "HTTP/1.1 " << statusCode << "\n";
+	oss << "Content-Type: text/html\n";
+	oss << "Content-Length: " << body.length() << "\n\n";
+	oss << body;
+
+	return (oss.str());
+}
+
 std::string Response::makeBody(const std::string &requestTarget)
 {
 	std::ostringstream oss;
-	std::ifstream file("www" + requestTarget);
+	std::ifstream file(requestTarget);
 
 	if (file.is_open())
 	{
@@ -127,22 +150,6 @@ std::string Response::callCGI(const std::string &scriptPath)
 	return (NULL);
 }
 
-// std::string Response::setBoundary(std::map<std::string, std::vector<std::string> > &message)
-// {
-// 	std::string contentType = message["Content-Type"].front();
-// 	std::string str;
-// 	std::istringstream iss(contentType);
-// 	// Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymPT9dBQpTyN8gwce.
-
-// 	std::getline(iss >> std::ws, str, ';');
-// 	if (iss.eof())
-// 		boundary = "\r\n";
-// 	else
-// 	{
-// 		std::getline(iss >> std::ws, str, ' ');
-// 	}
-// }
-
 char **Response::makeEnvp()
 {
 	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
@@ -171,6 +178,12 @@ char **Response::makeEnvp()
 	}
 	envp[envVec.size()] = NULL;
 	return envp;
+}
+
+bool Response::isFileExists(const std::string &filename)
+{
+	std::ifstream file(filename.c_str());
+	return file.good();
 }
 
 std::string &Response::getResponse() { return (response); }
