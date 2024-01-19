@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/19 17:13:00 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/19 21:20:26 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@ ServerConfig::ServerConfig(const ServerConfig &other)
 {
 }
 
-ServerConfig::ServerConfig(const ConfigFile &block) : names(), ports(), locations()
+ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
+	: AHttpConfigModule(core), names(), ports(), locations()
 {
 	ConfigFile::directives_t::const_iterator it = block.directives.begin();
 	for (; it != block.directives.end(); it++)

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/19 17:11:01 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/19 21:20:07 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ class ServerConfig : public AHttpConfigModule
 public:
 	ServerConfig();
 	ServerConfig(const ServerConfig &other);
-	ServerConfig(const ConfigFile &block);
+	ServerConfig(const ConfigFile &block, const HttpConfigCore& core);
 	ServerConfig &operator=(const ServerConfig &other);
 	~ServerConfig();
 

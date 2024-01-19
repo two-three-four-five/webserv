@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/19 16:51:45 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/19 22:27:00 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class WebservConfig
 public:
 	WebservConfig();
 	WebservConfig(const WebservConfig &other);
-	WebservConfig(const ConfigFile &block);
+	WebservConfig(const ConfigFile &configFile);
 	WebservConfig &operator=(const WebservConfig &other);
 	~WebservConfig();
 
@@ -40,5 +40,7 @@ private:
 };
 
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::WebservConfig &conf);
 
 #endif
