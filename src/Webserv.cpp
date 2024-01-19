@@ -131,6 +131,8 @@ void Webserv::connectClient(int serv_sock)
 	clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_adr, &adr_sz);
 	EV_SET(&event, clnt_sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
+	// EV_SET(&event, clnt_sock, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+	// kevent(kq, &event, 1, NULL, 0, NULL);
 
 	std::pair<int, Hafserv::Request> p;
 	p.first = clnt_sock;
@@ -144,6 +146,8 @@ void Webserv::disconnectClient(int socketfd)
 	struct kevent event;
 	EV_SET(&event, socketfd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
+	// EV_SET(&event, socketfd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+	// kevent(kq, &event, 1, NULL, 0, NULL);
 	close(socketfd);
 
 	Requests.erase(socketfd);
