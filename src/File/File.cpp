@@ -1,38 +1,40 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   AFile.cpp                                          :+:      :+:    :+:   */
+/*   File.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:46:33 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 16:19:39 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 21:00:20 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "AFile.hpp"
+#include "File.hpp"
 
 using namespace Hafserv;
 
-AFile::AFile() : code(NOT_EXIST), name("") {}
+File::File() : code(NOT_EXIST), name("") {}
 
-AFile::AFile(const AFile &other) : code(other.code), name(other.name) {}
+File::File(const File &other) : code(other.code), name(other.name) {}
 
-AFile::AFile(const std::string &filename) : code(NOT_EXIST), name(filename)
+File::File(const std::string &filename) : code(NOT_EXIST), name(filename)
 {
 	if (!isExist(name))
 		code = NOT_EXIST;
 	else if (!isReadable(name))
 		code = PERMISSION_DENIED;
 	else if (isDirectory(name))
-		code = IS_A_DIRECTORY;
+		code = DIRECTORY;
 	else if (isRegularFile(name))
 		code = REGULAR_FILE;
 	else
 		code = UNKNOWN_ERROR;
 }
 
-AFile &AFile::operator=(const AFile &other)
+File::File(int code, const std::string &name) : code(code), name(name) {}
+
+File &File::operator=(const File &other)
 {
 	if (this != &other)
 	{
@@ -42,9 +44,9 @@ AFile &AFile::operator=(const AFile &other)
 	return *this;
 }
 
-AFile::~AFile() {}
+File::~File() {}
 
-bool AFile::isExist(const std::string &filename)
+bool File::isExist(const std::string &filename)
 {
 	if (filename.empty())
 		return true;
@@ -52,7 +54,7 @@ bool AFile::isExist(const std::string &filename)
 		return access(filename.c_str(), F_OK) == 0;
 }
 
-bool AFile::isDirectory(const std::string &filename)
+bool File::isDirectory(const std::string &filename)
 {
 	int fd = open(filename.c_str(), O_DIRECTORY);
 	close(fd);
@@ -60,16 +62,23 @@ bool AFile::isDirectory(const std::string &filename)
 	return fd >= 0;
 }
 
-bool AFile::isReadable(const std::string &filename)
+bool File::isReadable(const std::string &filename)
 {
 	return isExist(filename) && (access(filename.c_str(), R_OK) == 0);
 }
 
-bool AFile::isRegularFile(const std::string &filename)
+bool File::isRegularFile(const std::string &filename)
 {
 	return isExist(filename) && !isDirectory(filename) && isReadable(filename);
 }
 
-int AFile::getCode() const { return code; }
+int File::getCode() const { return code; }
 
-const std::string &AFile::getName() const { return name; }
+const std::string &File::getName() const { return name; }
+
+std::ostream &operator<<(std::ostream &os, const File &file)
+{
+	os << "code: " << file.getCode() << std::endl;
+	os << "name: " << file.getName();
+	return os;
+}
