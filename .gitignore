@@ -88,3 +88,9 @@ Temporary Items
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,visualstudiocode,macos
+
+# Custom Files
+webserv
+tester
+cgi_tester
+# End of Custom Files

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace ft
+namespace Hafserv
 {
 class Response
 {
@@ -28,6 +28,6 @@ private:
 	friend class Request;
 };
 
-} // namespace ft
+} // namespace Hafserv
 
 #endif

@@ -3,7 +3,7 @@
 #include "utils.hpp"
 #include <iostream>
 
-namespace ft
+namespace Hafserv
 {
 Request::Request() : parseStatus(CREATED), statusCode(200), inBoundary(false) {}
 
@@ -167,4 +167,4 @@ void Request::printBody()
 
 // std::map<std::string, std::vector<std::string> > &Request::getMessage() { return (message); }
 
-} // namespace ft
+} // namespace Hafserv
