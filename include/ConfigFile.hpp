@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/18 16:42:31 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 19:00:02 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,6 @@ public:
 	ConfigFile &operator=(const ConfigFile &other);
 	virtual ~ConfigFile() throw();
 
-	void print() const;
-
 	std::string name;
 	std::vector<std::string> parameters;
 	std::multimap<std::string, std::string> directives;
@@ -49,5 +47,7 @@ private:
 };
 
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::ConfigFile &configFile);
 
 #endif

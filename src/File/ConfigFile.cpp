@@ -87,8 +87,11 @@ ConfigFile::ConfigFile(const std::string &filename) : name("head")
 					waiting.push_back(front);
 				if (!waiting.empty())
 				{
-					for (size_t j = 1; j < waiting.size(); j++)
-						(*history.back()).directives.insert(std::make_pair(waiting.at(0), waiting.at(j)));
+					std::string value;
+					for (size_t j = 1; j < waiting.size() - 1; j++)
+						value += waiting.at(j) + " ";
+					value += waiting.back();
+					(*history.back()).directives.insert(std::make_pair(waiting.at(0), value));
 				}
 				waiting.clear();
 				break;
@@ -117,19 +120,21 @@ ConfigFile &ConfigFile::operator=(const ConfigFile &other)
 
 ConfigFile::~ConfigFile() throw() {}
 
-void ConfigFile::print() const
+std::ostream &operator<<(std::ostream &os, const ConfigFile &configFile)
 {
-	std::cout << name << " ";
-	for (size_t i = 0; i < parameters.size(); i++)
-		std::cout << parameters.at(i) << " ";
-	std::cout << std::endl;
+	os << configFile.name << " ";
+	for (size_t i = 0; i < configFile.parameters.size(); i++)
+		os << configFile.parameters.at(i) << " ";
+	os << std::endl;
 
-	for (directives_t::const_iterator it = directives.begin(); it != directives.end(); it++)
-		std::cout << "    [" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
+	for (ConfigFile::directives_t::const_iterator it = configFile.directives.begin(); it != configFile.directives.end();
+		 it++)
+		os << "    [" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
 
-	for (size_t i = 0; i < subBlocks.size(); i++)
+	for (size_t i = 0; i < configFile.subBlocks.size(); i++)
 	{
-		std::cout << std::endl << name << ".";
-		subBlocks.at(i).print();
+		os << std::endl << configFile.name << ".";
+		os << configFile.subBlocks.at(i);
 	}
+	return os;
 }
