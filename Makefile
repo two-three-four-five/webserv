@@ -6,7 +6,7 @@
 #    By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/16 16:53:40 by gyoon             #+#    #+#              #
-#    Updated: 2024/01/20 18:17:16 by gyoon            ###   ########.fr        #
+#    Updated: 2024/01/20 18:24:19 by gyoon            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,8 @@ RM			= rm -rf
 # **************************************************************************** #
 
 SRCS		= 	main.cpp \
-				$(wildcard src/Server/*.cpp)
+				$(wildcard src/Server/*.cpp) \
+				$(wildcard src/utils/*.cpp)
 OBJS		= 	${SRCS:.cpp=.o}
 INC			= 	./include
 

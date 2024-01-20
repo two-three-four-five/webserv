@@ -1,10 +1,10 @@
 #include "Request.hpp"
 #include "Parse.hpp"
-#include "utils.hpp"
+#include "util/string.hpp"
 #include <iostream>
 
-namespace Hafserv
-{
+using namespace Hafserv;
+
 Request::Request() : parseStatus(CREATED), statusCode(200), inBoundary(false) {}
 
 int Request::parse(const std::string &request)
@@ -74,7 +74,7 @@ void Request::parseFieldLine(const std::string &fieldLine)
 	std::string key, value;
 
 	std::getline(iss, key, ':');
-	if (isSpaceIncluded(key))
+	if (util::string::hasSpace(key))
 	{
 		statusCode = 400;
 		parseStatus = PARSE_END;
@@ -86,7 +86,7 @@ void Request::parseFieldLine(const std::string &fieldLine)
 			; // error ( NOT ERROR MAYBE )
 		if (value[value.length() - 1] == '\n')
 			value = value.substr(0, value.length() - 2);
-		stringToLower(key);
+		key = util::string::toLower(key);
 		fields[key] = value;
 	}
 }
@@ -166,5 +166,3 @@ void Request::printBody()
 // }
 
 // std::map<std::string, std::vector<std::string> > &Request::getMessage() { return (message); }
-
-} // namespace Hafserv
