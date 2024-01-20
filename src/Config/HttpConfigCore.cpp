@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 17:13:58 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 23:23:54 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ const std::vector<std::string> &HttpConfigCore::getIndexes() const { return inde
 
 const HttpConfigCore::Timeout &HttpConfigCore::getTimeout() const { return timeouts; }
 
-const std::map<std::string, std::string> &HttpConfigCore::getErrorPages() const { return errorPages; }
+const std::map<int, std::string> &HttpConfigCore::getErrorPages() const { return errorPages; }
 
 const std::multimap<std::string, std::string> HttpConfigCore::getTypes() const { return types; }
 
@@ -63,11 +63,16 @@ void HttpConfigCore::setKeepAliveTimeout(int timeout) { this->timeouts.keepAlive
 
 void HttpConfigCore::setSendTimeout(int timeout) { this->timeouts.send = timeout; }
 
-void HttpConfigCore::setErrorPages(const std::map<std::string, std::string> &errorPages)
-{
-	this->errorPages = errorPages;
-}
+void HttpConfigCore::setErrorPages(const std::map<int, std::string> &errorPages) { this->errorPages = errorPages; }
+
 void HttpConfigCore::setTypes(const std::multimap<std::string, std::string> &types) { this->types = types; }
+
+void HttpConfigCore::addErrorPage(int errorCode, const std::string &uri)
+{
+	errorPages.insert(std::make_pair(errorCode, uri));
+}
+
+void HttpConfigCore::addIndex(const std::string &index) { indexes.push_back(index); }
 
 std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 {
@@ -77,7 +82,14 @@ std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 	for (size_t i = 0; i < conf.getIndexes().size(); i++)
 		os << conf.getIndexes().at(i) << " ";
 	os << std::endl;
+
 	os << conf.getTimeout();
+	os << std::endl;
+
+	std::map<int, std::string>::const_iterator it = conf.getErrorPages().begin();
+	for (; it != conf.getErrorPages().end(); it++)
+		os << "\t\terror code: " << (*it).first << " -> " << (*it).second << std::endl;
+
 	return os;
 }
 

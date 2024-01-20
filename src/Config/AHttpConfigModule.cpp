@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 17:06:37 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 23:24:37 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,11 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 		if (key == "root")
 			core.setRoot(value);
 		else if (key == "index")
-			;
+		{
+			std::vector<std::string> params = util::string::split(value, ' ');
+			for (size_t i = 0; i < params.size(); i++)
+				core.addIndex(params[i]);
+		}
 		else if (key == "client_header_timeout")
 		{
 			if (util::string::stoi(value).first)
@@ -66,8 +70,21 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 			if (util::string::stoi(value).first)
 				core.setSendTimeout(util::string::stoi(value).second);
 		}
-		else if (key == "error_pages")
-			;
+		else if (key == "error_page")
+		{
+			// what if error_page option duplicate?
+			std::vector<std::string> params = util::string::split(value, ' ');
+			if (params.size() == 1)
+				; // error
+			for (size_t i = 0; i < params.size() - 1; i++)
+			{
+				if (util::string::stoi(params[i]).first && 300 <= util::string::stoi(params[i]).second &&
+					util::string::stoi(params[i]).second < 600)
+					core.addErrorPage(util::string::stoi(params[i]).second, params.back());
+				else
+					; // error
+			}
+		}
 		else
 			;
 	}
