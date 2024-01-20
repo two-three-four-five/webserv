@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/19 17:00:43 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 13:18:57 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ public:
 
 	const std::string &getPattern() const;
 	void setPattern(const std::string &pattern);
-
 	bool isMatching(const std::string &url);
 
 private:

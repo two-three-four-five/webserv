@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/19 22:31:17 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 17:05:01 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,14 +27,11 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) : directives(), event
 	directives = main.directives;
 	for (size_t i = 0; i < main.subBlocks.size(); i++)
 	{
-		//
-		std::vector<std::string> core = std::vector<std::string>();
-		//
 		ConfigFile subBlock = main.subBlocks.at(i);
 		if (subBlock.name == "event")
 			event = EventConfig(subBlock);
 		else if (subBlock.name == "http")
-			http = HttpConfig(subBlock, HttpConfigCore("", core));
+			http = HttpConfig(subBlock);
 		else
 			;
 	}
@@ -63,12 +60,11 @@ std::ostream &operator<<(std::ostream &os, const WebservConfig &conf)
 {
 	os << "[WebservConfig]" << std::endl;
 
-	os << "\tdirectives" << std::endl;
 	ConfigFile::directives_t::const_iterator it = conf.getDirectives().begin();
 	for (; it != conf.getDirectives().end(); it++)
-		os << "\t\t" << (*it).first << ": " << (*it).second << std::endl;
+		os << "\t[" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
 
-	os << "\thttp:";
-	os << conf.getHttpConfig() << std::endl;
+	os << std::endl;
+	os << conf.getHttpConfig();
 	return os;
 }

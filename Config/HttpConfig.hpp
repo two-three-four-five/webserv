@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/19 22:21:52 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 13:22:20 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class HttpConfig : public AHttpConfigModule
 public:
 	HttpConfig();
 	HttpConfig(const HttpConfig &other);
-	HttpConfig(const ConfigFile &block, const HttpConfigCore &core);
+	HttpConfig(const ConfigFile &block);
 	HttpConfig &operator=(const HttpConfig &other);
 	~HttpConfig();
 

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/19 21:20:26 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 17:30:15 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,18 @@
 
 using namespace Hafserv;
 
-ServerConfig::ServerConfig() : names(), ports(), locations() {}
+ServerConfig::ServerConfig() : AHttpConfigModule(), names(), ports(), locations() {}
 
 ServerConfig::ServerConfig(const ServerConfig &other)
-	: names(other.names), ports(other.ports), locations(other.locations)
+	: AHttpConfigModule(other.core), names(other.names), ports(other.ports), locations(other.locations)
 {
 }
 
 ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 	: AHttpConfigModule(core), names(), ports(), locations()
 {
+	this->setHttpConfigCore(block.directives);
+
 	ConfigFile::directives_t::const_iterator it = block.directives.begin();
 	for (; it != block.directives.end(); it++)
 	{
@@ -54,6 +56,7 @@ ServerConfig &ServerConfig::operator=(const ServerConfig &other)
 {
 	if (this != &other)
 	{
+		core = other.core;
 		names = other.names;
 		ports = other.ports;
 		locations = other.locations;
@@ -73,6 +76,8 @@ std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 {
 	os << "[ServerConfig]" << std::endl;
 
+	os << conf.getHttpConfigCore() << std::endl;
+
 	os << "\tnames: ";
 	for (size_t i = 0; i < conf.getNames().size(); i++)
 		os << conf.getNames().at(i) << " ";
@@ -83,7 +88,6 @@ std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 		os << static_cast<int>(conf.getPorts().at(i)) << " ";
 	os << std::endl;
 
-	os << "\t locations:" << std::endl;
 	for (size_t i = 0; i < conf.getLocations().size(); i++)
 		os << conf.getLocations().at(i) << std::endl;
 	return os;
