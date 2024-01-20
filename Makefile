@@ -1,27 +1,153 @@
-SRCS = $(wildcard *.cpp) \
-		$(wildcard src/*.cpp)
-OBJS = $(SRCS:.cpp=.o)
-NAME = webserv
-# CXXFLAGS = -Wall -Wextra -Werror -std=c++98
-INCLUDE = src
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2022/11/16 16:53:40 by gyoon             #+#    #+#              #
+#    Updated: 2024/01/20 18:08:23 by gyoon            ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
-.PHONY : clean all fclean re
+NAME		= webserv
+
+# **************************************************************************** #
+#                                                                              #
+#    Options                                                                   #
+#                                                                              #
+# **************************************************************************** #
+
+CC			= c++
+# CXXFLAGS	= -Wall -Wextra -Werror -std=c++98
+RM			= rm -rf
+
+.PHONY : all bonus clean fclean re
+
+# **************************************************************************** #
+#                                                                              #
+#    Source Files                                                              #
+#                                                                              #
+# **************************************************************************** #
+
+SRCS		= 	main.cpp \
+				$(wildcard src/Server/*.cpp)
+OBJS		= 	${SRCS:.cpp=.o}
+INC			= 	./include
+
+# **************************************************************************** #
+#                                                                              #
+#    Progress                                                                  #
+#                                                                              #
+# **************************************************************************** #
+
+num_file	= $(shell echo $(SRCS) | tr ' ' '\n' | wc -w)
+cnt			:= 0
+bar_done	= '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩'
+bar_ready	= '⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️'
+
+#			COLOR
+red			= \e[1;31m
+grn			= \e[1;32m
+yel			= \e[1;33m
+blu			= \e[1;34m
+mag			= \e[1;35m
+cyn			= \e[1;36m
+bold		= \e[1;37m
+end			= \e[0m
+
+version = "mandatory version"
+
+# **************************************************************************** #
+#                                                                              #
+#    Executable Section                                                        #
+#                                                                              #
+# **************************************************************************** #
 
 all : $(NAME)
 
-$(NAME): $(OBJS)
-	$(CXX) -o $(NAME) $(CXXFLAGS) $(OBJS)
+$(NAME) : $(OBJS)
+	@$(CC) $(CXXFLAGS) $(OBJS) -o $@ -I $(INC)
+	@printf "\rCompiling source files... "
+	@printf "%.$(shell printf "%d" 64)s" $(bar_done)
+	@printf "%7.2f%%\n" 100
+	@printf "💥 Now you can execute ${bold}$(NAME).${end}"
+	@printf " (%s)\n" $(version)
 
 %.o : %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $< -I $(INCLUDE)
+	@$(eval cnt=$(shell printf $$(($(cnt)+1))))
+	@$(eval rate_hex=$(shell echo "scale=2; ($(cnt) / $(num_file)) * 16" | bc))
+	@$(eval len=$(shell printf "%.0f\n" $(rate_hex)))
+	@$(eval len_done=$(shell echo "scale=0; $(len) * 4" | bc))
+	@$(eval len_ready=$(shell echo "scale=0; 96 - ($(len_done) / 4) * 6" | bc))
+	@$(eval percent=$(shell echo "scale=4; ($(cnt) / $(num_file)) * 100" | bc))
+	@printf "\rCompiling source files... "
+	@printf "%.$(shell printf "%d" $(len_done))s" $(bar_done)
+	@printf "%.$(shell printf "%d" $(len_ready))s" $(bar_ready)
+	@printf "%7.2f%%" $(percent)
+	@$(CC) $(CXXFLAGS) -c $< -o $@ -I $(INC)
 
 clean :
-	rm -f $(OBJS)
+	@$(RM) $(OBJS)
+	@printf "make clean ${bold}$(NAME).${end}\n"
 
 fclean :
-	rm -f $(OBJS)
-	rm -f $(NAME)
+	@make clean
+	@$(RM) $(NAME)
+	@printf "make fclean ${bold}$(NAME).${end}\n"
 
 re :
-	make fclean
-	make all
+	@make fclean
+	@printf "\n"
+	@make all
+
+# **************************************************************************** #
+#                                                                              #
+#    Test Section                                                              #
+#                                                                              #
+# **************************************************************************** #
+
+ALL_SRCS	=	$(wildcard *.cpp) \
+				$(wildcard src/*/*.cpp)
+ALL_OBJS	=	${ALL_SRCS:.cpp=.o}
+ALL_TESTS	=	$(wildcard *.test)
+
+clean_all :
+	@$(RM) $(ALL_OBJS)
+	@printf "make clean_all ${bold}$(NAME).${end}\n"
+
+fclean_all :
+	@make clean_all
+	@$(RM) $(ALL_TESTS)
+	@printf "make fclean_all ${bold}$(NAME).${end}\n"
+
+# **************************************************************************** #
+
+FILE_SRCS	= 	test_file.cpp \
+				$(wildcard src/File/*.cpp)
+FILE_OBJS	= 	${FILE_SRCS:.cpp=.o}
+
+file.test: $(FILE_OBJS)
+	@$(CC) $(CXXFLAGS) $(FILE_OBJS) -o $@ -I $(INC)
+	@printf "\rCompiling source files... "
+	@printf "%.$(shell printf "%d" 64)s" $(bar_done)
+	@printf "%7.2f%%\n" 100
+	@printf "💥 Now you can execute ${bold}$@.${end}"
+	@printf " (%s)\n" $(version)
+
+# **************************************************************************** #
+
+CONFIG_SRCS	=	test_webserv_config.cpp \
+				$(wildcard src/Config/*.cpp) \
+				$(wildcard src/File/*.cpp) \
+				$(wildcard src/utils/*.cpp)
+CONFIG_OBJS	= 	${CONFIG_SRCS:.cpp=.o}
+
+
+config.test: $(CONFIG_OBJS)
+	@$(CC) $(CXXFLAGS) $(CONFIG_OBJS) -o $@ -I $(INC)
+	@printf "\rCompiling source files... "
+	@printf "%.$(shell printf "%d" 64)s" $(bar_done)
+	@printf "%7.2f%%\n" 100
+	@printf "💥 Now you can execute ${bold}$@.${end}"
+	@printf " (%s)\n" $(version)
