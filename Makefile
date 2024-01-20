@@ -6,7 +6,7 @@
 #    By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/16 16:53:40 by gyoon             #+#    #+#              #
-#    Updated: 2024/01/20 18:12:33 by gyoon            ###   ########.fr        #
+#    Updated: 2024/01/20 18:17:16 by gyoon            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -108,7 +108,8 @@ re :
 # **************************************************************************** #
 
 ALL_SRCS	=	$(wildcard *.cpp) \
-				$(wildcard src/*/*.cpp)
+				$(wildcard src/*/*.cpp) \
+				$(wildcard test/*.cpp)
 ALL_OBJS	=	${ALL_SRCS:.cpp=.o}
 ALL_TESTS	=	$(wildcard *.test)
 
@@ -123,21 +124,16 @@ fclean_all :
 
 # **************************************************************************** #
 
-FILE_SRCS	= 	test_file.cpp \
+FILE_SRCS	= 	test/test_file.cpp \
 				$(wildcard src/File/*.cpp)
 FILE_OBJS	= 	${FILE_SRCS:.cpp=.o}
 
 file.test: $(FILE_OBJS)
-	@$(CC) $(CXXFLAGS) $(FILE_OBJS) -o $@ -I $(INC)
-	@printf "\rCompiling source files... "
-	@printf "%.$(shell printf "%d" 64)s" $(bar_done)
-	@printf "%7.2f%%\n" 100
-	@printf "💥 Now you can execute ${bold}$@.${end}"
-	@printf " (%s)\n" $(version)
+	$(CC) $(CXXFLAGS) $(FILE_OBJS) -o $@ -I $(INC)
 
 # **************************************************************************** #
 
-CONFIG_SRCS	=	test_webserv_config.cpp \
+CONFIG_SRCS	=	test/test_webserv_config.cpp \
 				$(wildcard src/Config/*.cpp) \
 				$(wildcard src/File/*.cpp) \
 				$(wildcard src/utils/*.cpp)
@@ -145,9 +141,4 @@ CONFIG_OBJS	= 	${CONFIG_SRCS:.cpp=.o}
 
 
 config.test: $(CONFIG_OBJS)
-	@$(CC) $(CXXFLAGS) $(CONFIG_OBJS) -o $@ -I $(INC)
-	@printf "\rCompiling source files... "
-	@printf "%.$(shell printf "%d" 64)s" $(bar_done)
-	@printf "%7.2f%%\n" 100
-	@printf "💥 Now you can execute ${bold}$@.${end}"
-	@printf " (%s)\n" $(version)
+	$(CC) $(CXXFLAGS) $(CONFIG_OBJS) -o $@ -I $(INC)
