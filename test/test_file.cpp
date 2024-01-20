@@ -1,15 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   FileTest.cpp                                       :+:      :+:    :+:   */
+/*   test_file.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 21:30:38 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 13:47:26 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 20:57:05 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Directory.hpp"
 #include "RegularFile.hpp"
 #include <iostream>
 
@@ -22,8 +23,11 @@ int main(int argc, char **argv)
 	}
 
 	Hafserv::RegularFile file = Hafserv::RegularFile(argv[1]);
-	file.printProperty();
-	file.print();
+	std::cout << file << std::endl;
 
+	std::cout << std::endl;
+
+	Hafserv::Directory dir = Hafserv::Directory(argv[1]);
+	std::cout << dir << std::endl;
 	return 0;
 }

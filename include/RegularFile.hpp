@@ -6,18 +6,18 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:45:44 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 16:20:30 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 20:51:46 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REGULARFILE_HPP
 #define REGULARFILE_HPP
 
-#include "AFile.hpp"
+#include "File.hpp"
 
 namespace Hafserv
 {
-class RegularFile : public AFile
+class RegularFile : public File
 {
 public:
 	RegularFile();
@@ -26,9 +26,7 @@ public:
 	RegularFile &operator=(const RegularFile &other);
 	virtual ~RegularFile();
 
-	virtual void printProperty() const;
-	virtual void print() const;
-
+	const std::vector<std::string> &getContents() const;
 	size_t getContentsSize() const;
 	const std::string &getExtension() const;
 	const std::string &getline(size_t lineNum) const;
@@ -39,5 +37,7 @@ protected:
 };
 
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::RegularFile &file);
 
 #endif
