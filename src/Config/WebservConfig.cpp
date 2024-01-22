@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 17:05:01 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/22 18:38:10 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) : directives(), event
 	for (size_t i = 0; i < main.subBlocks.size(); i++)
 	{
 		ConfigFile subBlock = main.subBlocks.at(i);
-		if (subBlock.name == "event")
+		if (subBlock.name == "events")
 			event = EventConfig(subBlock);
 		else if (subBlock.name == "http")
 			http = HttpConfig(subBlock);
@@ -64,6 +64,8 @@ std::ostream &operator<<(std::ostream &os, const WebservConfig &conf)
 	for (; it != conf.getDirectives().end(); it++)
 		os << "\t[" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
 
+	os << std::endl;
+	os << conf.getEventConfig();
 	os << std::endl;
 	os << conf.getHttpConfig();
 	return os;

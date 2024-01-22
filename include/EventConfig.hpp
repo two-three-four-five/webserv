@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:12 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/19 16:11:29 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/22 18:27:56 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define EVENTCONFIG_HPP
 
 #include "ConfigFile.hpp"
+#include "util/string.hpp"
 
 namespace Hafserv
 {
@@ -26,12 +27,14 @@ public:
 	EventConfig &operator=(const EventConfig &other);
 	~EventConfig();
 
-	const ConfigFile::directives_t &getDirectives() const;
+	int getWorkerConnections() const;
 
 private:
-	ConfigFile::directives_t directives;
+	int workerConnections;
 };
 
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::EventConfig &conf);
 
 #endif
