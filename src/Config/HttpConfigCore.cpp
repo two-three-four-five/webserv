@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 23:23:54 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/22 22:41:27 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ const HttpConfigCore::Timeout &HttpConfigCore::getTimeout() const { return timeo
 
 const std::map<int, std::string> &HttpConfigCore::getErrorPages() const { return errorPages; }
 
-const std::multimap<std::string, std::string> HttpConfigCore::getTypes() const { return types; }
+const std::multimap<std::string, std::string> &HttpConfigCore::getTypes() const { return types; }
 
 void HttpConfigCore::setRoot(const std::string &root) { this->root = root; }
 
@@ -74,6 +74,11 @@ void HttpConfigCore::addErrorPage(int errorCode, const std::string &uri)
 
 void HttpConfigCore::addIndex(const std::string &index) { indexes.push_back(index); }
 
+void HttpConfigCore::addType(const std::string &type, const std::string &extension)
+{
+	types.insert(std::make_pair(type, extension));
+}
+
 std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 {
 	os << "\t[HttpConfigCore]" << std::endl;
@@ -89,6 +94,10 @@ std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 	std::map<int, std::string>::const_iterator it = conf.getErrorPages().begin();
 	for (; it != conf.getErrorPages().end(); it++)
 		os << "\t\terror code: " << (*it).first << " -> " << (*it).second << std::endl;
+
+	std::map<std::string, std::string>::const_iterator it2 = conf.getTypes().begin();
+	for (; it2 != conf.getTypes().end(); it++)
+		os << "\t\textension: " << (*it2).first << " -> " << (*it2).second << std::endl;
 
 	return os;
 }

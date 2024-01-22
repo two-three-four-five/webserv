@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:05 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 16:06:02 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/22 22:28:17 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ public:
 	const HttpConfigCore &getHttpConfigCore() const;
 	void setHttpConfigCore(const HttpConfigCore &core);
 	void setHttpConfigCore(const ConfigFile::directives_t &directives);
+	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks);
 
 protected:
 	HttpConfigCore core;

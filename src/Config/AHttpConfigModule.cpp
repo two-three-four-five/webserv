@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 23:24:37 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/22 22:40:03 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,16 +37,18 @@ void AHttpConfigModule::setHttpConfigCore(const HttpConfigCore &core) { this->co
 
 void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &directives)
 {
+	std::string key, value;
+	std::vector<std::string> params;
 	ConfigFile::directives_t::const_iterator it = directives.begin();
 	for (; it != directives.end(); it++)
 	{
-		std::string key = (*it).first;
-		std::string value = (*it).second;
+		key = (*it).first;
+		value = (*it).second;
 		if (key == "root")
 			core.setRoot(value);
 		else if (key == "index")
 		{
-			std::vector<std::string> params = util::string::split(value, ' ');
+			params = util::string::split(value, ' ');
 			for (size_t i = 0; i < params.size(); i++)
 				core.addIndex(params[i]);
 		}
@@ -73,7 +75,7 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 		else if (key == "error_page")
 		{
 			// what if error_page option duplicate?
-			std::vector<std::string> params = util::string::split(value, ' ');
+			params = util::string::split(value, ' ');
 			if (params.size() == 1)
 				; // error
 			for (size_t i = 0; i < params.size() - 1; i++)
@@ -87,5 +89,25 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 		}
 		else
 			;
+	}
+}
+
+void AHttpConfigModule::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks)
+{
+	std::string subBlockName;
+	for (size_t i; i < subBlocks.size(); i++)
+	{
+		subBlockName = subBlocks.at(i).name;
+		if (subBlockName == "type")
+		{
+			std::string type, extension;
+			ConfigFile::directives_t::const_iterator it = subBlocks.at(i).directives.begin();
+			for (; it != subBlocks.at(i).directives.end(); it++)
+			{
+				type = (*it).first;
+				extension = (*it).second;
+				core.addType(extension, type);
+			}
+		}
 	}
 }

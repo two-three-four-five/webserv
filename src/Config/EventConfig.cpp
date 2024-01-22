@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 18:38:27 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/22 22:21:18 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,24 @@ EventConfig::EventConfig() : workerConnections() {}
 
 EventConfig::EventConfig(const EventConfig &other) : workerConnections(other.workerConnections) {}
 
-EventConfig::EventConfig(const ConfigFile &block) : workerConnections()
+EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : workerConnections()
 {
+	std::string key, value;
 	ConfigFile::directives_t::const_iterator it = block.directives.begin();
 	for (; it != block.directives.end(); it++)
-		if ((*it).first == "worker_connections")
-			if (util::string::stoi((*it).second).first)
-				workerConnections = util::string::stoi((*it).second).second;
+	{
+		key = (*it).first;
+		value = (*it).second;
+		if (key == "worker_connections")
+		{
+			if (util::string::stoi(value).first)
+				workerConnections = util::string::stoi(value).second;
+			else
+				throw ParseError("stoi failed: " + value);
+		}
+		else
+			throw ParseError("unexpected block context directive: " + key);
+	}
 }
 
 EventConfig &EventConfig::operator=(const EventConfig &other)
