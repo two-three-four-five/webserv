@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/23 14:22:04 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/23 14:36:54 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,6 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 		subBlockName = block.subBlocks.at(i).name;
 		if (subBlockName == "server")
 			servers.push_back(ServerConfig(block.subBlocks.at(i), core));
-		else if (subBlockName == "types")
-			;
 		else
 			throw ParseError("unexpected http context block: " + subBlockName);
 	}
