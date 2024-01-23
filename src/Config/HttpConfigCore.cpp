@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:41:27 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/23 14:34:39 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ using namespace Hafserv;
 
 HttpConfigCore::Timeout::Timeout() : clientHeader(60), clientBody(60), keepAlive(75), send(60) {}
 
-HttpConfigCore::HttpConfigCore() : root(), indexes(), timeouts(), errorPages() {}
+HttpConfigCore::HttpConfigCore() : root(), indexes(), timeouts(), errorPages(), types() {}
 
 HttpConfigCore::HttpConfigCore(const HttpConfigCore &other)
 	: root(other.root), indexes(other.indexes), timeouts(other.timeouts), errorPages(other.errorPages),
@@ -96,7 +96,7 @@ std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 		os << "\t\terror code: " << (*it).first << " -> " << (*it).second << std::endl;
 
 	std::map<std::string, std::string>::const_iterator it2 = conf.getTypes().begin();
-	for (; it2 != conf.getTypes().end(); it++)
+	for (; it2 != conf.getTypes().end(); it2++)
 		os << "\t\textension: " << (*it2).first << " -> " << (*it2).second << std::endl;
 
 	return os;

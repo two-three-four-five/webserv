@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:40:03 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/23 14:35:00 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,13 +94,12 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 
 void AHttpConfigModule::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks)
 {
-	std::string subBlockName;
-	for (size_t i; i < subBlocks.size(); i++)
+	std::string subBlockName, type, extension;
+	for (size_t i = 0; i < subBlocks.size(); i++)
 	{
 		subBlockName = subBlocks.at(i).name;
-		if (subBlockName == "type")
+		if (subBlockName == "types")
 		{
-			std::string type, extension;
 			ConfigFile::directives_t::const_iterator it = subBlocks.at(i).directives.begin();
 			for (; it != subBlocks.at(i).directives.end(); it++)
 			{

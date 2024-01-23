@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:25:03 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/23 14:22:04 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 	: AHttpConfigModule(), directives(block.directives), servers()
 {
 	this->setHttpConfigCore(block.directives);
+	this->setHttpConfigCore(block.subBlocks);
 
 	std::string subBlockName;
 	for (size_t i = 0; i < block.subBlocks.size(); i++)
