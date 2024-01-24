@@ -11,7 +11,7 @@
 
 using namespace Hafserv;
 
-Webserv::Webserv() { initServer(); }
+Webserv::Webserv() { initWebserv(); }
 
 Webserv::~Webserv() {}
 
@@ -19,32 +19,45 @@ void Webserv::addServer(Server *server)
 {
 	servers.push_back(server);
 
-	struct sockaddr_in serv_adr;
-	struct kevent event;
-	int ret;
-
-	server->setServSock(socket(PF_INET, SOCK_STREAM, 0));
-	memset(&serv_adr, 0, sizeof(serv_adr));
-	serv_adr.sin_family = AF_INET;
-	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_adr.sin_port = htons(server->getPort());
-
-	if (bind(server->getServSock(), (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
-	{
-		std::cerr << "bind() error" << std::endl;
-		exit(1);
-	}
-	if (listen(server->getServSock(), 5) == -1)
-	{
-		std::cerr << "listen() error" << std::endl;
-		exit(1);
-	}
-
-	EV_SET(&event, server->getServSock(), EVFILT_READ, EV_ADD, 0, 0, NULL);
-	ret = kevent(kq, &event, 1, NULL, 0, NULL);
+	for (std::vector<int>::iterator it = server->getPorts().begin(); it != server->getPorts().end(); it++)
+		openPort(*it);
 }
 
-void Webserv::initServer()
+void Hafserv::Webserv::openPort(unsigned short port)
+{
+	if (portToSocket.find(port) == portToSocket.end())
+	{
+		struct sockaddr_in serv_adr;
+		struct kevent event;
+		int socketFd;
+
+		socketFd = socket(PF_INET, SOCK_STREAM, 0);
+		memset(&serv_adr, 0, sizeof(serv_adr));
+		serv_adr.sin_family = AF_INET;
+		serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
+		serv_adr.sin_port = htons(port);
+
+		if (bind(socketFd, (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
+		{
+			std::cerr << "bind() error" << std::endl;
+			exit(1);
+		}
+		if (listen(socketFd, 5) == -1)
+		{
+			std::cerr << "listen() error" << std::endl;
+			exit(1);
+		}
+
+		int ret;
+		EV_SET(&event, socketFd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+		ret = kevent(kq, &event, 1, NULL, 0, NULL);
+
+		portToSocket[port] = socketFd;
+		socketToPort[socketFd] = port;
+	}
+}
+
+void Webserv::initWebserv()
 {
 	kq = kqueue();
 	if (kq == -1)
@@ -155,20 +168,12 @@ void Webserv::disconnectClient(int socketfd)
 	std::cout << "closed client: " << socketfd << std::endl;
 }
 
-bool Webserv::inServSocks(int serv_sock)
-{
-	for (std::vector<Server *>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		if ((*it)->getServSock() == serv_sock)
-			return true;
-	}
-	return false;
-}
+bool Webserv::inServSocks(int serv_sock) { return socketToPort.find(serv_sock) != socketToPort.end(); }
 
 void Webserv::closeServSocks()
 {
-	for (std::vector<Server *>::iterator it = servers.begin(); it != servers.end(); it++)
+	for (std::map<int, unsigned short>::iterator it = socketToPort.begin(); it != socketToPort.end(); it++)
 	{
-		close((*it)->getServSock());
+		close((*it).first);
 	}
 }

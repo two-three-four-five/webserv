@@ -11,16 +11,12 @@
 namespace Hafserv
 {
 
-Server::Server() {}
-
-Server::Server(int port) : port(port) {}
+Server::Server(int port) { ports.push_back(port); }
 
 Server::~Server() {}
 
-int Server::getPort() { return port; }
+std::vector<int> &Server::getPorts() { return ports; }
 
-int Server::getServSock() { return serv_sock; }
-
-void Server::setServSock(int serv_sock) { this->serv_sock = serv_sock; }
+std::vector<std::string> &Server::getServerNames() { return serverNames; }
 
 } // namespace Hafserv

@@ -11,10 +11,10 @@ int main(int argc, char *argv[])
 	}
 	Hafserv::Webserv webserv;
 	Hafserv::Server *myServer = new Hafserv::Server(atoi(argv[1]));
-	// Hafserv::Server *myServer2 = new Hafserv::Server(atoi(argv[1]) + 1);
+	Hafserv::Server *myServer2 = new Hafserv::Server(atoi(argv[1]) + 1);
 
 	webserv.addServer(myServer);
-	// webserv.addServer(myServer2);
+	webserv.addServer(myServer2);
 	webserv.runWebserv();
 	return 0;
 }
