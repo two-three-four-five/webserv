@@ -1,26 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ConfigFileTest.cpp                                 :+:      :+:    :+:   */
+/*   string.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/10 15:01:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/18 13:35:15 by gyoon            ###   ########.fr       */
+/*   Created: 2024/01/20 15:43:53 by gyoon             #+#    #+#             */
+/*   Updated: 2024/01/20 16:10:04 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ConfigFile.hpp"
-#include <iostream>
+#ifndef UTIL_STRING_HPP
+#define UTIL_STRING_HPP
 
-int main(int argc, char **argv)
+#include <sstream>
+#include <string>
+#include <utility>
+
+namespace Hafserv
 {
-	if (argc != 2)
-	{
-		std::cout << "Usage: test filename" << std::endl;
-		return 1;
-	}
-	Hafserv::ConfigFile config = Hafserv::ConfigFile(argv[1]);
-	config.print();
-	return 0;
-}
+namespace util
+{
+namespace string
+{
+std::pair<bool, int> stoi(const std::string &str);
+
+bool hasSpace(const std::string &str);
+
+std::string toLower(const std::string &str);
+
+} // namespace string
+} // namespace util
+} // namespace Hafserv
+
+#endif

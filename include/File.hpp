@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   AFile.hpp                                          :+:      :+:    :+:   */
+/*   File.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:44:36 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 16:18:52 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 20:59:55 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef AFILE_HPP
-#define AFILE_HPP
+#ifndef FILE_HPP
+#define FILE_HPP
 
 #include <fcntl.h>
 #include <fstream>
@@ -22,23 +22,25 @@
 
 namespace Hafserv
 {
-class AFile
+class File
 {
 public:
 	enum FileCode
 	{
-		UNKNOWN_ERROR = -1,
-		NOT_EXIST = 0,
+		DIRECTORY = 2,
 		REGULAR_FILE = 1,
-		IS_A_DIRECTORY = 2,
-		PERMISSION_DENIED = 3,
+
+		NOT_EXIST = 0,
+		PERMISSION_DENIED = -1,
+		UNKNOWN_ERROR = -100,
 	};
 
-	AFile();
-	AFile(const AFile &other);
-	AFile(const std::string &filename);
-	AFile &operator=(const AFile &other);
-	virtual ~AFile();
+	File();
+	File(const File &other);
+	File(const std::string &filename);
+	File(int code, const std::string &name);
+	File &operator=(const File &other);
+	virtual ~File();
 
 	static bool isExist(const std::string &filename);
 	static bool isDirectory(const std::string &filename);
@@ -47,8 +49,6 @@ public:
 
 	int getCode() const;
 	const std::string &getName() const;
-	virtual void printProperty() const = 0;
-	virtual void print() const = 0;
 
 protected:
 	int code;
@@ -56,5 +56,7 @@ protected:
 };
 
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::File &file);
 
 #endif

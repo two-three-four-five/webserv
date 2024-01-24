@@ -6,42 +6,40 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/18 22:42:43 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 13:18:57 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef LOCATIONCONFIG_HPP
 #define LOCATIONCONFIG_HPP
 
+#include "AHttpConfigModule.hpp"
 #include "ConfigFile.hpp"
+#include <iostream>
 #include <string>
 
 namespace Hafserv
 {
-class LocationConfig
+class LocationConfig : public AHttpConfigModule
 {
 public:
 	LocationConfig();
 	LocationConfig(const LocationConfig &other);
-	LocationConfig(const ConfigFile &block);
+	LocationConfig(const ConfigFile &block, const HttpConfigCore &core);
 	LocationConfig &operator=(const LocationConfig &other);
 	~LocationConfig();
 
-	// std::string &getPattern();
-	// std::string &getRoot();
 	const std::string &getPattern() const;
-	const std::string &getRoot() const;
 	void setPattern(const std::string &pattern);
-	void setRoot(const std::string &root);
-
 	bool isMatching(const std::string &url);
 
 private:
 	std::string pattern;
-	std::string root;
 	// NOT NEEDED : std::string regExpr;
 };
 
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::LocationConfig &conf);
 
 #endif

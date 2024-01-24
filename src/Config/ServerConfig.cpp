@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/18 22:44:58 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 17:30:15 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,18 @@
 
 using namespace Hafserv;
 
-ServerConfig::ServerConfig() {}
+ServerConfig::ServerConfig() : AHttpConfigModule(), names(), ports(), locations() {}
 
-ServerConfig::ServerConfig(const ServerConfig &other) {}
-
-#include <sstream>
-
-ServerConfig::ServerConfig(const ConfigFile &block)
+ServerConfig::ServerConfig(const ServerConfig &other)
+	: AHttpConfigModule(other.core), names(other.names), ports(other.ports), locations(other.locations)
 {
+}
+
+ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
+	: AHttpConfigModule(core), names(), ports(), locations()
+{
+	this->setHttpConfigCore(block.directives);
+
 	ConfigFile::directives_t::const_iterator it = block.directives.begin();
 	for (; it != block.directives.end(); it++)
 	{
@@ -43,7 +47,7 @@ ServerConfig::ServerConfig(const ConfigFile &block)
 	{
 		if (block.subBlocks.at(i).name == "location")
 		{
-			locations.push_back(LocationConfig(block.subBlocks.at(i)));
+			locations.push_back(LocationConfig(block.subBlocks.at(i), core));
 		}
 	}
 }
@@ -52,6 +56,10 @@ ServerConfig &ServerConfig::operator=(const ServerConfig &other)
 {
 	if (this != &other)
 	{
+		core = other.core;
+		names = other.names;
+		ports = other.ports;
+		locations = other.locations;
 	}
 	return *this;
 }
@@ -64,18 +72,23 @@ const std::vector<unsigned short> &ServerConfig::getPorts() const { return ports
 
 const std::vector<LocationConfig> &ServerConfig::getLocations() const { return locations; }
 
-void ServerConfig::print() const
+std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 {
-	std::cout << "names : ";
-	for (size_t i = 0; i < names.size(); i++)
-		std::cout << names.at(i) << " ";
-	std::cout << std::endl;
-	std::cout << "ports : ";
-	for (size_t i = 0; i < ports.size(); i++)
-		std::cout << static_cast<int>(ports.at(i)) << " ";
-	std::cout << std::endl;
-	std::cout << "locations : ";
-	for (size_t i = 0; i < locations.size(); i++)
-		std::cout << locations.at(i).getPattern() << " ";
-	std::cout << std::endl;
+	os << "[ServerConfig]" << std::endl;
+
+	os << conf.getHttpConfigCore() << std::endl;
+
+	os << "\tnames: ";
+	for (size_t i = 0; i < conf.getNames().size(); i++)
+		os << conf.getNames().at(i) << " ";
+	os << std::endl;
+
+	os << "\tports: ";
+	for (size_t i = 0; i < conf.getPorts().size(); i++)
+		os << static_cast<int>(conf.getPorts().at(i)) << " ";
+	os << std::endl;
+
+	for (size_t i = 0; i < conf.getLocations().size(); i++)
+		os << conf.getLocations().at(i) << std::endl;
+	return os;
 }

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:46:48 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/14 16:21:08 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 21:00:33 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 
 using namespace Hafserv;
 
-RegularFile::RegularFile() : AFile(), extension("") {}
+RegularFile::RegularFile() : File(), extension(""), contents() {}
 
 RegularFile::RegularFile(const RegularFile &other)
-	: AFile(other.name), extension(other.extension), contents(std::vector<std::string>(other.contents))
+	: File(other.code, other.name), extension(other.extension), contents(std::vector<std::string>(other.contents))
 {
 }
 
-RegularFile::RegularFile(const std::string &filename) : AFile(filename), extension("")
+RegularFile::RegularFile(const std::string &filename) : File(filename), extension(""), contents()
 {
 	if (code != REGULAR_FILE)
 		return;
@@ -58,26 +58,27 @@ RegularFile &RegularFile::operator=(const RegularFile &other)
 
 RegularFile::~RegularFile() {}
 
-void RegularFile::printProperty() const
-{
-	std::cout << "Filename: " << name << std::endl;
-	if (code == REGULAR_FILE)
-	{
-		std::cout << "Extension: " << extension << std::endl;
-		std::cout << "Contents-length: " << contents.size() << std::endl;
-	}
-	else
-		std::cout << "not a regular file. error code : " << code << std::endl;
-}
-
-void RegularFile::print() const
-{
-	for (size_t i = 0; i < contents.size(); i++)
-		std::cout << contents[i] << std::endl;
-}
+const std::vector<std::string> &RegularFile::getContents() const { return contents; }
 
 size_t RegularFile::getContentsSize() const { return contents.size(); }
 
 const std::string &RegularFile::getExtension() const { return extension; }
 
 const std::string &RegularFile::getline(size_t lineNum) const { return contents.at(lineNum); }
+
+std::ostream &operator<<(std::ostream &os, const RegularFile &file)
+{
+	os << "code: " << file.getCode() << std::endl;
+	os << "name: " << file.getName() << std::endl;
+	if (file.getCode() == File::REGULAR_FILE)
+	{
+		std::cout << "Extension: " << file.getExtension() << std::endl;
+		std::cout << "Contents-length: " << file.getContentsSize() << std::endl;
+		for (size_t i = 0; i < file.getContentsSize(); i++)
+			std::cout << file.getContents()[i] << std::endl;
+	}
+	else
+		std::cout << "not a regular file. error code : " << file.getCode();
+
+	return os;
+}
