@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 17:30:15 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/23 15:00:49 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 	: AHttpConfigModule(core), names(), ports(), locations()
 {
 	this->setHttpConfigCore(block.directives);
+	this->setHttpConfigCore(block.subBlocks);
 
 	ConfigFile::directives_t::const_iterator it = block.directives.begin();
 	for (; it != block.directives.end(); it++)
@@ -76,7 +77,7 @@ std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 {
 	os << "[ServerConfig]" << std::endl;
 
-	os << conf.getHttpConfigCore() << std::endl;
+	os << conf.getHttpConfigCore();
 
 	os << "\tnames: ";
 	for (size_t i = 0; i < conf.getNames().size(); i++)

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 13:22:20 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/22 22:21:58 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define HTTPCONFIG_HPP
 
 #include "AHttpConfigModule.hpp"
+#include "ConfigException.hpp"
 #include "ConfigFile.hpp"
 #include "ServerConfig.hpp"
 #include <string>
@@ -26,7 +27,7 @@ class HttpConfig : public AHttpConfigModule
 public:
 	HttpConfig();
 	HttpConfig(const HttpConfig &other);
-	HttpConfig(const ConfigFile &block);
+	HttpConfig(const ConfigFile &block) throw(ParseError);
 	HttpConfig &operator=(const HttpConfig &other);
 	~HttpConfig();
 
