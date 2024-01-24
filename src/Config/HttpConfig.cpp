@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/23 14:36:54 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/23 14:53:52 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 		subBlockName = block.subBlocks.at(i).name;
 		if (subBlockName == "server")
 			servers.push_back(ServerConfig(block.subBlocks.at(i), core));
+		else if (subBlockName == "types")
+			;
 		else
 			throw ParseError("unexpected http context block: " + subBlockName);
 	}
@@ -59,13 +61,12 @@ std::ostream &operator<<(std::ostream &os, const HttpConfig &conf)
 {
 	os << "[HttpConfig]" << std::endl;
 
-	os << conf.getHttpConfigCore() << std::endl;
+	os << conf.getHttpConfigCore();
 
 	ConfigFile::directives_t::const_iterator it = conf.getDirectives().begin();
 	for (; it != conf.getDirectives().end(); it++)
 		os << "\t[" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
 
-	os << std::endl;
 	for (size_t i = 0; i < conf.getServers().size(); i++)
 		os << conf.getServers().at(i) << std::endl;
 	return os;

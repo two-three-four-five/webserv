@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/23 14:34:39 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/23 14:59:13 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,9 +95,15 @@ std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 	for (; it != conf.getErrorPages().end(); it++)
 		os << "\t\terror code: " << (*it).first << " -> " << (*it).second << std::endl;
 
+	size_t i = 0;
 	std::map<std::string, std::string>::const_iterator it2 = conf.getTypes().begin();
-	for (; it2 != conf.getTypes().end(); it2++)
+	for (; it2 != conf.getTypes().end() && i < 5; it2++)
+	{
 		os << "\t\textension: " << (*it2).first << " -> " << (*it2).second << std::endl;
+		i++;
+	}
+	if (it2 != conf.getTypes().end())
+		os << "\t\textension: ..." << std::endl;
 
 	return os;
 }

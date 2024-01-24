@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/23 14:35:00 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/23 14:50:41 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,9 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::subblocks_t &subBloc
 			{
 				type = (*it).first;
 				extension = (*it).second;
-				core.addType(extension, type);
+				std::vector<std::string> extensions = util::string::split(extension, ' ');
+				for (size_t j = 0; j < extensions.size(); j++)
+					core.addType(extensions.at(j), type);
 			}
 		}
 	}
