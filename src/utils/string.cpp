@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:47:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 18:25:15 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/20 23:06:49 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,22 @@ std::pair<bool, int> util::string::stoi(const std::string &str)
 	ss >> ret.second;
 	ret.first = !ss.fail() && !ss.bad() && ss.eof();
 	return ret;
+}
+
+std::vector<std::string> util::string::split(const std::string &str, char delimiter)
+{
+	std::vector<std::string> vec;
+	std::stringstream ss(str);
+	std::string section;
+	while (std::getline(ss, section, delimiter))
+	{
+		std::stringstream sector(section);
+		std::string trimmed;
+		sector >> trimmed;
+		if (trimmed.size())
+			vec.push_back(trimmed);
+	}
+	return vec;
 }
 
 bool util::string::hasSpace(const std::string &str)

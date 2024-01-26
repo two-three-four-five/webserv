@@ -1,26 +1,24 @@
 #include "Server.hpp"
 #include "Response.hpp"
 
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <iostream>
-#include <sys/event.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
 namespace Hafserv
 {
 
-Server::Server() {}
-
-Server::Server(int port) : port(port) {}
+Server::Server(ServerConfig serverConfig) : serverConfig(serverConfig) {}
 
 Server::~Server() {}
 
-int Server::getPort() { return port; }
+const std::vector<unsigned short> &Server::getPorts() const { return serverConfig.getPorts(); }
 
-int Server::getServSock() { return serv_sock; }
+const std::vector<std::string> &Server::getNames() const { return serverConfig.getNames(); }
 
-void Server::setServSock(int serv_sock) { this->serv_sock = serv_sock; }
+const ServerConfig &Server::getServerConfig() const { return serverConfig; }
 
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::Server &server)
+{
+	os << "Server Info" << std::endl;
+	os << server.getServerConfig();
+	return os;
+}

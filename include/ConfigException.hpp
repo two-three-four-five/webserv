@@ -1,39 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   string.hpp                                         :+:      :+:    :+:   */
+/*   ConfigException.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/20 15:43:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 23:03:24 by gyoon            ###   ########.fr       */
+/*   Created: 2024/01/22 22:19:48 by gyoon             #+#    #+#             */
+/*   Updated: 2024/01/22 22:20:04 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef UTIL_STRING_HPP
-#define UTIL_STRING_HPP
+#ifndef CONFIGEXCEPTION_HPP
+#define CONFIGEXCEPTION_HPP
 
-#include <sstream>
+#include <stdexcept>
 #include <string>
-#include <utility>
-#include <vector>
 
-namespace Hafserv
+class ParseError : public std::logic_error
 {
-namespace util
-{
-namespace string
-{
-std::pair<bool, int> stoi(const std::string &str);
-
-std::vector<std::string> split(const std::string &str, char delimiter);
-
-bool hasSpace(const std::string &str);
-
-std::string toLower(const std::string &str);
-
-} // namespace string
-} // namespace util
-} // namespace Hafserv
+public:
+	ParseError(const std::string &msg) : std::logic_error(msg){};
+	virtual ~ParseError() throw() {}
+};
 
 #endif

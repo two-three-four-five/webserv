@@ -6,13 +6,14 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 17:04:57 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/22 22:20:21 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERVCONFIG_HPP
 #define WEBSERVCONFIG_HPP
 
+#include "ConfigException.hpp"
 #include "ConfigFile.hpp"
 #include "EventConfig.hpp"
 #include "HttpConfig.hpp"
@@ -25,7 +26,7 @@ class WebservConfig
 public:
 	WebservConfig();
 	WebservConfig(const WebservConfig &other);
-	WebservConfig(const ConfigFile &configFile);
+	WebservConfig(const ConfigFile &configFile) throw(ParseError);
 	WebservConfig &operator=(const WebservConfig &other);
 	~WebservConfig();
 

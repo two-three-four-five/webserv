@@ -1,9 +1,9 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "Request.hpp"
-#include <map>
+#include "ServerConfig.hpp"
 #include <string>
+#include <vector>
 
 #define BUF_SIZE 512
 #define MAX_EVENTS 50
@@ -13,13 +13,12 @@ namespace Hafserv
 class Server
 {
 public:
-	Server();
-	Server(int port);
+	Server(ServerConfig serverConfig);
 	~Server();
 
-	int getPort();
-	int getServSock();
-	void setServSock(int serv_sock);
+	const std::vector<unsigned short> &getPorts() const;
+	const std::vector<std::string> &getNames() const;
+	const ServerConfig &getServerConfig() const;
 	/*
 		string -> Request
 		parseRequest
@@ -27,12 +26,10 @@ public:
 		sendResponse
 	*/
 private:
-	int port;
-	int kq;
-	int serv_sock;
-	std::string serverName;
-	std::map<int, Hafserv::Request> Requests;
+	ServerConfig serverConfig;
 };
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::Server &server);
 
 #endif
