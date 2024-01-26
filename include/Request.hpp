@@ -8,6 +8,7 @@
 #define TRAILER 4
 #define PARSE_END 5
 
+#include "Server.hpp"
 #include <fstream>
 #include <map>
 #include <sstream>
@@ -19,6 +20,23 @@ namespace Hafserv
 
 class Request
 {
+public:
+	Request();
+	int parse(const std::string &request);
+	void parseStartLine(const std::string &request);
+	void parseFieldLine(const std::string &fieldLine);
+	void parseBody(const std::string &body);
+	std::string getRawRequest();
+	void printRequest();
+	void printBody();
+
+	const int getParseStatus() const;
+	const std::map<std::string, std::string> &getFields() const;
+	const Server *getTargetServer() const;
+	void setTargetServer(Server *server);
+
+	friend class Response;
+
 private:
 	int parseStatus;
 	int statusCode;
@@ -28,20 +46,7 @@ private:
 	std::string boundary;
 	std::map<std::string, std::string> fields;
 	std::vector<std::string> body;
-	// std::map<std::string, std::vector<std::string> > message;
-
-public:
-	Request();
-	int parse(const std::string &request);
-	void parseStartLine(const std::string &request);
-	void parseFieldLine(const std::string &fieldLine);
-	void parseBody(const std::string &body);
-	std::string getRawRequest();
-	// void printMessage();
-	// std::map<std::string, std::vector<std::string> > &getMessage();
-	void printRequest();
-	void printBody();
-	friend class Response;
+	Server *targetServer;
 };
 } // namespace Hafserv
 

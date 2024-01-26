@@ -11,7 +11,7 @@
 
 using namespace Hafserv;
 
-Webserv::Webserv() { initServer(); }
+Webserv::Webserv() { initWebserv(); }
 
 Webserv::~Webserv() {}
 
@@ -19,32 +19,46 @@ void Webserv::addServer(Server *server)
 {
 	servers.push_back(server);
 
-	struct sockaddr_in serv_adr;
-	struct kevent event;
-	int ret;
-
-	server->setServSock(socket(PF_INET, SOCK_STREAM, 0));
-	memset(&serv_adr, 0, sizeof(serv_adr));
-	serv_adr.sin_family = AF_INET;
-	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_adr.sin_port = htons(server->getPort());
-
-	if (bind(server->getServSock(), (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
-	{
-		std::cerr << "bind() error" << std::endl;
-		exit(1);
-	}
-	if (listen(server->getServSock(), 5) == -1)
-	{
-		std::cerr << "listen() error" << std::endl;
-		exit(1);
-	}
-
-	EV_SET(&event, server->getServSock(), EVFILT_READ, EV_ADD, 0, 0, NULL);
-	ret = kevent(kq, &event, 1, NULL, 0, NULL);
+	for (std::vector<unsigned short>::const_iterator it = server->getPorts().begin(); it != server->getPorts().end();
+		 it++)
+		openPort(*it);
 }
 
-void Webserv::initServer()
+void Hafserv::Webserv::openPort(unsigned short port)
+{
+	if (portToServSock.find(port) == portToServSock.end())
+	{
+		struct sockaddr_in serv_adr;
+		struct kevent event;
+		int socketFd;
+
+		socketFd = socket(PF_INET, SOCK_STREAM, 0);
+		memset(&serv_adr, 0, sizeof(serv_adr));
+		serv_adr.sin_family = AF_INET;
+		serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
+		serv_adr.sin_port = htons(port);
+
+		if (bind(socketFd, (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
+		{
+			std::cerr << "bind() error" << std::endl;
+			exit(1);
+		}
+		if (listen(socketFd, 5) == -1)
+		{
+			std::cerr << "listen() error" << std::endl;
+			exit(1);
+		}
+
+		int ret;
+		EV_SET(&event, socketFd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+		ret = kevent(kq, &event, 1, NULL, 0, NULL);
+
+		portToServSock[port] = socketFd;
+		servSockToPort[socketFd] = port;
+	}
+}
+
+void Webserv::initWebserv()
 {
 	kq = kqueue();
 	if (kq == -1)
@@ -95,7 +109,16 @@ void Webserv::runWebserv()
 					try
 					{
 						// 일단 TRAILER로 해놓음. 추후에 PARSE_END로 바꾸어야함
-						if (request.parse(static_cast<std::string>(readBuf)) == PARSE_END)
+						request.parse(static_cast<std::string>(readBuf));
+
+						if (request.getParseStatus() >= BODY && request.getTargetServer() == NULL)
+						{
+							std::cout << (*sockToPort.find(event_list[i].ident)).second << std::endl;
+							request.setTargetServer(
+								findTargetServer((*sockToPort.find(event_list[i].ident)).second, request));
+							std::cout << request.getTargetServer() << std::endl;
+						}
+						if (request.getParseStatus() == PARSE_END)
 						{
 							Hafserv::Response response(request);
 							std::string responseString = response.getResponse();
@@ -138,6 +161,9 @@ void Webserv::connectClient(int serv_sock)
 	p.first = clnt_sock;
 	Requests.insert(p);
 
+	int port = (*servSockToPort.find(serv_sock)).second;
+	sockToPort[clnt_sock] = port;
+
 	std::cout << "connected client: " << clnt_sock << std::endl;
 }
 
@@ -152,23 +178,40 @@ void Webserv::disconnectClient(int socketfd)
 
 	Requests.erase(socketfd);
 
+	std::map<int, unsigned short>::iterator socketToPortIt = sockToPort.find(socketfd);
+	if (socketToPortIt != sockToPort.end())
+		sockToPort.erase(socketToPortIt);
+
 	std::cout << "closed client: " << socketfd << std::endl;
 }
 
-bool Webserv::inServSocks(int serv_sock)
+Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &request)
 {
+	Server *defaultServer = NULL;
+	std::string host = (*request.getFields().find("host")).second;
+	std::string hostName = host.substr(0, host.find(':'));
+
 	for (std::vector<Server *>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
-		if ((*it)->getServSock() == serv_sock)
-			return true;
+		std::vector<std::string> serverNames = (*it)->getNames();
+		std::vector<unsigned short> ports = (*it)->getPorts();
+		std::vector<std::string>::iterator findNameIt = find(serverNames.begin(), serverNames.end(), hostName);
+		std::vector<unsigned short>::iterator findPortIt = find(ports.begin(), ports.end(), port);
+
+		if (defaultServer == NULL && findPortIt != ports.end())
+			defaultServer = *it;
+		if (findNameIt != serverNames.end() && findPortIt != ports.end())
+			return *it;
 	}
-	return false;
+	return defaultServer;
 }
+
+bool Webserv::inServSocks(int serv_sock) { return servSockToPort.find(serv_sock) != servSockToPort.end(); }
 
 void Webserv::closeServSocks()
 {
-	for (std::vector<Server *>::iterator it = servers.begin(); it != servers.end(); it++)
+	for (std::map<int, unsigned short>::iterator it = servSockToPort.begin(); it != servSockToPort.end(); it++)
 	{
-		close((*it)->getServSock());
+		close((*it).first);
 	}
 }

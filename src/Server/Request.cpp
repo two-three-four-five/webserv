@@ -5,7 +5,7 @@
 
 using namespace Hafserv;
 
-Request::Request() : parseStatus(CREATED), statusCode(200), inBoundary(false) {}
+Request::Request() : parseStatus(CREATED), statusCode(200), inBoundary(false), targetServer(NULL) {}
 
 int Request::parse(const std::string &request)
 {
@@ -152,17 +152,10 @@ void Request::printBody()
 	}
 }
 
-// void Request::printMessage()
-// {
-// 	for (std::map<std::string, std::vector<std::string> >::iterator it = message.begin(); it != message.end(); it++)
-// 	{
-// 		std::cout << it->first << ": ";
-// 		for (std::vector<std::string>::iterator vecIt = it->second.begin(); vecIt != it->second.end(); vecIt++)
-// 		{
-// 			std::cout << *vecIt << ". ";
-// 		}
-// 		std::cout << std::endl;
-// 	}
-// }
+const int Hafserv::Request::getParseStatus() const { return parseStatus; }
 
-// std::map<std::string, std::vector<std::string> > &Request::getMessage() { return (message); }
+const std::map<std::string, std::string> &Hafserv::Request::getFields() const { return fields; }
+
+const Server *Hafserv::Request::getTargetServer() const { return targetServer; }
+
+void Hafserv::Request::setTargetServer(Server *server) { targetServer = server; }
