@@ -11,9 +11,26 @@
 
 using namespace Hafserv;
 
-Webserv::Webserv() { initWebserv(); }
+Webserv::Webserv()
+{
+	initWebserv();
+	statusCodeMap[200] = "OK";
+	statusCodeMap[201] = "Created";
+	statusCodeMap[202] = "Accepted";
+	statusCodeMap[204] = "No Content";
+	statusCodeMap[400] = "Bad Request";
+	statusCodeMap[403] = "Forbidden";
+	statusCodeMap[404] = "Not Found";
+	statusCodeMap[500] = "Internal Server Error";
+	statusCodeMap[501] = "Not Implemented";
+	statusCodeMap[505] = "HTTP Version Not Supported";
+}
 
-Webserv::~Webserv() {}
+Webserv::~Webserv()
+{
+	for (std::vector<Server *>::iterator it = servers.begin(); it != servers.end(); it++)
+		delete *it;
+}
 
 void Webserv::addServer(Server *server)
 {
@@ -91,7 +108,7 @@ void Webserv::runWebserv()
 			{
 				connectClient(event_list[i].ident);
 			}
-			else
+			else if (event_list[i].filter == EVFILT_READ)
 			{
 				memset(peekBuf, 0, sizeof(peekBuf));
 				str_len = recv(event_list[i].ident, peekBuf, BUF_SIZE, MSG_PEEK | MSG_DONTWAIT);
@@ -113,10 +130,8 @@ void Webserv::runWebserv()
 
 						if (request.getParseStatus() >= BODY && request.getTargetServer() == NULL)
 						{
-							std::cout << (*sockToPort.find(event_list[i].ident)).second << std::endl;
 							request.setTargetServer(
 								findTargetServer((*sockToPort.find(event_list[i].ident)).second, request));
-							std::cout << request.getTargetServer() << std::endl;
 						}
 						if (request.getParseStatus() == PARSE_END)
 						{
@@ -154,8 +169,8 @@ void Webserv::connectClient(int serv_sock)
 	clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_adr, &adr_sz);
 	EV_SET(&event, clnt_sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
-	// EV_SET(&event, clnt_sock, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-	// kevent(kq, &event, 1, NULL, 0, NULL);
+	EV_SET(&event, clnt_sock, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+	kevent(kq, &event, 1, NULL, 0, NULL);
 
 	std::pair<int, Hafserv::Request> p;
 	p.first = clnt_sock;
@@ -172,8 +187,8 @@ void Webserv::disconnectClient(int socketfd)
 	struct kevent event;
 	EV_SET(&event, socketfd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
-	// EV_SET(&event, socketfd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-	// kevent(kq, &event, 1, NULL, 0, NULL);
+	EV_SET(&event, socketfd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+	kevent(kq, &event, 1, NULL, 0, NULL);
 	close(socketfd);
 
 	Requests.erase(socketfd);
@@ -189,7 +204,10 @@ Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &r
 {
 	Server *defaultServer = NULL;
 	std::string host = (*request.getFields().find("host")).second;
-	std::string hostName = host.substr(0, host.find(':'));
+
+	std::string hostName = host;
+	if (host.find(':') != std::string::npos)
+		hostName = host.substr(0, host.find(':'));
 
 	for (std::vector<Server *>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
