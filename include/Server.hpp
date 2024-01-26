@@ -1,7 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "Request.hpp"
+#include "ServerConfig.hpp"
 #include <string>
 #include <vector>
 
@@ -13,11 +13,12 @@ namespace Hafserv
 class Server
 {
 public:
-	Server(int port);
+	Server(ServerConfig serverConfig);
 	~Server();
 
-	std::vector<int> &getPorts();
-	std::vector<std::string> &getServerNames();
+	const std::vector<unsigned short> &getPorts() const;
+	const std::vector<std::string> &getNames() const;
+	const ServerConfig &getServerConfig() const;
 	/*
 		string -> Request
 		parseRequest
@@ -25,9 +26,10 @@ public:
 		sendResponse
 	*/
 private:
-	std::vector<int> ports;
-	std::vector<std::string> serverNames;
+	ServerConfig serverConfig;
 };
 } // namespace Hafserv
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::Server &server);
 
 #endif
