@@ -28,39 +28,46 @@ Response::~Response() {}
 void Response::buildResponseFromRequest()
 {
 	std::string targetLocation = getTargetLocation();
+	std::cout << std::endl << "TARGET\n" << targetLocation << std::endl;
 	File targetFile(targetLocation);
-	if (request.method == "GET" && targetFile.getCode() == File::REGULAR_FILE)
+
+	if (request.method == "GET" && targetFile.getCode() == File::DIRECTORY)
+		build301Response(targetLocation);
+	else if (request.method == "GET" && targetFile.getCode() == File::REGULAR_FILE)
 		buildGetResponse(targetLocation);
 	else if (request.method == "GET" && targetFile.getCode() != File::REGULAR_FILE)
-		build404Response();
+		buildErrorResponse(404);
 	else if (request.method == "POST")
 		callCGI("./cgi-bin" + request.requestTarget);
 }
 
 std::string Response::getTargetLocation()
 {
-	size_t depth = 0;
+	int depth = -1;
 	const std::vector<LocationConfig> &locations = request.getTargetServer()->getServerConfig().getLocations();
 	std::vector<LocationConfig>::const_iterator selectedIt = locations.end();
 
 	for (std::vector<LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); it++)
 	{
+		// deep route first
 		const std::string &pattern = (*it).getPattern();
 		if (request.requestTarget.find(pattern) == 0)
 		{
-			if (depth < std::count(pattern.begin(), pattern.end(), '/'))
+			int currDepth = pattern == "/" ? 0 : std::count(pattern.begin(), pattern.end(), '/');
+			if (depth < currDepth)
 			{
-				depth = std::count(pattern.begin(), pattern.end(), '/');
+				depth = currDepth;
 				selectedIt = it;
 			}
 		}
 	}
+	std::cout << selectedIt->getPattern() << std::endl;
 
 	std::string targetLocation;
+	// root / is always presents in httpConfigCore
 	if (selectedIt != locations.end())
 	{
-		targetLocation = (*selectedIt).getHttpConfigCore().getRoot() +
-						 request.requestTarget.substr((*selectedIt).getPattern().length() - 1);
+		targetLocation = (*selectedIt).getHttpConfigCore().getRoot() + request.requestTarget;
 		if (targetLocation.back() == '/')
 		{
 			std::vector<std::string> indexes = (*selectedIt).getHttpConfigCore().getIndexes();
@@ -77,9 +84,18 @@ std::string Response::getTargetLocation()
 
 void Response::buildGetResponse(std::string targetLocation) { makeBody(targetLocation); }
 
-void Response::build404Response()
+void Response::build301Response(std::string redirectTarget)
 {
-	statusLine = "HTTP/1.1 404 Not Found";
+	statusLine = "HTTP/1.1 301 Moved Permanently";
+	fields.push_back("Location: http://" + request.fields.find("host")->second + request.requestTarget + "/");
+	makeBody("error/301.html");
+}
+
+void Response::buildErrorResponse(int statusCode)
+{
+	std::ostringstream oss;
+	oss << "HTTP/1.1 " << statusCode;
+	statusLine = oss.str();
 	makeBody(request.getTargetServer()->getServerConfig().getHttpConfigCore().getErrorPages().find(404)->second);
 }
 

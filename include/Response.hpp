@@ -17,7 +17,8 @@ public:
 	std::string getTargetLocation();
 
 	void buildGetResponse(std::string targetLocation);
-	void build404Response();
+	void build301Response(std::string redirectTarget);
+	void buildErrorResponse(int statusCode);
 
 	void callCGI(const std::string &scriptPath);
 	void makeBody(const std::string &requestTarget);
