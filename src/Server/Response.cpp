@@ -14,13 +14,13 @@ Response::Response(Request &request) : request(request)
 
 	if (request.statusCode != 200)
 	{
-		// generate error response
+		buildErrorResponse(request.statusCode);
 	}
 	else
 	{
 		statusLine = "HTTP/1.1 200 OK";
+		buildResponseFromRequest();
 	}
-	buildResponseFromRequest();
 }
 
 Response::~Response() {}
@@ -38,7 +38,8 @@ void Response::buildResponseFromRequest()
 	else if (request.method == "GET" && targetFile.getCode() != File::REGULAR_FILE)
 		buildErrorResponse(404);
 	else if (request.method == "POST")
-		callCGI("./cgi-bin" + request.requestTarget);
+		build405Response();
+	// callCGI("./cgi-bin" + request.requestTarget);
 }
 
 std::string Response::getTargetLocation()
@@ -91,12 +92,18 @@ void Response::build301Response(std::string redirectTarget)
 	makeBody("error/301.html");
 }
 
+void Response::build405Response()
+{
+	statusLine = "HTTP/1.1 405 Not Allowed";
+	makeBody("error/405.html");
+}
+
 void Response::buildErrorResponse(int statusCode)
 {
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << statusCode;
 	statusLine = oss.str();
-	makeBody(request.getTargetServer()->getServerConfig().getHttpConfigCore().getErrorPages().find(404)->second);
+	makeBody(request.getTargetServer()->getServerConfig().getHttpConfigCore().getErrorPages().find(statusCode)->second);
 }
 
 void Response::makeBody(const std::string &targetLocation)
