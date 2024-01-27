@@ -32,6 +32,8 @@ public:
 private:
 	int kq;
 
+	std::map<int, std::string> statusCodeMap;
+
 	std::map<unsigned short, int> portToServSock;
 	std::map<int, unsigned short> servSockToPort;
 	std::map<int, unsigned short> sockToPort;
