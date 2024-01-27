@@ -1,5 +1,5 @@
 #include "Response.hpp"
-
+#include "File.hpp"
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -9,6 +9,8 @@ namespace Hafserv
 Response::Response(Request &request) : request(request)
 {
 	request.printRequest();
+
+	fields.push_back("Server: Hafserv/1.0.0");
 
 	if (request.statusCode != 200)
 	{
@@ -25,9 +27,12 @@ Response::~Response() {}
 
 void Response::buildResponseFromRequest()
 {
-	std::string str = getTargetLocation();
-	if (request.method == "GET")
-		buildGetResponse();
+	std::string targetLocation = getTargetLocation();
+	File targetFile(targetLocation);
+	if (request.method == "GET" && targetFile.getCode() == File::REGULAR_FILE)
+		buildGetResponse(targetLocation);
+	else if (request.method == "GET" && targetFile.getCode() != File::REGULAR_FILE)
+		build404Response();
 	else if (request.method == "POST")
 		callCGI("./cgi-bin" + request.requestTarget);
 }
@@ -50,36 +55,47 @@ std::string Response::getTargetLocation()
 			}
 		}
 	}
-	std::cout << request.requestTarget << std::endl;
+
+	std::string targetLocation;
 	if (selectedIt != locations.end())
-		std::cout << *selectedIt << std::endl;
-	return std::string();
+	{
+		targetLocation = (*selectedIt).getHttpConfigCore().getRoot() +
+						 request.requestTarget.substr((*selectedIt).getPattern().length() - 1);
+		if (targetLocation.back() == '/')
+		{
+			std::vector<std::string> indexes = (*selectedIt).getHttpConfigCore().getIndexes();
+			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
+			{
+				File index(targetLocation + *it);
+				if (index.getCode() == File::REGULAR_FILE)
+					return targetLocation + *it;
+			}
+		}
+	}
+	return targetLocation;
 }
 
-void Response::buildGetResponse()
-{
-	fields.push_back("Server: Hafserv/1.0.0");
+void Response::buildGetResponse(std::string targetLocation) { makeBody(targetLocation); }
 
+void Response::build404Response()
+{
+	statusLine = "HTTP/1.1 404 Not Found";
+	makeBody(request.getTargetServer()->getServerConfig().getHttpConfigCore().getErrorPages().find(404)->second);
+}
+
+void Response::makeBody(const std::string &targetLocation)
+{
 	const std::multimap<std::string, std::string> &typeMap =
 		request.getTargetServer()->getServerConfig().getHttpConfigCore().getTypes();
 	std::multimap<std::string, std::string>::const_iterator typeIt =
-		typeMap.find(request.requestTarget.substr(request.requestTarget.rfind('.') + 1));
+		typeMap.find(targetLocation.substr(targetLocation.rfind('.') + 1));
 	if (typeIt != typeMap.end())
-		fields.push_back("Content-Type: " + (*typeIt).second);
+		fields.push_back("Content-Type: " + typeIt->second);
 	else
 		fields.push_back("Content-Type: application/octet-stream");
 
-	makeBody(request.requestTarget);
-
 	std::ostringstream oss;
-	oss << "Content-Length: " << body.length();
-	fields.push_back(oss.str());
-}
-
-void Response::makeBody(const std::string &requestTarget)
-{
-	std::ostringstream oss;
-	std::ifstream file("www" + requestTarget);
+	std::ifstream file(targetLocation);
 
 	if (file.is_open())
 	{
@@ -91,6 +107,10 @@ void Response::makeBody(const std::string &requestTarget)
 		file.close();
 	}
 	body = oss.str();
+
+	std::ostringstream contentLengthOss;
+	contentLengthOss << "Content-Length: " << body.length();
+	fields.push_back(contentLengthOss.str());
 }
 
 void Response::callCGI(const std::string &scriptPath)
@@ -148,7 +168,7 @@ char **Response::makeEnvp()
 	if (request.fields.find("content-type") != request.fields.end())
 	{
 		std::string contentType("CONTENT_TYPE=");
-		contentType += (*request.fields.find("content-type")).second;
+		contentType += request.fields.find("content-type")->second;
 		envVec.push_back(contentType);
 	};
 	std::stringstream ss;

@@ -122,7 +122,7 @@ void Webserv::runWebserv()
 					int idx = static_cast<std::string>(peekBuf).find('\n');
 					memset(readBuf, 0, sizeof(readBuf));
 					read(event_list[i].ident, readBuf, idx + 1);
-					Request &request = (*Requests.find(event_list[i].ident)).second;
+					Request &request = Requests.find(event_list[i].ident)->second;
 					try
 					{
 						// 일단 TRAILER로 해놓음. 추후에 PARSE_END로 바꾸어야함
@@ -131,7 +131,7 @@ void Webserv::runWebserv()
 						if (request.getParseStatus() >= BODY && request.getTargetServer() == NULL)
 						{
 							request.setTargetServer(
-								findTargetServer((*sockToPort.find(event_list[i].ident)).second, request));
+								findTargetServer(sockToPort.find(event_list[i].ident)->second, request));
 						}
 						if (request.getParseStatus() == PARSE_END)
 						{
@@ -176,7 +176,7 @@ void Webserv::connectClient(int serv_sock)
 	p.first = clnt_sock;
 	Requests.insert(p);
 
-	int port = (*servSockToPort.find(serv_sock)).second;
+	int port = servSockToPort.find(serv_sock)->second;
 	sockToPort[clnt_sock] = port;
 
 	std::cout << "connected client: " << clnt_sock << std::endl;
@@ -203,7 +203,7 @@ void Webserv::disconnectClient(int socketfd)
 Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &request)
 {
 	Server *defaultServer = NULL;
-	std::string host = (*request.getFields().find("host")).second;
+	std::string host = request.getFields().find("host")->second;
 
 	std::string hostName = host;
 	if (host.find(':') != std::string::npos)

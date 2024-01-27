@@ -54,8 +54,6 @@ void Request::parseStartLine(const std::string &request)
 			return;
 		} // 505 HTTP version not supported
 	}
-	if (requestTarget == "/")
-		requestTarget = "/index.html"; // from Config
 	parseStatus = HEADER;
 }
 
@@ -127,7 +125,7 @@ std::string Request::getRawRequest()
 
 	ss << method << " " << requestTarget << " HTTP/1.1\r\n";
 	for (std::map<std::string, std::string>::iterator it = fields.begin(); it != fields.end(); it++)
-		ss << (*it).first << ": " << (*it).second << "\r\n";
+		ss << it->first << ": " << it->second << "\r\n";
 	if (method == "POST")
 		ss << "\r\n" << body[0] << "\r\n";
 	return ss.str();
@@ -138,7 +136,7 @@ void Request::printRequest()
 	std::cout << "<-------request------->" << std::endl;
 	std::cout << method << " " << requestTarget << " HTTP/1.1\r\n";
 	for (std::map<std::string, std::string>::iterator it = fields.begin(); it != fields.end(); it++)
-		std::cout << (*it).first << ": " << (*it).second << "\r\n";
+		std::cout << it->first << ": " << it->second << "\r\n";
 	if (method == "POST")
 		std::cout << "\r\n" << body[0] << "\r\n";
 	std::cout << "<-----request end----->" << std::endl;
