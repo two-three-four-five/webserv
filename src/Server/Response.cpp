@@ -167,19 +167,8 @@ void Response::makeBody(const std::string &targetLocation)
 	else
 		fields.push_back("Content-Type: application/octet-stream");
 
-	std::ostringstream oss;
-	std::ifstream file(targetLocation);
-
-	if (file.is_open())
-	{
-		std::string line;
-		while (std::getline(file, line))
-		{
-			oss << line << std::endl;
-		}
-		file.close();
-	}
-	body = oss.str();
+	RegularFile targetFile(targetLocation);
+	body = targetFile.getRawContents();
 
 	std::ostringstream contentLengthOss;
 	contentLengthOss << "Content-Length: " << body.length();

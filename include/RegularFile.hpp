@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RegularFile.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:45:44 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 20:51:46 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/29 23:10:20 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ public:
 	virtual ~RegularFile();
 
 	const std::vector<std::string> &getContents() const;
+	const std::string getRawContents() const;
 	size_t getContentsSize() const;
 	const std::string &getExtension() const;
 	const std::string &getline(size_t lineNum) const;
