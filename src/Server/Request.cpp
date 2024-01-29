@@ -54,7 +54,10 @@ void Request::parseStartLine(const std::string &request)
 			return;
 		} // 505 HTTP version not supported
 	}
-	parseStatus = HEADER;
+	if (method == "HEAD")
+		parseStatus = PARSE_END;
+	else
+		parseStatus = HEADER;
 }
 
 void Request::parseFieldLine(const std::string &fieldLine)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RegularFile.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:46:48 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 21:00:33 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/29 23:10:07 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,14 @@ RegularFile &RegularFile::operator=(const RegularFile &other)
 RegularFile::~RegularFile() {}
 
 const std::vector<std::string> &RegularFile::getContents() const { return contents; }
+
+const std::string Hafserv::RegularFile::getRawContents() const
+{
+	std::string rawContents;
+	for (std::vector<std::string>::const_iterator it = contents.begin(); it != contents.end(); it++)
+		rawContents += *it;
+	return rawContents;
+}
 
 size_t RegularFile::getContentsSize() const { return contents.size(); }
 

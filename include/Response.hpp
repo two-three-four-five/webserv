@@ -14,12 +14,12 @@ public:
 	~Response();
 
 	void buildResponseFromRequest();
-	std::string getTargetLocation();
+	std::string getTargetLocation(const std::string &requestTarget);
 
-	void buildGetResponse(std::string targetLocation);
-	void build301Response(std::string redirectTarget);
+	void buildGetResponse(const std::string &targetLocation);
+	void build301Response(const std::string &redirectTarget);
 	void build405Response();
-	void buildErrorResponse(int statusCode);
+	void build404Response();
 
 	void callCGI(const std::string &scriptPath);
 	void makeBody(const std::string &requestTarget);
@@ -30,6 +30,8 @@ private:
 	std::string statusLine;
 	std::vector<std::string> fields;
 	std::string body;
+
+	std::vector<LocationConfig>::const_iterator targetLocationConfig;
 
 	Request &request;
 	friend class Request;

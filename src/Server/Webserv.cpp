@@ -120,6 +120,8 @@ void Webserv::runWebserv()
 				else
 				{
 					int idx = static_cast<std::string>(peekBuf).find('\n');
+					if (idx == std::string::npos)
+						continue;
 					memset(readBuf, 0, sizeof(readBuf));
 					read(event_list[i].ident, readBuf, idx + 1);
 					Request &request = Requests.find(event_list[i].ident)->second;
@@ -137,8 +139,10 @@ void Webserv::runWebserv()
 						{
 							Hafserv::Response response(request);
 							std::string responseString = response.getResponse();
-							std::cout << "<-------response------->" << std::endl << responseString;
-							send(event_list[i].ident, responseString.c_str(), responseString.length(), 0);
+							// std::cout << "<-------response------->" << std::endl << responseString;
+							// std::cout << "<-----response end----->" << std::endl;
+							// send(event_list[i].ident, responseString.c_str(), responseString.length(), 0);
+							write(event_list[i].ident, responseString.c_str(), responseString.length());
 							disconnectClient(event_list[i].ident);
 						}
 					}
