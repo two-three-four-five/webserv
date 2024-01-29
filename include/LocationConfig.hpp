@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 13:18:57 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/01/29 19:32:28 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,14 @@ public:
 	~LocationConfig();
 
 	const std::string &getPattern() const;
+	const std::string &getAlias() const;
 	void setPattern(const std::string &pattern);
+	void setAlias(const std::string &alias);
 	bool isMatching(const std::string &url);
 
 private:
 	std::string pattern;
+	std::string alias;
 	// NOT NEEDED : std::string regExpr;
 };
 
