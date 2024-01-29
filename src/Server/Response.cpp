@@ -1,5 +1,5 @@
 #include "Response.hpp"
-
+#include "File.hpp"
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -9,84 +9,117 @@ namespace Hafserv
 
 Response::Response(Request &request) : request(request)
 {
-	// /* temp headers */
-	// headers.push_back("server: NWS");
-	// headers.push_back("date: Sat, 06 Jan 2024 11:54:12 GMT");
-	// headers.push_back("content-type: text/html");
-	// headers.push_back("location: http://www.naver.com/");
-	// headers.push_back("vary: Accept-Encoding,User-Agent");
-	// headers.push_back("referrer-policy:unsafe-url");
-
 	request.printRequest();
+
+	fields.push_back("Server: Hafserv/1.0.0");
 
 	if (request.statusCode != 200)
 	{
-		// generate error response
+		buildErrorResponse(request.statusCode);
 	}
-	if (request.method == "GET")
+	else
 	{
-		if (isFileExists("www" + request.requestTarget))
-		{
-			response = makeGetResponse(request);
-		}
-		else
-		{
-			response = makeErrorResponse("404");
-		}
-	}
-	else if (request.method == "POST")
-	{
-		response = callCGI("./cgi-bin" + request.requestTarget);
+		statusLine = "HTTP/1.1 200 OK";
+		buildResponseFromRequest();
 	}
 }
 
 Response::~Response() {}
 
-std::string Response::makeGetResponse(const Request &request)
+void Response::buildResponseFromRequest()
 {
-	/*
-	Server: nginx/1.25.3
-	Date: Sat, 13 Jan 2024 07:13:54 GMT
-	Content-Type: text/html
-	Content-Length: 615
-	Last-Modified: Tue, 24 Oct 2023 13:46:52 GMT
-	Connection: keep-alive
-	ETag: "6537cacc-267"
-	Accept-Ranges: bytes
-	*/
-	std::ostringstream oss;
-	std::string body = makeBody("www" + request.requestTarget);
+	std::string targetLocation = getTargetLocation();
+	std::cout << std::endl << "TARGET\n" << targetLocation << std::endl;
+	File targetFile(targetLocation);
 
-	oss << "HTTP/1.1 200 OK\n";
-	if (request.requestTarget.substr(request.requestTarget.rfind('.') + 1) == "css")
-		oss << "Content-Type: text/css\n";
-	else if (request.fields.find("content-type") == request.fields.end())
-		oss << "Content-Type: text/html\n";
+	if (request.method == "GET" && targetFile.getCode() == File::DIRECTORY)
+		build301Response(targetLocation);
+	else if (request.method == "GET" && targetFile.getCode() == File::REGULAR_FILE)
+		buildGetResponse(targetLocation);
+	else if (request.method == "GET" && targetFile.getCode() != File::REGULAR_FILE)
+		buildErrorResponse(404);
+	else if (request.method == "POST")
+		build405Response();
+	// callCGI("./cgi-bin" + request.requestTarget);
+}
+
+std::string Response::getTargetLocation()
+{
+	int depth = -1;
+	const std::vector<LocationConfig> &locations = request.getTargetServer()->getServerConfig().getLocations();
+	std::vector<LocationConfig>::const_iterator selectedIt = locations.end();
+
+	for (std::vector<LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); it++)
+	{
+		// deep route first
+		const std::string &pattern = (*it).getPattern();
+		if (request.requestTarget.find(pattern) == 0)
+		{
+			int currDepth = pattern == "/" ? 0 : std::count(pattern.begin(), pattern.end(), '/');
+			if (depth < currDepth)
+			{
+				depth = currDepth;
+				selectedIt = it;
+			}
+		}
+	}
+	std::cout << selectedIt->getPattern() << std::endl;
+
+	std::string targetLocation;
+	// root / is always presents in httpConfigCore
+	if (selectedIt != locations.end())
+	{
+		targetLocation = (*selectedIt).getHttpConfigCore().getRoot() + request.requestTarget;
+		if (targetLocation.back() == '/')
+		{
+			std::vector<std::string> indexes = (*selectedIt).getHttpConfigCore().getIndexes();
+			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
+			{
+				File index(targetLocation + *it);
+				if (index.getCode() == File::REGULAR_FILE)
+					return targetLocation + *it;
+			}
+		}
+	}
+	return targetLocation;
+}
+
+void Response::buildGetResponse(std::string targetLocation) { makeBody(targetLocation); }
+
+void Response::build301Response(std::string redirectTarget)
+{
+	statusLine = "HTTP/1.1 301 Moved Permanently";
+	fields.push_back("Location: http://" + request.fields.find("host")->second + request.requestTarget + "/");
+	makeBody("error/301.html");
+}
+
+void Response::build405Response()
+{
+	statusLine = "HTTP/1.1 405 Not Allowed";
+	makeBody("error/405.html");
+}
+
+void Response::buildErrorResponse(int statusCode)
+{
+	std::ostringstream oss;
+	oss << "HTTP/1.1 " << statusCode;
+	statusLine = oss.str();
+	makeBody(request.getTargetServer()->getServerConfig().getHttpConfigCore().getErrorPages().find(statusCode)->second);
+}
+
+void Response::makeBody(const std::string &targetLocation)
+{
+	const std::multimap<std::string, std::string> &typeMap =
+		request.getTargetServer()->getServerConfig().getHttpConfigCore().getTypes();
+	std::multimap<std::string, std::string>::const_iterator typeIt =
+		typeMap.find(targetLocation.substr(targetLocation.rfind('.') + 1));
+	if (typeIt != typeMap.end())
+		fields.push_back("Content-Type: " + typeIt->second);
 	else
-		oss << "Content-Type: " << request.fields.at("content-type")[0] << "\n";
-	oss << "Content-Length: " << body.length() << "\n\n";
-	oss << body;
+		fields.push_back("Content-Type: application/octet-stream");
 
-	return (oss.str());
-}
-
-std::string Response::makeErrorResponse(std::string statusCode)
-{
 	std::ostringstream oss;
-	std::string body = makeBody("./html/" + statusCode + ".html");
-
-	oss << "HTTP/1.1 " << statusCode << "\n";
-	oss << "Content-Type: text/html\n";
-	oss << "Content-Length: " << body.length() << "\n\n";
-	oss << body;
-
-	return (oss.str());
-}
-
-std::string Response::makeBody(const std::string &requestTarget)
-{
-	std::ostringstream oss;
-	std::ifstream file(requestTarget);
+	std::ifstream file(targetLocation);
 
 	if (file.is_open())
 	{
@@ -97,10 +130,14 @@ std::string Response::makeBody(const std::string &requestTarget)
 		}
 		file.close();
 	}
-	return (oss.str());
+	body = oss.str();
+
+	std::ostringstream contentLengthOss;
+	contentLengthOss << "Content-Length: " << body.length();
+	fields.push_back(contentLengthOss.str());
 }
 
-std::string Response::callCGI(const std::string &scriptPath)
+void Response::callCGI(const std::string &scriptPath)
 {
 	/* 예시
 	// std::string home_path = getenv("HOME");
@@ -108,9 +145,6 @@ std::string Response::callCGI(const std::string &scriptPath)
 	// std::string queryString = "first=1&second=2";
 	*/
 	char *argv[] = {(char *)scriptPath.c_str(), NULL};
-	// char *envp[] = {nullptr};
-
-	// char *argv[] = makeArgv();
 	char **envp = makeEnvp();
 
 	int outward_fd[2];
@@ -136,7 +170,6 @@ std::string Response::callCGI(const std::string &scriptPath)
 		ssize_t bytes_read;
 		std::ostringstream output;
 
-		output << "HTTP/1.1 200 OK\n";
 		close(outward_fd[1]);
 		close(inward_fd[0]);
 		write(inward_fd[1], request.body[0].c_str(), request.body[0].length());
@@ -145,9 +178,8 @@ std::string Response::callCGI(const std::string &scriptPath)
 			output.write(buffer, bytes_read);
 		close(outward_fd[0]);
 		close(inward_fd[1]);
-		return (output.str());
+		body = output.str();
 	}
-	return (NULL);
 }
 
 char **Response::makeEnvp()
@@ -160,7 +192,7 @@ char **Response::makeEnvp()
 	if (request.fields.find("content-type") != request.fields.end())
 	{
 		std::string contentType("CONTENT_TYPE=");
-		contentType += (*request.fields.find("content-type")).second;
+		contentType += request.fields.find("content-type")->second;
 		envVec.push_back(contentType);
 	};
 	std::stringstream ss;
@@ -180,12 +212,16 @@ char **Response::makeEnvp()
 	return envp;
 }
 
-bool Response::isFileExists(const std::string &filename)
+std::string Response::getResponse()
 {
-	std::ifstream file(filename.c_str());
-	return file.good();
-}
+	std::string response;
 
-std::string &Response::getResponse() { return (response); }
+	response = statusLine + "\r\n";
+	for (std::vector<std::string>::iterator it = fields.begin(); it != fields.end(); it++)
+		response += (*it) + "\r\n";
+	response += "\r\n";
+	response += body;
+	return response;
+}
 
 } // namespace Hafserv

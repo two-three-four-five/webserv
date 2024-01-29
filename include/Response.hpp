@@ -10,26 +10,29 @@ namespace Hafserv
 class Response
 {
 public:
-	Response();
 	Response(Request &request);
 	~Response();
 
-	std::string makeGetResponse(const Request &request);
-	std::string makeErrorResponse(std::string statusCode);
+	void buildResponseFromRequest();
+	std::string getTargetLocation();
 
-	std::string makeBody(const std::string &requestTarget);
-	std::string &getResponse();
+	void buildGetResponse(std::string targetLocation);
+	void build301Response(std::string redirectTarget);
+	void build405Response();
+	void buildErrorResponse(int statusCode);
 
-	std::string callCGI(const std::string &scriptPath);
+	void callCGI(const std::string &scriptPath);
+	void makeBody(const std::string &requestTarget);
+	std::string getResponse();
 	char **makeEnvp();
 
 	bool isFileExists(const std::string &filename);
 
 private:
-	static std::map<std::string, std::string> statusCodeMap;
-	std::string statusCode;
-	std::string response;
-	std::string boundary;
+	std::string statusLine;
+	std::vector<std::string> fields;
+	std::string body;
+
 	Request &request;
 	friend class Request;
 };

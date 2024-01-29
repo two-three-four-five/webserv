@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+         #
+#    By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/16 16:53:40 by gyoon             #+#    #+#              #
-#    Updated: 2024/01/20 18:24:19 by gyoon            ###   ########.fr        #
+#    Updated: 2024/01/27 13:44:46 by jinhchoi         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ NAME		= webserv
 # **************************************************************************** #
 
 CC			= c++
-# CXXFLAGS	= -Wall -Wextra -Werror -std=c++98
+#CXXFLAGS	= -Wall -Wextra -Werror -std=c++98
 RM			= rm -rf
 
 .PHONY : all bonus clean fclean re
@@ -30,9 +30,11 @@ RM			= rm -rf
 #                                                                              #
 # **************************************************************************** #
 
-SRCS		= 	main.cpp \
+SRCS		= 	src/main.cpp \
 				$(wildcard src/Server/*.cpp) \
-				$(wildcard src/utils/*.cpp)
+				$(wildcard src/utils/*.cpp) \
+				$(wildcard src/Config/*.cpp) \
+				$(wildcard src/File/*.cpp)
 OBJS		= 	${SRCS:.cpp=.o}
 INC			= 	./include
 
