@@ -41,7 +41,6 @@ void Response::buildResponseFromRequest()
 	else if (request.method == "HEAD")
 	{
 		build405Response();
-		body = "";
 	}
 	// else if (request.method == "HEAD" && targetFile.getCode() == File::DIRECTORY)
 	// 	build301Response(targetLocation);
@@ -75,7 +74,7 @@ std::string Response::getTargetLocation(const std::string &requestTarget)
 			}
 		}
 	}
-	std::cout << selectedIt->getPattern() << std::endl;
+	std::cout << "SELECTED LOCATION" << std::endl << selectedIt->getPattern() << std::endl;
 
 	std::string targetLocation;
 	// root / is always presents in httpConfigCore
@@ -116,30 +115,39 @@ void Response::build301Response(const std::string &redirectTarget)
 {
 	statusLine = "HTTP/1.1 301 Moved Permanently";
 	fields.push_back("Location: http://" + request.fields.find("host")->second + request.requestTarget + "/");
-	makeBody("error/301.html");
+	std::map<int, std::string> errorPages = this->targetLocationConfig->getHttpConfigCore().getErrorPages();
+	std::map<int, std::string>::iterator targetIt = errorPages.find(301);
+	std::string targetLocation;
+	if (targetIt == errorPages.end())
+		targetLocation = "error/301.html";
+	else
+		targetLocation = getTargetLocation(targetIt->second);
+	makeBody(targetLocation);
 }
 
 void Response::build405Response()
 {
 	statusLine = "HTTP/1.1 405 Not Allowed";
-	if (request.method != "HEAD")
-		makeBody("error/405.html");
+	std::map<int, std::string> errorPages = this->targetLocationConfig->getHttpConfigCore().getErrorPages();
+	std::map<int, std::string>::iterator targetIt = errorPages.find(405);
+	std::string targetLocation;
+	if (targetIt == errorPages.end())
+		targetLocation = "error/405.html";
+	else
+		targetLocation = getTargetLocation(targetIt->second);
+	makeBody(targetLocation);
 }
 
 void Response::build404Response()
 {
 	statusLine = "HTTP/1.1 404 Not Found";
 	std::map<int, std::string> errorPages = this->targetLocationConfig->getHttpConfigCore().getErrorPages();
-	// request.getTargetServer()->getServerConfig().getHttpConfigCore().getErrorPages();
 	std::map<int, std::string>::iterator targetIt = errorPages.find(404);
 	std::string targetLocation;
-	for (std::map<int, std::string>::iterator it = errorPages.begin(); it != errorPages.end(); it++)
-		std::cout << it->first << ":" << it->second << std::endl;
 	if (targetIt == errorPages.end())
 		targetLocation = "error/404.html";
 	else
 		targetLocation = getTargetLocation(targetIt->second);
-	std::cout << "ERROR TARGET LOCATION" << std::endl << targetLocation << std::endl;
 	makeBody(targetLocation);
 }
 
@@ -150,7 +158,12 @@ void Response::makeBody(const std::string &targetLocation)
 	std::multimap<std::string, std::string>::const_iterator typeIt =
 		typeMap.find(targetLocation.substr(targetLocation.rfind('.') + 1));
 	if (typeIt != typeMap.end())
-		fields.push_back("Content-Type: " + typeIt->second + ";charset=UTF-8");
+	{
+		std::string contentType = "Content-Type: " + typeIt->second;
+		if (typeIt->second == "text/html" || typeIt->second == "text/css" || typeIt->second == "text/xml")
+			contentType += ";charset=UTF-8";
+		fields.push_back(contentType);
+	}
 	else
 		fields.push_back("Content-Type: application/octet-stream");
 
@@ -256,7 +269,8 @@ std::string Response::getResponse()
 	for (std::vector<std::string>::iterator it = fields.begin(); it != fields.end(); it++)
 		response += (*it) + "\r\n";
 	response += "\r\n";
-	response += body;
+	if (request.method != "HEAD")
+		response += body;
 	return response;
 }
 
