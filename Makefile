@@ -6,7 +6,7 @@
 #    By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/16 16:53:40 by gyoon             #+#    #+#              #
-#    Updated: 2024/01/27 13:44:46 by jinhchoi         ###   ########.fr        #
+#    Updated: 2024/02/02 20:06:26 by jinhchoi         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ NAME		= webserv
 # **************************************************************************** #
 
 CC			= c++
-#CXXFLAGS	= -Wall -Wextra -Werror -std=c++98
+# CXXFLAGS	=-fsanitize=address -g# -Wall -Wextra -Werror -std=c++98
 RM			= rm -rf
 
 .PHONY : all bonus clean fclean re

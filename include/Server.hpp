@@ -5,9 +5,6 @@
 #include <string>
 #include <vector>
 
-#define BUF_SIZE 512
-#define MAX_EVENTS 50
-
 namespace Hafserv
 {
 class Server
