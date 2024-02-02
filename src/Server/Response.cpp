@@ -13,12 +13,14 @@ Response::Response(Request &request) : request(request)
 
 	addToHeaders("Server", "Hafserv/1.0.0");
 
-	if (request.statusCode == 404) // need others
-	{
+	if (request.statusCode == 400) // need others
+		build400Response();
+	else if (request.statusCode == 404)
 		build404Response();
-	}
 	else if (request.statusCode == 413)
 		build413Response();
+	else if (request.statusCode == 505)
+		build505Response();
 	else
 	{
 		statusLine = "HTTP/1.1 200 OK";
@@ -113,7 +115,13 @@ std::string Response::getTargetLocation(const std::string &requestTarget)
 	return targetLocation;
 }
 
-void Response::buildGetResponse(const std::string &targetLocation) { makeBody(targetLocation); }
+void Response::buildGetResponse(const std::string &targetLocation)
+{
+	if (request.headers.find("host") == request.headers.end())
+		build400Response();
+	else
+		makeBody(targetLocation);
+}
 
 void Response::build301Response(const std::string &redirectTarget)
 {
@@ -126,6 +134,19 @@ void Response::build301Response(const std::string &redirectTarget)
 		targetLocation = "error/301.html";
 	else
 		targetLocation = getTargetLocation(targetIt->second);
+	makeBody(targetLocation);
+}
+
+void Response::build400Response()
+{
+	statusLine = "HTTP/1.1 400 Bad Reqeust";
+	// std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
+	// std::map<int, std::string>::iterator targetIt = errorPages.find(405);
+	std::string targetLocation;
+	// if (targetIt == errorPages.end())
+	targetLocation = "error/405.html";
+	// else
+	// 	targetLocation = getTargetLocation(targetIt->second);
 	makeBody(targetLocation);
 }
 
@@ -168,8 +189,23 @@ void Response::build404Response()
 	makeBody(targetLocation);
 }
 
+void Response::build505Response()
+{
+	statusLine = "HTTP/1.1 505 HTTP Version Not Supported";
+	std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
+	std::map<int, std::string>::iterator targetIt = errorPages.find(404);
+	std::string targetLocation;
+	if (targetIt == errorPages.end())
+		targetLocation = "error/404.html";
+	else
+		targetLocation = getTargetLocation(targetIt->second);
+	makeBody(targetLocation);
+}
+
 void Response::makeBody(const std::string &targetLocation)
 {
+	if (request.method == "HEAD")
+		return;
 	const std::multimap<std::string, std::string> &typeMap =
 		request.getTargetServer()->getServerConfig().getHttpConfigCore().getTypes();
 	std::multimap<std::string, std::string>::const_iterator typeIt =

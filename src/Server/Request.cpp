@@ -185,7 +185,6 @@ void Hafserv::Request::setTargetLocation()
 			}
 		}
 	}
-	std::cout << "SELECTED LOCATION" << std::endl << selectedIt->getPattern() << std::endl;
 
 	// root / is always presents in httpConfigCore
 	if (selectedIt != locations.end())
