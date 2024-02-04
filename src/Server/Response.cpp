@@ -9,14 +9,18 @@ namespace Hafserv
 
 Response::Response(Request &request) : request(request)
 {
-	request.printRequest();
+	// request.printRequest();
 
-	fields.push_back("Server: Hafserv/1.0.0");
+	addToHeaders("Server", "Hafserv/1.0.0");
 
-	if (request.statusCode == 404) // need others
-	{
+	if (request.statusCode == 400) // need others
+		build400Response();
+	else if (request.statusCode == 404)
 		build404Response();
-	}
+	else if (request.statusCode == 413)
+		build413Response();
+	else if (request.statusCode == 505)
+		build505Response();
 	else
 	{
 		statusLine = "HTTP/1.1 200 OK";
@@ -28,13 +32,14 @@ Response::~Response() {}
 
 void Response::buildResponseFromRequest()
 {
-	std::string targetLocation = getTargetLocation(request.requestTarget);
+	std::string &targetLocation = request.targetLocation;
 	std::cout << std::endl << "TARGET\n" << targetLocation << std::endl;
 	File targetFile(targetLocation);
 
 	if (request.method == "GET" && targetFile.getCode() == File::DIRECTORY)
-		build301Response(targetLocation);
-	else if (request.method == "GET" && targetFile.getCode() == File::REGULAR_FILE)
+		build301Response("http://" + request.headers.find("host")->second + request.requestTarget + "/");
+	else if (request.method == "GET" &&
+			 (targetFile.getCode() == File::REGULAR_FILE || request.targetLocationConfig->getProxyPass().length() != 0))
 		buildGetResponse(targetLocation);
 	else if (request.method == "GET" && targetFile.getCode() != File::REGULAR_FILE)
 		build404Response();
@@ -48,8 +53,10 @@ void Response::buildResponseFromRequest()
 	// 	buildGetResponse(targetLocation);
 	// else if (request.method == "HEAD" && targetFile.getCode() != File::REGULAR_FILE)
 	// 	buildErrorResponse(404);
-	else if (request.method == "POST")
+	else if (request.method == "POST" && request.requestTarget == "/")
 		build405Response();
+	else if (request.method == "POST" && request.requestTarget != "/")
+		callCGI(targetLocation);
 
 	// callCGI("./cgi-bin" + request.requestTarget);
 }
@@ -109,13 +116,23 @@ std::string Response::getTargetLocation(const std::string &requestTarget)
 	return targetLocation;
 }
 
-void Response::buildGetResponse(const std::string &targetLocation) { makeBody(targetLocation); }
+void Response::buildGetResponse(const std::string &targetLocation)
+{
+	if (request.headers.find("host") == request.headers.end())
+		build400Response();
+	else if (request.targetLocationConfig->getProxyPass().length() != 0)
+	{
+		build301Response(request.targetLocationConfig->getProxyPass());
+	}
+	else
+		makeBody(targetLocation);
+}
 
 void Response::build301Response(const std::string &redirectTarget)
 {
 	statusLine = "HTTP/1.1 301 Moved Permanently";
-	fields.push_back("Location: http://" + request.fields.find("host")->second + request.requestTarget + "/");
-	std::map<int, std::string> errorPages = this->targetLocationConfig->getHttpConfigCore().getErrorPages();
+	addToHeaders("Location", redirectTarget);
+	std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
 	std::map<int, std::string>::iterator targetIt = errorPages.find(301);
 	std::string targetLocation;
 	if (targetIt == errorPages.end())
@@ -125,10 +142,23 @@ void Response::build301Response(const std::string &redirectTarget)
 	makeBody(targetLocation);
 }
 
+void Response::build400Response()
+{
+	statusLine = "HTTP/1.1 400 Bad Reqeust";
+	// std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
+	// std::map<int, std::string>::iterator targetIt = errorPages.find(405);
+	std::string targetLocation;
+	// if (targetIt == errorPages.end())
+	targetLocation = "error/405.html";
+	// else
+	// 	targetLocation = getTargetLocation(targetIt->second);
+	makeBody(targetLocation);
+}
+
 void Response::build405Response()
 {
 	statusLine = "HTTP/1.1 405 Not Allowed";
-	std::map<int, std::string> errorPages = this->targetLocationConfig->getHttpConfigCore().getErrorPages();
+	std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
 	std::map<int, std::string>::iterator targetIt = errorPages.find(405);
 	std::string targetLocation;
 	if (targetIt == errorPages.end())
@@ -138,10 +168,36 @@ void Response::build405Response()
 	makeBody(targetLocation);
 }
 
+void Response::build413Response()
+{
+	statusLine = "HTTP/1.1 413 Content Too Large";
+	std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
+	std::map<int, std::string>::iterator targetIt = errorPages.find(404);
+	std::string targetLocation;
+	if (targetIt == errorPages.end())
+		targetLocation = "error/404.html";
+	else
+		targetLocation = getTargetLocation(targetIt->second);
+	makeBody(targetLocation);
+}
+
 void Response::build404Response()
 {
 	statusLine = "HTTP/1.1 404 Not Found";
-	std::map<int, std::string> errorPages = this->targetLocationConfig->getHttpConfigCore().getErrorPages();
+	std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
+	std::map<int, std::string>::iterator targetIt = errorPages.find(404);
+	std::string targetLocation;
+	if (targetIt == errorPages.end())
+		targetLocation = "error/404.html";
+	else
+		targetLocation = getTargetLocation(targetIt->second);
+	makeBody(targetLocation);
+}
+
+void Response::build505Response()
+{
+	statusLine = "HTTP/1.1 505 HTTP Version Not Supported";
+	std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
 	std::map<int, std::string>::iterator targetIt = errorPages.find(404);
 	std::string targetLocation;
 	if (targetIt == errorPages.end())
@@ -153,26 +209,28 @@ void Response::build404Response()
 
 void Response::makeBody(const std::string &targetLocation)
 {
+	if (request.method == "HEAD")
+		return;
 	const std::multimap<std::string, std::string> &typeMap =
 		request.getTargetServer()->getServerConfig().getHttpConfigCore().getTypes();
 	std::multimap<std::string, std::string>::const_iterator typeIt =
 		typeMap.find(targetLocation.substr(targetLocation.rfind('.') + 1));
 	if (typeIt != typeMap.end())
 	{
-		std::string contentType = "Content-Type: " + typeIt->second;
+		std::string contentType = typeIt->second;
 		if (typeIt->second == "text/html" || typeIt->second == "text/css" || typeIt->second == "text/xml")
 			contentType += ";charset=UTF-8";
-		fields.push_back(contentType);
+		addToHeaders("Content-Type", contentType);
 	}
 	else
-		fields.push_back("Content-Type: application/octet-stream");
+		addToHeaders("Content-Type", "application/octet-stream");
 
 	RegularFile targetFile(targetLocation);
 	body = targetFile.getRawContents();
 
 	std::ostringstream contentLengthOss;
-	contentLengthOss << "Content-Length: " << body.length();
-	fields.push_back(contentLengthOss.str());
+	contentLengthOss << body.length();
+	addToHeaders("Content-Length", contentLengthOss.str());
 }
 
 void Response::callCGI(const std::string &scriptPath)
@@ -224,13 +282,15 @@ char **Response::makeEnvp()
 {
 	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 	std::vector<std::string> envVec;
+	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	envVec.push_back("PATH_INFO=/hi");
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.method;
 	envVec.push_back(requestMethod);
-	if (request.fields.find("content-type") != request.fields.end())
+	if (request.headers.find("content-type") != request.headers.end())
 	{
 		std::string contentType("CONTENT_TYPE=");
-		contentType += request.fields.find("content-type")->second;
+		contentType += request.headers.find("content-type")->second;
 		envVec.push_back(contentType);
 	};
 	std::stringstream ss;
@@ -255,12 +315,15 @@ std::string Response::getResponse()
 	std::string response;
 
 	response = statusLine + "\r\n";
-	for (std::vector<std::string>::iterator it = fields.begin(); it != fields.end(); it++)
-		response += (*it) + "\r\n";
-	response += "\r\n";
+	for (HeaderMultiMap::iterator it = headers.begin(); it != headers.end(); it++)
+		response += it->first + ": " + it->second + "\r\n";
+	if (body.front() != 'S')
+		response += "\r\n";
 	if (request.method != "HEAD")
 		response += body;
 	return response;
 }
+
+void Response::addToHeaders(std::string key, std::string value) { headers.insert(std::make_pair(key, value)); }
 
 } // namespace Hafserv

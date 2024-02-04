@@ -1,14 +1,8 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#define CREATED 0
-#define START_LINE 1
-#define HEADER 2
-#define BODY 3
-#define TRAILER 4
-#define PARSE_END 5
-
 #include "Server.hpp"
+#include <ctime>
 #include <fstream>
 #include <map>
 #include <sstream>
@@ -18,35 +12,55 @@
 namespace Hafserv
 {
 
+typedef std::multimap<std::string, std::string> HeaderMultiMap;
+
+enum RequestParseStatus
+{
+	Created,
+	StartLine,
+	Header,
+	Body,
+	Trailer,
+	End
+};
+
 class Request
 {
 public:
 	Request();
 	int parse(const std::string &request);
 	void parseStartLine(const std::string &request);
-	void parseFieldLine(const std::string &fieldLine);
+	void parseHeaders(const std::string &fieldLine);
 	void parseBody(const std::string &body);
 	std::string getRawRequest();
 	void printRequest();
 	void printBody();
 
+	void setTargetLocation();
+
 	const int getParseStatus() const;
-	const std::map<std::string, std::string> &getFields() const;
+	const HeaderMultiMap &getHeaders() const;
 	const Server *getTargetServer() const;
 	void setTargetServer(Server *server);
+	const time_t &getStartTime() const;
+	const LocationConfig *getTargetLocationConfig() const;
 
 	friend class Response;
 
 private:
-	int parseStatus;
+	RequestParseStatus parseStatus;
 	int statusCode;
-	bool inBoundary;
+	time_t startTime;
+
 	std::string method;
 	std::string requestTarget;
-	std::string boundary;
-	std::map<std::string, std::string> fields;
+	HeaderMultiMap headers;
 	std::vector<std::string> body;
+	size_t bodyLength;
+
 	Server *targetServer;
+	const LocationConfig *targetLocationConfig;
+	std::string targetLocation;
 };
 } // namespace Hafserv
 

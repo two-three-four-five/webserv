@@ -6,8 +6,13 @@
 #include <map>
 #include <vector>
 
+#define BUF_SIZE 512
+#define MAX_EVENTS 50
+
 namespace Hafserv
 {
+
+typedef std::map<int, Hafserv::Request> RequestMap;
 
 class Webserv
 {
@@ -26,6 +31,8 @@ public:
 
 	Server *findTargetServer(unsigned short port, const Request &request);
 
+	void checkTimeout();
+
 	bool inServSocks(int serv_sock);
 	void closeServSocks();
 
@@ -39,7 +46,7 @@ private:
 	std::map<int, unsigned short> sockToPort;
 	std::vector<Server *> servers;
 
-	std::map<int, Hafserv::Request> Requests;
+	RequestMap Requests;
 };
 
 } // namespace Hafserv
