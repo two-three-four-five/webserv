@@ -180,6 +180,7 @@ void Webserv::connectClient(int serv_sock)
 
 	adr_sz = sizeof(clnt_adr);
 	clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_adr, &adr_sz);
+	fcntl(clnt_sock, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	EV_SET(&event, clnt_sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
 	EV_SET(&event, clnt_sock, EVFILT_WRITE, EV_ADD, 0, 0, NULL);

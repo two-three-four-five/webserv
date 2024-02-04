@@ -37,8 +37,9 @@ void Response::buildResponseFromRequest()
 	File targetFile(targetLocation);
 
 	if (request.method == "GET" && targetFile.getCode() == File::DIRECTORY)
-		build301Response(targetLocation);
-	else if (request.method == "GET" && targetFile.getCode() == File::REGULAR_FILE)
+		build301Response("http://" + request.headers.find("host")->second + request.requestTarget + "/");
+	else if (request.method == "GET" &&
+			 (targetFile.getCode() == File::REGULAR_FILE || request.targetLocationConfig->getProxyPass().length() != 0))
 		buildGetResponse(targetLocation);
 	else if (request.method == "GET" && targetFile.getCode() != File::REGULAR_FILE)
 		build404Response();
@@ -119,6 +120,10 @@ void Response::buildGetResponse(const std::string &targetLocation)
 {
 	if (request.headers.find("host") == request.headers.end())
 		build400Response();
+	else if (request.targetLocationConfig->getProxyPass().length() != 0)
+	{
+		build301Response(request.targetLocationConfig->getProxyPass());
+	}
 	else
 		makeBody(targetLocation);
 }
@@ -126,7 +131,7 @@ void Response::buildGetResponse(const std::string &targetLocation)
 void Response::build301Response(const std::string &redirectTarget)
 {
 	statusLine = "HTTP/1.1 301 Moved Permanently";
-	addToHeaders("Location", "http://" + request.headers.find("host")->second + request.requestTarget + "/");
+	addToHeaders("Location", redirectTarget);
 	std::map<int, std::string> errorPages = request.targetLocationConfig->getHttpConfigCore().getErrorPages();
 	std::map<int, std::string>::iterator targetIt = errorPages.find(301);
 	std::string targetLocation;

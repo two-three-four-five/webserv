@@ -205,7 +205,11 @@ void Hafserv::Request::setTargetLocation()
 		if (targetLocation.back() == '/')
 		{
 			std::vector<std::string> indexes = selectedIt->getHttpConfigCore().getIndexes();
-			std::string defaultTargetLocation = targetLocation + indexes[0];
+			std::string defaultTargetLocation;
+			if (indexes.size() == 0)
+				defaultTargetLocation = targetLocation + "index.html";
+			else
+				defaultTargetLocation = targetLocation + indexes[0];
 			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
 			{
 				File index(targetLocation + *it);
