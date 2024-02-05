@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConfig.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/03 16:14:23 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/05 07:50:06 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define LOCATIONCONFIG_HPP
 
 #include "AHttpConfigModule.hpp"
+#include "ConfigException.hpp"
 #include "ConfigFile.hpp"
 #include <iostream>
 #include <string>
@@ -29,19 +30,21 @@ public:
 	LocationConfig &operator=(const LocationConfig &other);
 	~LocationConfig();
 
+	const std::string &getModifier() const;
 	const std::string &getPattern() const;
 	const std::string &getAlias() const;
 	const std::string &getProxyPass() const;
+	void setModifier(const std::string &modifier);
 	void setPattern(const std::string &pattern);
 	void setAlias(const std::string &alias);
 	void setProxyPass(const std::string &proxyPass);
 	bool isMatching(const std::string &url);
 
 private:
+	std::string modifier;
 	std::string pattern;
 	std::string alias;
 	std::string proxyPass;
-	// NOT NEEDED : std::string regExpr;
 };
 
 } // namespace Hafserv

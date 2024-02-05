@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConfig.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/04 13:40:19 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/05 07:49:30 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,20 @@
 
 using namespace Hafserv;
 
-LocationConfig::LocationConfig() : AHttpConfigModule(), pattern(), alias(), proxyPass() {}
+LocationConfig::LocationConfig() : AHttpConfigModule(), modifier(), pattern(), alias(), proxyPass() {}
 
 LocationConfig::LocationConfig(const LocationConfig &other)
-	: AHttpConfigModule(other.core), pattern(other.pattern), alias(other.alias), proxyPass(other.proxyPass)
+	: AHttpConfigModule(other.core),modifier(other.modifier), pattern(other.pattern), alias(other.alias), proxyPass(other.proxyPass)
 {
 }
 
 LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &core)
-	: AHttpConfigModule(core), pattern(), alias(), proxyPass()
+	: AHttpConfigModule(core), modifier(), pattern(), alias(), proxyPass()
 {
-	pattern = block.parameters.at(0);
+	modifier = block.parameters.at(0);
+	if (modifier != "=" && modifier != "$" && modifier != "^")
+		throw ParseError("unexpected location parameter: " + modifier);
+	pattern = block.parameters.at(1);
 
 	this->setHttpConfigCore(block.directives);
 	this->setHttpConfigCore(block.subBlocks);
@@ -46,6 +49,7 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &other)
 	if (this != &other)
 	{
 		core = other.core;
+		modifier = other.modifier;
 		pattern = other.pattern;
 		alias = other.alias;
 		proxyPass = other.proxyPass;
@@ -55,11 +59,15 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &other)
 
 LocationConfig::~LocationConfig() {}
 
+const std::string &LocationConfig::getModifier() const { return modifier; }
+
 const std::string &LocationConfig::getPattern() const { return pattern; }
 
 const std::string &LocationConfig::getAlias() const { return alias; }
 
 const std::string &LocationConfig::getProxyPass() const { return proxyPass; }
+
+void LocationConfig::setModifier(const std::string &modifier) { this->modifier = modifier; }
 
 void LocationConfig::setPattern(const std::string &pattern) { this->pattern = pattern; }
 
@@ -79,6 +87,7 @@ std::ostream &operator<<(std::ostream &os, const LocationConfig &conf)
 {
 	os << "[LocationConfig]" << std::endl;
 	os << conf.getHttpConfigCore();
+	os << "\tmodifier: " << conf.getModifier() << std::endl;
 	os << "\tpattern: " << conf.getPattern() << std::endl;
 	os << "\talias: " << conf.getAlias() << std::endl;
 	os << "\tproxy_pass: " << conf.getProxyPass();
