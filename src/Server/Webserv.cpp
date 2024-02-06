@@ -87,9 +87,6 @@ void Webserv::initWebserv()
 
 void Webserv::runWebserv()
 {
-	int str_len;
-	char peekBuf[BUF_SIZE + 1];
-	char readBuf[BUF_SIZE + 1];
 	struct kevent event_list[MAX_EVENTS];
 
 	while (1)
@@ -112,57 +109,9 @@ void Webserv::runWebserv()
 			}
 			else if (event_list[i].filter == EVFILT_READ)
 			{
-				memset(peekBuf, 0, sizeof(peekBuf));
-				str_len = recv(event_list[i].ident, peekBuf, BUF_SIZE, MSG_PEEK | MSG_DONTWAIT);
-				peekBuf[str_len] = 0;
-
-				if (str_len == 0)
-				{
+				Connection &conn = Connections.find(event_list[i].ident)->second;
+				if (!conn.readRequest(event_list->ident, this))
 					disconnectClient(event_list[i].ident);
-				}
-				else
-				{
-					Request &request = Requests.find(event_list[i].ident)->second;
-					int idx = static_cast<std::string>(peekBuf).find('\n');
-					if (request.getParseStatus() == Body && idx == std::string::npos)
-					{
-						idx = BUF_SIZE - 1;
-					}
-					else if (idx == std::string::npos)
-						continue;
-					memset(readBuf, 0, sizeof(readBuf));
-					str_len = read(event_list[i].ident, readBuf, idx + 1);
-					readBuf[str_len] = 0;
-
-					try
-					{
-						request.parse(static_cast<std::string>(readBuf));
-						if (request.getParseStatus() >= Body && request.getTargetServer() == NULL)
-						{
-							request.setTargetServer(
-								findTargetServer(sockToPort.find(event_list[i].ident)->second, request));
-							request.setTargetLocation();
-						}
-						if (request.getParseStatus() == End)
-						{
-							Hafserv::Response response(request);
-							std::string responseString = response.getResponse();
-							// std::cout << "<-------response------->" << std::endl << responseString;
-							// std::cout << "<-----response end----->" << std::endl;
-							// send(event_list[i].ident, responseString.c_str(), responseString.length(), 0);
-							write(event_list[i].ident, responseString.c_str(), responseString.length());
-							disconnectClient(event_list[i].ident);
-						}
-					}
-					catch (const std::exception &e)
-					{
-						std::cerr << e.what() << std::endl;
-						// client에게 오류메시지 보내기
-						disconnectClient(event_list[i].ident);
-						continue;
-					}
-					// write(event_list[i].ident, buf, str_len);
-				}
 			}
 		}
 		checkTimeout();
@@ -193,6 +142,8 @@ void Webserv::connectClient(int serv_sock)
 	int port = servSockToPort.find(serv_sock)->second;
 	sockToPort[clnt_sock] = port;
 
+	Connections.insert(std::make_pair(clnt_sock, Connection(clnt_sock, sockToPort.find(clnt_sock)->second)));
+
 	std::cout << "connected client: " << clnt_sock << std::endl;
 }
 
@@ -206,6 +157,7 @@ void Webserv::disconnectClient(int socketfd)
 	close(socketfd);
 
 	Requests.erase(socketfd);
+	Connections.erase(socketfd);
 
 	std::map<int, unsigned short>::iterator socketToPortIt = sockToPort.find(socketfd);
 	if (socketToPortIt != sockToPort.end())
@@ -227,8 +179,8 @@ Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &r
 	{
 		std::vector<std::string> serverNames = (*it)->getNames();
 		std::vector<unsigned short> ports = (*it)->getPorts();
-		std::vector<std::string>::iterator findNameIt = find(serverNames.begin(), serverNames.end(), hostName);
-		std::vector<unsigned short>::iterator findPortIt = find(ports.begin(), ports.end(), port);
+		std::vector<std::string>::iterator findNameIt = std::find(serverNames.begin(), serverNames.end(), hostName);
+		std::vector<unsigned short>::iterator findPortIt = std::find(ports.begin(), ports.end(), port);
 
 		if (defaultServer == NULL && findPortIt != ports.end())
 			defaultServer = *it;

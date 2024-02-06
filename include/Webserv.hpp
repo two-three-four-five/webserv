@@ -1,6 +1,7 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
+#include "Connection.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
 #include <map>
@@ -13,6 +14,8 @@ namespace Hafserv
 {
 
 typedef std::map<int, Hafserv::Request> RequestMap;
+
+class Connection;
 
 class Webserv
 {
@@ -47,6 +50,7 @@ private:
 	std::vector<Server *> servers;
 
 	RequestMap Requests;
+	std::map<int, Connection> Connections;
 };
 
 } // namespace Hafserv
