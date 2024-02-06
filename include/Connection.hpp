@@ -18,7 +18,7 @@ public:
 	Connection(int socket, unsigned short port);
 	~Connection();
 
-	bool readRequest(int fd, Webserv *webserv);
+	bool readRequest(int fd);
 
 	Request request;
 

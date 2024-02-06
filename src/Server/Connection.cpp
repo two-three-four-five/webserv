@@ -9,10 +9,8 @@ Connection::Connection(int socket, unsigned short port) : socket(socket), port(p
 
 Connection::~Connection() {}
 
-bool Connection::readRequest(int fd, Webserv *webserv)
+bool Connection::readRequest(int fd)
 {
-	webserv = webserv;
-
 	int str_len;
 	char peekBuf[BUFFER_SIZE + 1];
 	char readBuf[BUFFER_SIZE + 1];
@@ -41,7 +39,7 @@ bool Connection::readRequest(int fd, Webserv *webserv)
 		request.parse(static_cast<std::string>(readBuf));
 		if (request.getParseStatus() >= Body && request.getTargetServer() == NULL)
 		{
-			request.setTargetServer(webserv->findTargetServer(port, request));
+			request.setTargetServer(Webserv::findTargetServer(port, request));
 			std::cout << request.getTargetServer() << std::endl;
 			request.setTargetLocation();
 		}

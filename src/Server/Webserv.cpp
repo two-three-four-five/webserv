@@ -11,6 +11,15 @@
 
 using namespace Hafserv;
 
+int Webserv::kq;
+std::map<int, std::string> Webserv::statusCodeMap;
+std::map<unsigned short, int> Webserv::portToServSock;
+std::map<int, unsigned short> Webserv::servSockToPort;
+std::map<int, unsigned short> Webserv::sockToPort;
+std::vector<Server *> Webserv::servers;
+RequestMap Webserv::Requests;
+ConnectionMap Webserv::Connections;
+
 Webserv::Webserv()
 {
 	initWebserv();
@@ -110,7 +119,7 @@ void Webserv::runWebserv()
 			else if (event_list[i].filter == EVFILT_READ)
 			{
 				Connection &conn = Connections.find(event_list[i].ident)->second;
-				if (!conn.readRequest(event_list->ident, this))
+				if (!conn.readRequest(event_list->ident))
 					disconnectClient(event_list[i].ident);
 			}
 		}
