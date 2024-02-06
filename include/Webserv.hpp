@@ -21,37 +21,39 @@ typedef std::map<int, Connection> ConnectionMap;
 class Webserv
 {
 public:
+	static Webserv &getInstance();
+
+	void initWebserv();
+
+	void addServer(Server *server);
+	void openPort(unsigned short port);
+
+	void runWebserv();
+	void connectClient(int serv_sock);
+	void disconnectClient(int socketfd);
+
+	Server *findTargetServer(unsigned short port, const Request &request);
+
+	void checkTimeout();
+
+	bool inServSocks(int serv_sock);
+	void closeServSocks();
+
+private:
 	Webserv();
 	~Webserv();
 
-	static void initWebserv();
+	int kq;
 
-	static void addServer(Server *server);
-	static void openPort(unsigned short port);
+	std::map<int, std::string> statusCodeMap;
 
-	static void runWebserv();
-	static void connectClient(int serv_sock);
-	static void disconnectClient(int socketfd);
+	std::map<unsigned short, int> portToServSock;
+	std::map<int, unsigned short> servSockToPort;
+	std::map<int, unsigned short> sockToPort;
+	std::vector<Server *> servers;
 
-	static Server *findTargetServer(unsigned short port, const Request &request);
-
-	static void checkTimeout();
-
-	static bool inServSocks(int serv_sock);
-	static void closeServSocks();
-
-private:
-	static int kq;
-
-	static std::map<int, std::string> statusCodeMap;
-
-	static std::map<unsigned short, int> portToServSock;
-	static std::map<int, unsigned short> servSockToPort;
-	static std::map<int, unsigned short> sockToPort;
-	static std::vector<Server *> servers;
-
-	static RequestMap Requests;
-	static ConnectionMap Connections;
+	RequestMap Requests;
+	ConnectionMap Connections;
 };
 
 } // namespace Hafserv

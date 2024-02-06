@@ -39,7 +39,7 @@ bool Connection::readRequest(int fd)
 		request.parse(static_cast<std::string>(readBuf));
 		if (request.getParseStatus() >= Body && request.getTargetServer() == NULL)
 		{
-			request.setTargetServer(Webserv::findTargetServer(port, request));
+			request.setTargetServer(Webserv::getInstance().findTargetServer(port, request));
 			std::cout << request.getTargetServer() << std::endl;
 			request.setTargetLocation();
 		}

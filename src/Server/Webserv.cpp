@@ -11,14 +11,11 @@
 
 using namespace Hafserv;
 
-int Webserv::kq;
-std::map<int, std::string> Webserv::statusCodeMap;
-std::map<unsigned short, int> Webserv::portToServSock;
-std::map<int, unsigned short> Webserv::servSockToPort;
-std::map<int, unsigned short> Webserv::sockToPort;
-std::vector<Server *> Webserv::servers;
-RequestMap Webserv::Requests;
-ConnectionMap Webserv::Connections;
+Webserv &Webserv::getInstance()
+{
+	static Webserv webserv;
+	return webserv;
+}
 
 Webserv::Webserv()
 {
