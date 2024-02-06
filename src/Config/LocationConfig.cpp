@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/06 17:01:54 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/06 19:10:00 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 	this->setHttpConfigCore(block.subBlocks);
 
 	ConfigFile::directives_t::const_iterator it = block.directives.begin();
-	bool hasAlias, hasRoot, hasProxyPass, hasCgiPath = false;
+	bool hasAlias = false, hasRoot = false, hasProxyPass = false, hasCgiPath = false;
 	for (; it != block.directives.end(); it++)
 	{
 		std::string key = (*it).first;
