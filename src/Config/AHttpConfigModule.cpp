@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/23 14:50:41 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/06 17:00:33 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,18 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 	std::string key, value;
 	std::vector<std::string> params;
 	ConfigFile::directives_t::const_iterator it = directives.begin();
+	bool hasRoot = false;
 	for (; it != directives.end(); it++)
 	{
 		key = (*it).first;
 		value = (*it).second;
 		if (key == "root")
+		{
+			if (hasRoot)
+				throw ParseError("\"root\" directive is duplicate");
+			hasRoot = true;
 			core.setRoot(value);
+		}
 		else if (key == "index")
 		{
 			params = util::string::split(value, ' ');
@@ -111,4 +117,14 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::subblocks_t &subBloc
 			}
 		}
 	}
+}
+
+bool AHttpConfigModule::isCoreDirective(const std::string &directive)
+{
+	if (directive == "root" || directive == "index" || directive == "client_header_timeout" ||
+		directive == "client_body_timeout" || directive == "keepalive_timeout" || directive == "send_timeout" ||
+		directive == "error_page")
+		return true;
+	else
+		return false;
 }
