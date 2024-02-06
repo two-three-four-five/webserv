@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/06 16:51:42 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/06 17:16:50 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ public:
 
 private:
 	std::string modifier;
-	std::string pattern;
+	std::string pattern; // TODO: change pattern into URI
 	std::string alias;
 	std::string proxyPass;
 	std::string cgiPath;
