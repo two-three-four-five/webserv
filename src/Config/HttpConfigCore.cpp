@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/23 14:59:13 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/06 17:14:51 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,28 +91,40 @@ std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 	os << conf.getTimeout();
 	os << std::endl;
 
-	std::map<int, std::string>::const_iterator it = conf.getErrorPages().begin();
-	for (; it != conf.getErrorPages().end(); it++)
-		os << "\t\terror code: " << (*it).first << " -> " << (*it).second << std::endl;
-
-	size_t i = 0;
-	std::map<std::string, std::string>::const_iterator it2 = conf.getTypes().begin();
-	for (; it2 != conf.getTypes().end() && i < 5; it2++)
+	// errorPages
+	if (conf.getErrorPages().size())
 	{
-		os << "\t\textension: " << (*it2).first << " -> " << (*it2).second << std::endl;
-		i++;
+		os << "\t\terror code: ";
+		std::map<int, std::string>::const_iterator it = conf.getErrorPages().begin();
+		for (; it != conf.getErrorPages().end(); it++)
+			os << (*it).first << "=" << (*it).second << ", ";
+		if (conf.getErrorPages().size())
+			os << std::endl;
 	}
-	if (it2 != conf.getTypes().end())
-		os << "\t\textension: ..." << std::endl;
+
+	// types
+	if (conf.getTypes().size())
+	{
+		os << "\t\textension: ";
+		size_t i = 0;
+		std::map<std::string, std::string>::const_iterator it2 = conf.getTypes().begin();
+		for (; it2 != conf.getTypes().end() && i < 3; it2++)
+		{
+			os << (*it2).first << "=" << (*it2).second << ", ";
+			i++;
+		}
+		if (it2 != conf.getTypes().end())
+			os << " ..." << std::endl;
+	}
 
 	return os;
 }
 
 std::ostream &operator<<(std::ostream &os, const HttpConfigCore::Timeout &timeouts)
 {
-	os << "\t\tclientHeaderTimeouts: " << timeouts.clientHeader << std::endl;
-	os << "\t\tclientBodyTimeouts: " << timeouts.clientBody << std::endl;
-	os << "\t\tkeepAliveTimeouts: " << timeouts.keepAlive << std::endl;
-	os << "\t\tsendTimeouts: " << timeouts.send;
+	os << "\t\ttimeouts: clientHeader=" << timeouts.clientHeader;
+	os << ", clientBody=" << timeouts.clientBody;
+	os << ", keepalive=" << timeouts.keepAlive;
+	os << ", send=" << timeouts.send;
 	return os;
 }

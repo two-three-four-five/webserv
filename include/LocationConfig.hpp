@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConfig.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/03 16:14:23 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/06 17:16:50 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define LOCATIONCONFIG_HPP
 
 #include "AHttpConfigModule.hpp"
+#include "ConfigException.hpp"
 #include "ConfigFile.hpp"
 #include <iostream>
 #include <string>
@@ -29,19 +30,27 @@ public:
 	LocationConfig &operator=(const LocationConfig &other);
 	~LocationConfig();
 
+	const std::string &getModifier() const;
 	const std::string &getPattern() const;
 	const std::string &getAlias() const;
 	const std::string &getProxyPass() const;
+	const std::string &getCgiPath() const;
+
+	void setModifier(const std::string &modifier);
 	void setPattern(const std::string &pattern);
 	void setAlias(const std::string &alias);
 	void setProxyPass(const std::string &proxyPass);
+	void setCgiPath(const std::string &cgiPath);
+
 	bool isMatching(const std::string &url);
+	virtual bool isCoreDirective(const std::string &directive);
 
 private:
-	std::string pattern;
+	std::string modifier;
+	std::string pattern; // TODO: change pattern into URI
 	std::string alias;
 	std::string proxyPass;
-	// NOT NEEDED : std::string regExpr;
+	std::string cgiPath;
 };
 
 } // namespace Hafserv

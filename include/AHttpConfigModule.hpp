@@ -6,13 +6,14 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:05 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:28:17 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/06 16:59:24 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef ACONFIG_HPP
 #define ACONFIG_HPP
 
+#include "ConfigException.hpp"
 #include "ConfigFile.hpp"
 #include "HttpConfigCore.hpp"
 #include "util/string.hpp"
@@ -34,6 +35,8 @@ public:
 	void setHttpConfigCore(const HttpConfigCore &core);
 	void setHttpConfigCore(const ConfigFile::directives_t &directives);
 	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks);
+
+	virtual bool isCoreDirective(const std::string &directive);
 
 protected:
 	HttpConfigCore core;
