@@ -40,6 +40,7 @@ public:
 	const std::string getRequestTarget() const;
 	const HeaderMultiMap &getHeaders() const;
 	const std::string &getMethod() const;
+	const std::string &getBody() const;
 
 	friend class Response;
 

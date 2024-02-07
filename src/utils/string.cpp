@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:47:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 23:06:49 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 00:43:39 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,12 @@ std::pair<bool, int> util::string::stoi(const std::string &str)
 	ss >> ret.second;
 	ret.first = !ss.fail() && !ss.bad() && ss.eof();
 	return ret;
+}
+
+std::string util::string::itos(const int n)
+{
+	std::stringstream ss(n);
+	return ss.str();
 }
 
 std::vector<std::string> util::string::split(const std::string &str, char delimiter)

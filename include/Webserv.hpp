@@ -39,6 +39,8 @@ public:
 	bool inServSocks(int serv_sock);
 	void closeServSocks();
 
+	const std::map<int, std::string> &getStatusCodeMap() const;
+
 private:
 	Webserv();
 	~Webserv();

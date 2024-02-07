@@ -203,14 +203,14 @@ void Webserv::checkTimeout()
 	for (ConnectionMap::iterator it = Connections.begin(); it != Connections.end(); it++)
 	{
 		const Server *server = it->second.getTargetServer();
-		const LocationConfig *targetConfig = it->second.getTargetLocationConfig();
+		const LocationConfig targetConfig = it->second.getTargetLocationConfig();
 		if (it->second.getRequest().getParseStatus() < Body)
 		{
 			int headerTimeout = 60;
 			if (server != NULL)
 				headerTimeout = server->getServerConfig().getHttpConfigCore().getTimeout().clientHeader;
-			if (targetConfig != NULL)
-				headerTimeout = targetConfig->getHttpConfigCore().getTimeout().clientHeader;
+			if (targetConfig.getHttpConfigCore().getTimeout().clientHeader > 0)
+				headerTimeout = targetConfig.getHttpConfigCore().getTimeout().clientHeader;
 			if (now - it->second.getStartTime() > headerTimeout)
 			{
 				timeoutSockets.push_back(it->first);
@@ -219,8 +219,8 @@ void Webserv::checkTimeout()
 		else if (it->second.getRequest().getParseStatus() == Body)
 		{
 			int bodyTimeout = 60;
-			if (targetConfig != NULL)
-				bodyTimeout = targetConfig->getHttpConfigCore().getTimeout().clientBody;
+			if (targetConfig.getHttpConfigCore().getTimeout().clientHeader > 0)
+				bodyTimeout = targetConfig.getHttpConfigCore().getTimeout().clientBody;
 			if (now - it->second.getStartTime() > bodyTimeout)
 			{
 				timeoutSockets.push_back(it->first);
@@ -242,3 +242,5 @@ void Webserv::closeServSocks()
 		close(it->first);
 	}
 }
+
+const std::map<int, std::string> &Hafserv::Webserv::getStatusCodeMap() const { return statusCodeMap; }

@@ -16,17 +16,25 @@ class Connection
 {
 public:
 	Connection(int socket, unsigned short port);
+	Connection(const Connection &other);
+	Connection &operator=(Connection &rhs);
 	~Connection();
 
 	bool readRequest(int fd);
-	void configureTargetResource();
+	std::string configureTargetResource(std::string requestTarget);
 
 	void buildResponseFromRequest();
+	void buildGetResponse();
+	void buildErrorResponse(int statusCode);
+	void build301Response(const std::string &redirectTarget);
+
+	void callCGI(const std::string &scriptPath);
+	char **makeEnvp();
 
 	const Request &getRequest() const;
 	const Server *getTargetServer() const;
 	const time_t &getStartTime() const;
-	const LocationConfig *getTargetLocationConfig() const;
+	const LocationConfig &getTargetLocationConfig() const;
 
 private:
 	Request request;
@@ -37,7 +45,7 @@ private:
 	int statusCode;
 	time_t startTime;
 	Server *targetServer;
-	const LocationConfig *targetLocationConfig;
+	LocationConfig targetLocationConfig;
 	std::string targetResource;
 };
 

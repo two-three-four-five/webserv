@@ -164,3 +164,5 @@ const std::string Hafserv::Request::getRequestTarget() const { return requestTar
 const HeaderMultiMap &Request::getHeaders() const { return headers; }
 
 const std::string &Hafserv::Request::getMethod() const { return method; }
+
+const std::string &Hafserv::Request::getBody() const { return body[0]; }
