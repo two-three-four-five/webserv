@@ -47,7 +47,7 @@ void Webserv::addServer(Server *server)
 		openPort(*it);
 }
 
-void Hafserv::Webserv::openPort(unsigned short port)
+void Webserv::openPort(unsigned short port)
 {
 	if (portToServSock.find(port) == portToServSock.end())
 	{
@@ -141,7 +141,7 @@ void Webserv::connectClient(int serv_sock)
 	EV_SET(&event, clnt_sock, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
 
-	std::pair<int, Hafserv::Request> p;
+	std::pair<int, Request> p;
 	p.first = clnt_sock;
 	Requests.insert(p);
 
@@ -172,7 +172,7 @@ void Webserv::disconnectClient(int socketfd)
 	std::cout << "closed client: " << socketfd << std::endl;
 }
 
-Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &request)
+Server *Webserv::findTargetServer(unsigned short port, const Request &request)
 {
 	Server *defaultServer = NULL;
 	std::string host = request.getHeaders().find("host")->second;
@@ -196,15 +196,15 @@ Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &r
 	return defaultServer;
 }
 
-void Hafserv::Webserv::checkTimeout()
+void Webserv::checkTimeout()
 {
 	time_t now = time(NULL);
 	std::vector<int> timeoutSockets;
-	for (RequestMap::iterator it = Requests.begin(); it != Requests.end(); it++)
+	for (ConnectionMap::iterator it = Connections.begin(); it != Connections.end(); it++)
 	{
 		const Server *server = it->second.getTargetServer();
 		const LocationConfig *targetConfig = it->second.getTargetLocationConfig();
-		if (it->second.getParseStatus() < Body)
+		if (it->second.getRequest().getParseStatus() < Body)
 		{
 			int headerTimeout = 60;
 			if (server != NULL)
@@ -216,7 +216,7 @@ void Hafserv::Webserv::checkTimeout()
 				timeoutSockets.push_back(it->first);
 			}
 		}
-		else if (it->second.getParseStatus() == Body)
+		else if (it->second.getRequest().getParseStatus() == Body)
 		{
 			int bodyTimeout = 60;
 			if (targetConfig != NULL)
@@ -228,7 +228,9 @@ void Hafserv::Webserv::checkTimeout()
 		}
 	}
 	for (std::vector<int>::iterator it = timeoutSockets.begin(); it != timeoutSockets.end(); it++)
+	{
 		disconnectClient(*it);
+	}
 }
 
 bool Webserv::inServSocks(int serv_sock) { return servSockToPort.find(serv_sock) != servSockToPort.end(); }
@@ -237,6 +239,6 @@ void Webserv::closeServSocks()
 {
 	for (std::map<int, unsigned short>::iterator it = servSockToPort.begin(); it != servSockToPort.end(); it++)
 	{
-		close((*it).first);
+		close(it->first);
 	}
 }

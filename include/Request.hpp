@@ -29,39 +29,30 @@ class Request
 public:
 	Request();
 	int parse(const std::string &request);
-	void parseStartLine(const std::string &request);
-	void parseHeaders(const std::string &fieldLine);
-	void parseBody(const std::string &body);
+	int parseStartLine(const std::string &request);
+	int parseHeaders(const std::string &fieldLine);
+	int parseBody(const std::string &body);
 	std::string getRawRequest();
 	void printRequest();
 	void printBody();
 
-	void setTargetLocation();
-
 	const int getParseStatus() const;
+	const std::string getRequestTarget() const;
 	const HeaderMultiMap &getHeaders() const;
-	const Server *getTargetServer() const;
-	void setTargetServer(Server *server);
-	const time_t &getStartTime() const;
-	const LocationConfig *getTargetLocationConfig() const;
+	const std::string &getMethod() const;
 
 	friend class Response;
 
 private:
 	RequestParseStatus parseStatus;
-	int statusCode;
-	time_t startTime;
 
 	std::string method;
 	std::string requestTarget;
 	HeaderMultiMap headers;
 	std::vector<std::string> body;
 	size_t bodyLength;
-
-	Server *targetServer;
-	const LocationConfig *targetLocationConfig;
-	std::string targetLocation;
 };
+
 } // namespace Hafserv
 
 /*

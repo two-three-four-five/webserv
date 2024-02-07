@@ -7,6 +7,8 @@
 namespace Hafserv
 {
 
+Response::Response() {}
+
 Response::Response(Request &request) : request(request)
 {
 	// request.printRequest();

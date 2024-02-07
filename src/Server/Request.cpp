@@ -5,24 +5,20 @@
 
 using namespace Hafserv;
 
-Request::Request()
-	: parseStatus(Created), statusCode(200), targetServer(NULL), targetLocationConfig(NULL), bodyLength(0)
-{
-	startTime = time(NULL);
-}
+Request::Request() : parseStatus(Created), bodyLength(0) {}
 
 int Request::parse(const std::string &request)
 {
 	if (parseStatus == Created)
-		parseStartLine(request);
+		return parseStartLine(request);
 	else if (parseStatus == Header)
-		parseHeaders(request);
+		return parseHeaders(request);
 	else if (parseStatus == Body)
-		parseBody(request);
-	return (parseStatus);
+		return parseBody(request);
+	return 0;
 }
 
-void Request::parseStartLine(const std::string &request)
+int Request::parseStartLine(const std::string &request)
 {
 	std::istringstream requestStream(request);
 	std::string httpVersion;
@@ -34,9 +30,8 @@ void Request::parseStartLine(const std::string &request)
 
 	if (httpVersion.find("HTTP/") != 0)
 	{
-		statusCode = 400;
 		parseStatus = End;
-		return;
+		return 400;
 	} // 400 Bad Request
 	else
 	{
@@ -46,25 +41,24 @@ void Request::parseStartLine(const std::string &request)
 		iss >> ver;
 		if (iss.fail() || !iss.eof())
 		{
-			statusCode = 400;
 			parseStatus = End;
-			return;
+			return 400;
 		} // 400 Bad Request
 
 		if (httpVersion.substr(5) != "1.1")
 		{
-			statusCode = 505;
 			parseStatus = End;
-			return;
+			return 505;
 		} // 505 HTTP version not supported
 	}
 	if (method == "HEAD")
 		parseStatus = End;
 	else
 		parseStatus = Header;
+	return 0;
 }
 
-void Request::parseHeaders(const std::string &fieldLine)
+int Request::parseHeaders(const std::string &fieldLine)
 {
 	if (fieldLine == "\r\n")
 	{
@@ -72,11 +66,8 @@ void Request::parseHeaders(const std::string &fieldLine)
 		if (method == "GET")
 			parseStatus = End;
 		else
-		{
 			parseStatus = Body;
-			startTime = time(NULL);
-		}
-		return;
+		return 0;
 	}
 	std::istringstream iss(fieldLine);
 	std::string key, value;
@@ -84,9 +75,8 @@ void Request::parseHeaders(const std::string &fieldLine)
 	std::getline(iss, key, ':');
 	if (util::string::hasSpace(key))
 	{
-		statusCode = 400;
 		parseStatus = End;
-		return;
+		return 400;
 	} // 400 Bad Request
 	while (std::getline(iss >> std::ws, value, ','))
 	{
@@ -97,9 +87,10 @@ void Request::parseHeaders(const std::string &fieldLine)
 		key = util::string::toLower(key);
 		headers.insert(std::make_pair(key, value));
 	}
+	return 0;
 }
 
-void Request::parseBody(const std::string &line)
+int Request::parseBody(const std::string &line)
 {
 	// https://www.rfc-editor.org/rfc/rfc9112.html#name-message-body-length
 	// have to deal with transfer-encoding & content-length
@@ -130,8 +121,9 @@ void Request::parseBody(const std::string &line)
 		body.push_back(oss.str());
 		// std::cout << body[0];
 		parseStatus = End;
-		return;
+		return 0;
 	}
+	return 0;
 }
 
 std::string Request::getRawRequest()
@@ -165,73 +157,10 @@ void Request::printBody()
 	}
 }
 
-void Hafserv::Request::setTargetLocation()
-{
-	int depth = -1;
-	const std::vector<LocationConfig> &locations = targetServer->getServerConfig().getLocations();
-	std::vector<LocationConfig>::const_iterator selectedIt = locations.end();
-
-	for (std::vector<LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); it++)
-	{
-		// deep route first
-		const std::string &pattern = (*it).getPattern();
-		if (requestTarget.find(pattern) == 0)
-		{
-			int currDepth = pattern == "/" ? 0 : std::count(pattern.begin(), pattern.end(), '/');
-			if (depth < currDepth)
-			{
-				depth = currDepth;
-				selectedIt = it;
-			}
-		}
-	}
-
-	// root / is always presents in httpConfigCore
-	if (selectedIt != locations.end())
-	{
-		targetLocationConfig = &(*selectedIt);
-
-		const std::string &selectedPattern = selectedIt->getPattern();
-		const std::string &selectedAlias = selectedIt->getAlias();
-		if (!selectedAlias.empty())
-		{
-			if (selectedPattern.back() == '/')
-				targetLocation = selectedAlias + requestTarget.substr(selectedPattern.length() - 1);
-			else
-				targetLocation = selectedAlias + requestTarget.substr(selectedPattern.length());
-		}
-		else
-			targetLocation = selectedIt->getHttpConfigCore().getRoot() + requestTarget;
-		if (targetLocation.back() == '/')
-		{
-			std::vector<std::string> indexes = selectedIt->getHttpConfigCore().getIndexes();
-			std::string defaultTargetLocation;
-			if (indexes.size() == 0)
-				defaultTargetLocation = targetLocation + "index.html";
-			else
-				defaultTargetLocation = targetLocation + indexes[0];
-			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
-			{
-				File index(targetLocation + *it);
-				if (index.getCode() == File::REGULAR_FILE)
-				{
-					targetLocation += *it;
-					return;
-				}
-			}
-			targetLocation = defaultTargetLocation;
-		}
-	}
-}
-
 const int Hafserv::Request::getParseStatus() const { return parseStatus; }
+
+const std::string Hafserv::Request::getRequestTarget() const { return requestTarget; }
 
 const HeaderMultiMap &Request::getHeaders() const { return headers; }
 
-const Server *Hafserv::Request::getTargetServer() const { return targetServer; }
-
-void Hafserv::Request::setTargetServer(Server *server) { targetServer = server; }
-
-const time_t &Hafserv::Request::getStartTime() const { return startTime; }
-
-const LocationConfig *Request::getTargetLocationConfig() const { return targetLocationConfig; }
+const std::string &Hafserv::Request::getMethod() const { return method; }

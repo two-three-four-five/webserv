@@ -19,16 +19,26 @@ public:
 	~Connection();
 
 	bool readRequest(int fd);
+	void configureTargetResource();
 
-	Request request;
+	void buildResponseFromRequest();
+
+	const Request &getRequest() const;
+	const Server *getTargetServer() const;
+	const time_t &getStartTime() const;
+	const LocationConfig *getTargetLocationConfig() const;
 
 private:
-	Webserv *webserv;
-	Response *response;
+	Request request;
+	Response response;
 	int socket;
 	unsigned short port;
 
 	int statusCode;
+	time_t startTime;
+	Server *targetServer;
+	const LocationConfig *targetLocationConfig;
+	std::string targetResource;
 };
 
 } // namespace Hafserv

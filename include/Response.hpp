@@ -10,6 +10,7 @@ namespace Hafserv
 class Response
 {
 public:
+	Response();
 	Response(Request &request);
 	~Response();
 
