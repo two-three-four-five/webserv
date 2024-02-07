@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/06 19:10:00 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/07 16:25:48 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,13 +49,14 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 	{
 		std::string key = (*it).first;
 		std::string value = (*it).second;
+		size_t numToken = util::string::split(value, ' ').size();
 		if (key == "alias")
 		{
 			if (hasAlias)
 				throw ParseError("\"alias\" directive is duplicate");
 			if (hasRoot)
 				throw ParseError("\"alias\" directive is duplicate, \"root\" directive was specified earlier");
-			if (util::string::split(value, ' ').size() != 1)
+			if (numToken != 1)
 				throw ParseError("invalid number of arguments in \"alias\" directive");
 
 			hasAlias = true;
@@ -75,7 +76,7 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		{
 			if (hasCgiPath)
 				throw ParseError("\"cgi_path\" directive is duplicate");
-			if (util::string::split(value, ' ').size() != 1)
+			if (numToken != 1)
 				throw ParseError("invalid number of arguments in \"cgi_path\" directive");
 			if (File(value).getCode() != File::REGULAR_FILE)
 				throw ParseError("invalid path for cgi file " + value);
