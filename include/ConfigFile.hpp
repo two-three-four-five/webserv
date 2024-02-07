@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 19:00:02 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/07 16:58:11 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ public:
 	ConfigFile(const std::string &filename);
 	ConfigFile &operator=(const ConfigFile &other);
 	virtual ~ConfigFile() throw();
+
+	void include();
 
 	std::string name;
 	std::vector<std::string> parameters;

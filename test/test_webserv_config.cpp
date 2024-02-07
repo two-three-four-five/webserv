@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:01:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 21:49:47 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/07 17:42:02 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,11 @@ int main(int argc, char **argv)
 	try
 	{
 		Hafserv::ConfigFile configFile = Hafserv::ConfigFile(argv[1]);
-		Hafserv::WebservConfig config = Hafserv::WebservConfig(configFile);
 		std::cout << configFile << std::endl;
+		configFile.include();
+		std::cout << "-----------------------------------" << std::endl;
+		std::cout << configFile << std::endl;
+		Hafserv::WebservConfig config = Hafserv::WebservConfig(configFile);
 		std::cout << config << std::endl;
 	}
 	catch (const std::exception &e)
