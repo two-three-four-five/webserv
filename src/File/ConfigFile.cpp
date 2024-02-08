@@ -127,11 +127,11 @@ const ConfigFile::subblocks_t &ConfigFile::getSubBlocks() const { return subBloc
 
 void ConfigFile::include() throw(IncludeError)
 {
-	directives_t::iterator inc = this->directives.lower_bound("include");
-	directives_t::iterator end = this->directives.upper_bound("include");
-	for (; inc != end; inc++)
+	directives_t::iterator incBegin = this->directives.lower_bound("include");
+	directives_t::iterator incEnd = this->directives.upper_bound("include");
+	for (; incBegin != incEnd; incBegin++)
 	{
-		RegularFile toInclude = RegularFile((*inc).second);
+		RegularFile toInclude = RegularFile((*incBegin).second);
 		if (toInclude.getCode() == File::REGULAR_FILE)
 		{
 			ConfigFile file = ConfigFile(toInclude.getName());
