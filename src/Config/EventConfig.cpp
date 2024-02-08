@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:21:18 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 13:58:19 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@ EventConfig::EventConfig(const EventConfig &other) : workerConnections(other.wor
 EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : workerConnections()
 {
 	std::string key, value;
-	ConfigFile::directives_t::const_iterator it = block.directives.begin();
-	for (; it != block.directives.end(); it++)
+	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
+	for (; it != block.getDirectives().end(); it++)
 	{
 		key = (*it).first;
 		value = (*it).second;

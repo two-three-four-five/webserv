@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 13:50:29 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 14:01:01 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 
 namespace Hafserv
 {
-class ConfigFile // TODO: inherits public RegularFile in the future
+class ConfigFile
 {
 public:
 	typedef std::vector<std::string> parameters_t;
@@ -36,17 +36,20 @@ public:
 	ConfigFile &operator=(const ConfigFile &other);
 	virtual ~ConfigFile() throw();
 
+	const std::string &getName() const;
+	const parameters_t &getParameters() const;
+	const directives_t &getDirectives() const;
+	const subblocks_t &getSubBlocks() const;
+
 	void include() throw(IncludeError);
+
+private:
+	static const std::string meta;
 
 	std::string name;
 	std::vector<std::string> parameters;
 	std::multimap<std::string, std::string> directives;
 	std::vector<ConfigFile> subBlocks;
-
-private:
-	static const std::string meta;
-
-	// TODO: error code
 };
 
 } // namespace Hafserv

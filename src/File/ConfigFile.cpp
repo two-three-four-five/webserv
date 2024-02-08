@@ -120,6 +120,11 @@ ConfigFile &ConfigFile::operator=(const ConfigFile &other)
 
 ConfigFile::~ConfigFile() throw() {}
 
+const std::string &ConfigFile::getName() const { return name; }
+const ConfigFile::parameters_t &ConfigFile::getParameters() const { return parameters; }
+const ConfigFile::directives_t &ConfigFile::getDirectives() const { return directives; }
+const ConfigFile::subblocks_t &ConfigFile::getSubBlocks() const { return subBlocks; }
+
 void ConfigFile::include() throw(IncludeError)
 {
 	directives_t::iterator inc = this->directives.lower_bound("include");
@@ -150,19 +155,19 @@ void ConfigFile::include() throw(IncludeError)
 
 std::ostream &operator<<(std::ostream &os, const ConfigFile &configFile)
 {
-	os << configFile.name << " ";
-	for (size_t i = 0; i < configFile.parameters.size(); i++)
-		os << configFile.parameters.at(i) << " ";
+	os << configFile.getName() << " ";
+	for (size_t i = 0; i < configFile.getParameters().size(); i++)
+		os << configFile.getParameters().at(i) << " ";
 	os << std::endl;
 
-	for (ConfigFile::directives_t::const_iterator it = configFile.directives.begin(); it != configFile.directives.end();
-		 it++)
+	for (ConfigFile::directives_t::const_iterator it = configFile.getDirectives().begin();
+		 it != configFile.getDirectives().end(); it++)
 		os << "    [" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
 
-	for (size_t i = 0; i < configFile.subBlocks.size(); i++)
+	for (size_t i = 0; i < configFile.getSubBlocks().size(); i++)
 	{
-		os << std::endl << configFile.name << ".";
-		os << configFile.subBlocks.at(i);
+		os << std::endl << configFile.getName() << ".";
+		os << configFile.getSubBlocks().at(i);
 	}
 	return os;
 }

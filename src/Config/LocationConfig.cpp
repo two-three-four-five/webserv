@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/07 16:25:48 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 13:56:48 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,19 +33,19 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 			cgi_path path;
 	   }
 	 */
-	if (block.parameters.size() != 2)
+	if (block.getParameters().size() != 2)
 		throw ParseError("location parameter should be two.");
-	modifier = block.parameters.at(0);
+	modifier = block.getParameters().at(0);
 	if (modifier != "=" && modifier != "$" && modifier != "^")
 		throw ParseError("unexpected location parameter: " + modifier);
-	pattern = block.parameters.at(1);
+	pattern = block.getParameters().at(1);
 
-	this->setHttpConfigCore(block.directives);
-	this->setHttpConfigCore(block.subBlocks);
+	this->setHttpConfigCore(block.getDirectives());
+	this->setHttpConfigCore(block.getSubBlocks());
 
-	ConfigFile::directives_t::const_iterator it = block.directives.begin();
+	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	bool hasAlias = false, hasRoot = false, hasProxyPass = false, hasCgiPath = false;
-	for (; it != block.directives.end(); it++)
+	for (; it != block.getDirectives().end(); it++)
 	{
 		std::string key = (*it).first;
 		std::string value = (*it).second;
