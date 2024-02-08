@@ -120,7 +120,7 @@ ConfigFile &ConfigFile::operator=(const ConfigFile &other)
 
 ConfigFile::~ConfigFile() throw() {}
 
-void ConfigFile::include()
+void ConfigFile::include() throw(IncludeError)
 {
 	directives_t::iterator inc = this->directives.lower_bound("include");
 	directives_t::iterator end = this->directives.upper_bound("include");
@@ -138,7 +138,7 @@ void ConfigFile::include()
 				this->subBlocks.push_back(file.subBlocks.at(0).subBlocks.at(i));
 		}
 		else
-			std::cout << "NO FILE : " << toInclude.getName() << std::endl;
+			throw IncludeError("NO FILE EXIST : " + toInclude.getName());
 	}
 	if (this->subBlocks.size())
 	{

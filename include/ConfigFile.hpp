@@ -6,13 +6,14 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/07 16:58:11 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 13:50:29 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIGFILE_HPP
 #define CONFIGFILE_HPP
 
+#include "ConfigException.hpp"
 #include "RegularFile.hpp"
 #include <algorithm>
 #include <list>
@@ -35,7 +36,7 @@ public:
 	ConfigFile &operator=(const ConfigFile &other);
 	virtual ~ConfigFile() throw();
 
-	void include();
+	void include() throw(IncludeError);
 
 	std::string name;
 	std::vector<std::string> parameters;
