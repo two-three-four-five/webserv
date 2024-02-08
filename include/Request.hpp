@@ -28,13 +28,16 @@ class Request
 {
 public:
 	Request();
-	int parse(const std::string &request);
+	int parse(std::string request);
 	int parseStartLine(const std::string &request);
 	int parseHeaders(const std::string &fieldLine);
-	int parseBody(const std::string &body);
+	int parseByContentLength(std::string &line);
+	int parseByBoundary(std::string &line);
+	int parseByTransferEncoding(std::string &line);
 	std::string getRawRequest();
 	void printRequest();
 	void printBody();
+	void checkHeaderField();
 
 	const int getParseStatus() const;
 	const std::string getRequestTarget() const;
@@ -42,6 +45,7 @@ public:
 	const std::string &getMethod() const;
 	const std::string &getBody() const;
 
+	typedef int (Request::*ParseBodyFunction)(std::string &);
 	friend class Response;
 
 private:
@@ -50,8 +54,12 @@ private:
 	std::string method;
 	std::string requestTarget;
 	HeaderMultiMap headers;
-	std::vector<std::string> body;
+	std::string boundary;
+	size_t contentLength;
 	size_t bodyLength;
+	std::string body;
+	std::vector<std::string> bodyVec;
+	ParseBodyFunction parseBody;
 };
 
 } // namespace Hafserv

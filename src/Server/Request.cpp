@@ -7,14 +7,14 @@ using namespace Hafserv;
 
 Request::Request() : parseStatus(Created), bodyLength(0) {}
 
-int Request::parse(const std::string &request)
+int Request::parse(std::string request)
 {
 	if (parseStatus == Created)
 		return parseStartLine(request);
 	else if (parseStatus == Header)
 		return parseHeaders(request);
 	else if (parseStatus == Body)
-		return parseBody(request);
+		return (this->*parseBody)(request);
 	return 0;
 }
 
@@ -90,38 +90,99 @@ int Request::parseHeaders(const std::string &fieldLine)
 	return 0;
 }
 
-int Request::parseBody(const std::string &line)
+void Request::checkHeaderField()
 {
-	// https://www.rfc-editor.org/rfc/rfc9112.html#name-message-body-length
-	// have to deal with transfer-encoding & content-length
-	// content-length presents
-	static bool inBoundary = false;
-
-	if (headers.find("content-length") != headers.end())
+	// contentLength
+	std::multimap<std::string, std::string>::iterator contentLengthIt = headers.find("content-length");
+	if (contentLengthIt != headers.end())
 	{
+		contentLength = stoi(contentLengthIt->second);
+		// parseBody = parseByContentLength;
+		parseBody = &Request::parseByContentLength;
 	}
 
-	body.push_back(line);
-
-	for (int i = 0; i < body.size(); i++)
-		bodyLength += body[i].length();
-
-	std::vector<std::string> ContentType = parseContentType(headers.find("content-type")->second);
-	if (ContentType.size() == 4 && line.compare("--" + ContentType[3] + "\r\n") == 0)
-		inBoundary = true;
-
-	if ((inBoundary == false && (line == "\r\n" || line == "\n")) ||
-		ContentType.size() == 4 && line.compare("--" + ContentType[3] + "--\r\n") == 0)
+	// Transfer-Encoding
+	std::multimap<std::string, std::string>::iterator tranferEncodingIt = headers.find("transfer-encoding");
+	if (tranferEncodingIt != headers.end())
 	{
-		// std::cout << "Body end" << std::endl;
+		std::vector<std::string> transferEncoding = parseTransferEncoding(tranferEncodingIt->second);
+		std::vector<std::string>::iterator it = std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
+		if (it + 1 == transferEncoding.end())
+			parseBody = &Request::parseByTransferEncoding;
+
+		else if (it != transferEncoding.end() || contentLength == -1)
+			; // chunked가 있는데 마지막에 있는게 아니거나 | tranferEncoding이 있는데 contentLength도 있으면 에러
+	}
+
+	// Boundary
+	std::multimap<std::string, std::string>::iterator contentTypeIt = headers.find("content-type");
+	if (contentTypeIt != headers.end())
+	{
+		std::vector<std::string> contentType = parseContentType(contentTypeIt->second);
+		std::vector<std::string>::iterator it = std::find(contentType.begin(), contentType.end(), "boundary");
+		if (it != contentType.end())
+		{
+			boundary = *(it + 1);
+			parseBody = &Request::parseByBoundary;
+		}
+	}
+}
+
+int Request::parseByContentLength(std::string &line)
+{
+	bodyVec.push_back(line);
+	bodyLength += line.length();
+	if (line == "\r\n")
+	{
 		std::ostringstream oss;
-		for (std::vector<std::string>::iterator it = body.begin(); it != body.end(); it++)
+		for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
 			oss << *it;
-		body.clear();
-		body.push_back(oss.str());
-		// std::cout << body[0];
+		body = oss.str();
 		parseStatus = End;
-		return 0;
+	}
+	return 0;
+}
+
+int Request::parseByBoundary(std::string &line)
+{
+	// 계속 읽다가 Boundary--일때면 멈춤
+	bodyVec.push_back(line);
+	bodyLength += line.length();
+	if (line.substr(2, line.length() - 6) == boundary)
+	{
+		std::ostringstream oss;
+		for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
+			oss << *it;
+		body = oss.str();
+		parseStatus = End;
+	}
+	return 0;
+}
+
+int Request::parseByTransferEncoding(std::string &line)
+{
+	static int chunkSize;
+	std::istringstream iss(line);
+
+	if (!chunkSize)
+	{
+		chunkSize = std::stoi(readHex(line), NULL, 16) + 2;
+		if (chunkSize == 2)
+		{
+			std::ostringstream oss;
+			for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
+				oss << *it;
+			body = oss.str();
+			parseStatus = End;
+		}
+	}
+	else
+	{
+		int lineLength = line.length();
+
+		bodyLength += lineLength;
+		chunkSize -= lineLength;
+		bodyVec.push_back(line);
 	}
 	return 0;
 }
@@ -134,7 +195,7 @@ std::string Request::getRawRequest()
 	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++)
 		ss << it->first << ": " << it->second << "\r\n";
 	if (method == "POST")
-		ss << "\r\n" << body[0] << "\r\n";
+		ss << "\r\n" << body << "\r\n";
 	return ss.str();
 }
 
@@ -151,9 +212,9 @@ void Request::printRequest()
 
 void Request::printBody()
 {
-	for (int i = 0; i < body.size(); i++)
+	for (int i = 0; i < bodyVec.size(); i++)
 	{
-		std::cout << "body[" << i << "]:" << std::endl << body[i] << std::endl;
+		std::cout << "body[" << i << "]:" << std::endl << bodyVec[i] << std::endl;
 	}
 }
 
@@ -165,4 +226,4 @@ const HeaderMultiMap &Request::getHeaders() const { return headers; }
 
 const std::string &Hafserv::Request::getMethod() const { return method; }
 
-const std::string &Hafserv::Request::getBody() const { return body[0]; }
+const std::string &Hafserv::Request::getBody() const { return body; }
