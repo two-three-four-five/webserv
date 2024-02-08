@@ -68,7 +68,7 @@ ConfigFile::ConfigFile(const std::string &filename) : name("head"), file(filenam
 				{
 					ConfigFile newConfig = ConfigFile();
 					newConfig.name = *waiting.begin();
-					newConfig.setFile(this->file.getName());
+					newConfig.setFile(this->file);
 
 					for (size_t j = 1; j < waiting.size(); j++)
 						newConfig.parameters.push_back(waiting.at(j));
