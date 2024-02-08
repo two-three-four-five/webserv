@@ -20,14 +20,17 @@ ConfigFile::ConfigFile() : name("") {}
 
 ConfigFile::ConfigFile(const ConfigFile &other)
 	: name(other.name), parameters(parameters_t(other.parameters)), directives(directives_t(other.directives)),
-	  subBlocks(subblocks_t(other.subBlocks))
+	  subBlocks(subblocks_t(other.subBlocks)), file(other.file)
 {
 }
 
-ConfigFile::ConfigFile(const std::string &filename) : name("head")
+ConfigFile::ConfigFile(const std::string &filename) : name("head"), file(filename)
 {
+	if (file.getCode() != File::REGULAR_FILE)
+		; // throw config error
 	ConfigFile main = ConfigFile();
 	main.name = "main";
+	main.setFile(this->file.getName());
 	subBlocks.push_back(main);
 
 	std::vector<std::vector<ConfigFile>::iterator> history;
@@ -38,7 +41,6 @@ ConfigFile::ConfigFile(const std::string &filename) : name("head")
 	std::string line, front;
 	size_t min = -1;
 
-	RegularFile file = RegularFile(filename);
 	for (size_t i = 0; i < file.getContentsSize(); i++)
 	{
 		for (line = file.getline(i); line.size(); line = line.substr(min + 1, line.size() - (min + 1)))
@@ -66,6 +68,7 @@ ConfigFile::ConfigFile(const std::string &filename) : name("head")
 				{
 					ConfigFile newConfig = ConfigFile();
 					newConfig.name = *waiting.begin();
+					newConfig.setFile(this->file.getName());
 
 					for (size_t j = 1; j < waiting.size(); j++)
 						newConfig.parameters.push_back(waiting.at(j));
@@ -124,6 +127,10 @@ const std::string &ConfigFile::getName() const { return name; }
 const ConfigFile::parameters_t &ConfigFile::getParameters() const { return parameters; }
 const ConfigFile::directives_t &ConfigFile::getDirectives() const { return directives; }
 const ConfigFile::subblocks_t &ConfigFile::getSubBlocks() const { return subBlocks; }
+const File &ConfigFile::getFile() const { return file; }
+
+void ConfigFile::setFile(const RegularFile &file) { this->file = file; }
+void ConfigFile::setFile(const std::string &filename) { this->file = RegularFile(filename); }
 
 void ConfigFile::include() throw(IncludeError)
 {
@@ -131,7 +138,8 @@ void ConfigFile::include() throw(IncludeError)
 	directives_t::iterator incEnd = this->directives.upper_bound("include");
 	for (; incBegin != incEnd; incBegin++)
 	{
-		RegularFile toInclude = RegularFile((*incBegin).second);
+		std::string name = this->file.getName().substr(0, this->file.getName().rfind('/') + 1) + (*incBegin).second;
+		RegularFile toInclude = RegularFile(name);
 		if (toInclude.getCode() == File::REGULAR_FILE)
 		{
 			ConfigFile file = ConfigFile(toInclude.getName());
@@ -159,6 +167,8 @@ std::ostream &operator<<(std::ostream &os, const ConfigFile &configFile)
 	for (size_t i = 0; i < configFile.getParameters().size(); i++)
 		os << configFile.getParameters().at(i) << " ";
 	os << std::endl;
+
+	os << "    path: " << configFile.getFile().getName() << std::endl;
 
 	for (ConfigFile::directives_t::const_iterator it = configFile.getDirectives().begin();
 		 it != configFile.getDirectives().end(); it++)

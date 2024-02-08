@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 14:01:01 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 14:35:23 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,17 @@ public:
 	const parameters_t &getParameters() const;
 	const directives_t &getDirectives() const;
 	const subblocks_t &getSubBlocks() const;
+	const File &getFile() const;
+
+	void setFile(const RegularFile &file);
+	void setFile(const std::string &filename);
 
 	void include() throw(IncludeError);
 
 private:
 	static const std::string meta;
+
+	RegularFile file;
 
 	std::string name;
 	std::vector<std::string> parameters;
