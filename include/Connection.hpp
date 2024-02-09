@@ -4,6 +4,7 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "Webserv.hpp"
+#include <sys/stat.h>
 
 namespace Hafserv
 {
@@ -25,6 +26,7 @@ public:
 
 	void buildResponseFromRequest();
 	void buildGetResponse();
+	void buildDeleteResponse();
 	void buildErrorResponse(int statusCode);
 	void build301Response(const std::string &redirectTarget);
 

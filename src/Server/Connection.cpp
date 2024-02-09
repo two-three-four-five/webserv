@@ -173,6 +173,20 @@ void Connection::buildResponseFromRequest()
 		else
 			callCGI(targetResource);
 	}
+	else if (method == "DELETE")
+	{
+		if (targetFile.getCode() != File::REGULAR_FILE)
+			buildErrorResponse(404);
+		else
+			buildDeleteResponse();
+	}
+}
+
+void Connection::buildDeleteResponse()
+{
+	response.setStatusLine(std::string("HTTP/1.1 200 OK"));
+	response.makeBody(targetLocationConfig, targetResource);
+	std::remove(targetResource.c_str());
 }
 
 void Connection::buildGetResponse()
@@ -241,7 +255,19 @@ void Hafserv::Connection::callCGI(const std::string &scriptPath)
 		dup2(inward_fd[0], STDIN_FILENO);
 		close(outward_fd[1]);
 		close(inward_fd[0]);
-		execve(scriptPath.c_str(), argv, envp);
+
+		struct stat fileStat;
+		File target(scriptPath);
+		if (target.getCode() == File::REGULAR_FILE && stat(scriptPath.c_str(), &fileStat) == 0 &&
+			(fileStat.st_mode & S_IXUSR))
+		{
+			execve(scriptPath.c_str(), argv, envp);
+		}
+		else
+		{
+			std::cerr << "No authorization" << std::endl;
+			exit(1);
+		}
 		perror(scriptPath.c_str());
 	}
 	else
@@ -267,7 +293,6 @@ char **Hafserv::Connection::makeEnvp()
 	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	envVec.push_back("PATH_INFO=/hi");
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);
