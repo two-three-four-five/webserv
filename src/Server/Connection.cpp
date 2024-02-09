@@ -61,6 +61,7 @@ bool Connection::readRequest(int fd)
 		}
 		else if (idx == std::string::npos)
 			return true;
+		bzero(readBuf, BUFFER_SIZE + 1);
 		str_len = read(fd, readBuf, idx + 1);
 		readBuf[str_len] = 0;
 

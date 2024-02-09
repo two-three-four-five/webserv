@@ -116,7 +116,7 @@ void Webserv::runWebserv()
 			else if (event_list[i].filter == EVFILT_READ)
 			{
 				Connection &conn = Connections.find(event_list[i].ident)->second;
-				if (!conn.readRequest(event_list->ident))
+				if (!conn.readRequest(event_list[i].ident))
 					disconnectClient(event_list[i].ident);
 			}
 		}

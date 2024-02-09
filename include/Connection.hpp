@@ -9,7 +9,7 @@
 namespace Hafserv
 {
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 50000
 
 class Webserv;
 
