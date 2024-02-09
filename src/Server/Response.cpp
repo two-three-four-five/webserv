@@ -50,6 +50,8 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 
 void Response::setStatusLine(std::string statusLine) { this->statusLine = statusLine; }
 
+void Response::setBody(const std::string &bodyString) { body = bodyString; }
+
 std::string Response::getResponse()
 {
 	std::string response;

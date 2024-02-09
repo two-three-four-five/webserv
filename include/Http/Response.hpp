@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:45 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/09 19:58:47 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 21:18:29 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ public:
 	void addToHeaders(std::string key, std::string value);
 	void makeBody(const LocationConfig &targetLocationConfig, const std::string &requestTarget);
 
+	void setBody(const std::string &bodyString);
 	void setStatusLine(std::string statusLine);
 	std::string getResponse();
 

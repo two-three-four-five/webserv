@@ -11,14 +11,14 @@ Connection::Connection(int socket, unsigned short port) : socket(socket), port(p
 	startTime = time(NULL);
 }
 
-Hafserv::Connection::Connection(const Connection &other)
+Connection::Connection(const Connection &other)
 	: request(other.request), response(other.response), socket(other.socket), port(other.port),
 	  statusCode(other.statusCode), startTime(other.startTime), targetServer(other.targetServer),
 	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource)
 {
 }
 
-Connection &Hafserv::Connection::operator=(Connection &rhs)
+Connection &Connection::operator=(Connection &rhs)
 {
 	if (this != &rhs)
 	{
@@ -100,9 +100,11 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 		const std::string &pattern = it->getPattern();
 		if (requestTarget == pattern)
 		{
+			targetLocationConfig = *it;
 			return (requestTarget);
 		}
 	}
+
 	// $
 	const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
 	selectedIt = endLocations.end();
@@ -112,7 +114,8 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 		const std::string &pattern = it->getPattern();
 		if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
 		{
-			return (requestTarget);
+			targetLocationConfig = *it;
+			return ("cgi-bin" + requestTarget);
 		}
 	}
 
@@ -182,7 +185,11 @@ void Connection::buildResponseFromRequest()
 
 	response.addToHeaders("Server", "Hafserv/1.0.0");
 
-	if (method == "GET")
+	if (targetLocationConfig.getCgiPath().length() > 0)
+	{
+		buildCGIResponse(targetResource);
+	}
+	else if (method == "GET")
 	{
 		if (targetFile.getCode() == File::DIRECTORY)
 			build301Response("http://" + request.getHeaders().find("host")->second +
@@ -199,7 +206,7 @@ void Connection::buildResponseFromRequest()
 		if (request.getRequestTarget().getTargetURI() == "/")
 			buildErrorResponse(405);
 		else
-			callCGI(targetResource);
+			buildCGIResponse(targetResource);
 	}
 	else if (method == "DELETE")
 	{
@@ -258,7 +265,7 @@ void Connection::build301Response(const std::string &redirectTarget)
 		targetResource = configureTargetResource(targetIt->second);
 }
 
-void Hafserv::Connection::callCGI(const std::string &scriptPath)
+void Connection::buildCGIResponse(const std::string &scriptPath)
 {
 	std::string body;
 	/* 예시
@@ -297,6 +304,7 @@ void Hafserv::Connection::callCGI(const std::string &scriptPath)
 			exit(1);
 		}
 		perror(scriptPath.c_str());
+		exit(1);
 	}
 	else
 	{
@@ -312,15 +320,19 @@ void Hafserv::Connection::callCGI(const std::string &scriptPath)
 			output.write(buffer, bytes_read);
 		close(outward_fd[0]);
 		close(inward_fd[1]);
-		body = output.str();
+		response.setStatusLine("HTTP/1.1 200 OK");
+		response.addToHeaders("Content-Type", "text/html");
+		response.addToHeaders("Content-Length", util::string::itos(output.str().length()));
+		response.setBody(output.str());
 	}
 }
 
-char **Hafserv::Connection::makeEnvp()
+char **Connection::makeEnvp()
 {
 	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	envVec.push_back("SCRIPT_FILENAME=/Users/jinhchoi/Github/webserv/cgi-bin/index.php");
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);

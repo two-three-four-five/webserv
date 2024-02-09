@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/09 19:58:14 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 21:12:48 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ public:
 	void buildErrorResponse(int statusCode);
 	void build301Response(const std::string &redirectTarget);
 
-	void callCGI(const std::string &scriptPath);
+	void buildCGIResponse(const std::string &scriptPath);
 	char **makeEnvp();
 
 	const Request &getRequest() const;
