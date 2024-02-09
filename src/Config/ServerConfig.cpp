@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 15:05:47 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 18:13:31 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
 	{
 		// locations.push_back(LocationConfig(block.getSubBlocks().at(i), core));
-		if (block.getSubBlocks().at(i).getName() == "location")
+		if (block.getSubBlocks().at(i).getBlockDirective() == "location")
 		{
 			LocationConfig conf = LocationConfig(block.getSubBlocks().at(i), core);
 			if (conf.getModifier() == "=")

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 13:57:55 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 18:12:56 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,12 +50,12 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : d
 	for (size_t i = 0; i < main.getSubBlocks().size(); i++)
 	{
 		subBlock = main.getSubBlocks().at(i);
-		if (subBlock.getName() == "events")
+		if (subBlock.getBlockDirective() == "events")
 			event = EventConfig(subBlock);
-		else if (subBlock.getName() == "http")
+		else if (subBlock.getBlockDirective() == "http")
 			http = HttpConfig(subBlock);
 		else
-			throw ParseError("unexpected block directive: " + subBlock.getName());
+			throw ParseError("unexpected block directive: " + subBlock.getBlockDirective());
 	}
 }
 

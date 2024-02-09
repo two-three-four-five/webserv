@@ -41,7 +41,7 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 		addToHeaders("Content-Type", "application/octet-stream");
 
 	RegularFile targetFile(targetLocation);
-	body = targetFile.getRawContents();
+	body = targetFile.getContents();
 
 	std::ostringstream contentLengthOss;
 	contentLengthOss << body.length();

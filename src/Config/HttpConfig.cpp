@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 13:56:04 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 18:14:01 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 	std::string subBlockName;
 	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
 	{
-		subBlockName = block.getSubBlocks().at(i).getName();
+		subBlockName = block.getSubBlocks().at(i).getBlockDirective();
 		if (subBlockName == "server")
 			servers.push_back(ServerConfig(block.getSubBlocks().at(i), core));
 		else if (subBlockName == "types")
