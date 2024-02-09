@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/06 17:14:51 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 00:57:26 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,8 @@ std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 		}
 		if (it2 != conf.getTypes().end())
 			os << " ..." << std::endl;
+		else
+			os << std::endl;
 	}
 
 	return os;

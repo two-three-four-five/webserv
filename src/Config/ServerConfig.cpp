@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/26 21:48:31 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/08 13:57:13 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,11 @@ ServerConfig::ServerConfig(const ServerConfig &other)
 ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 	: AHttpConfigModule(core), names(), ports(), locations()
 {
-	this->setHttpConfigCore(block.directives);
-	this->setHttpConfigCore(block.subBlocks);
+	this->setHttpConfigCore(block.getDirectives());
+	this->setHttpConfigCore(block.getSubBlocks());
 
-	ConfigFile::directives_t::const_iterator it = block.directives.begin();
-	for (; it != block.directives.end(); it++)
+	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
+	for (; it != block.getDirectives().end(); it++)
 	{
 		std::string key = (*it).first;
 		std::string value = (*it).second;
@@ -44,11 +44,11 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 			names.push_back(value);
 		}
 	}
-	for (size_t i = 0; i < block.subBlocks.size(); i++)
+	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
 	{
-		if (block.subBlocks.at(i).name == "location")
+		if (block.getSubBlocks().at(i).getName() == "location")
 		{
-			locations.push_back(LocationConfig(block.subBlocks.at(i), core));
+			locations.push_back(LocationConfig(block.getSubBlocks().at(i), core));
 		}
 	}
 }

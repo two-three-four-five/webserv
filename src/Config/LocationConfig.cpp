@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/06 19:10:00 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 13:56:48 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,29 +33,30 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 			cgi_path path;
 	   }
 	 */
-	if (block.parameters.size() != 2)
+	if (block.getParameters().size() != 2)
 		throw ParseError("location parameter should be two.");
-	modifier = block.parameters.at(0);
+	modifier = block.getParameters().at(0);
 	if (modifier != "=" && modifier != "$" && modifier != "^")
 		throw ParseError("unexpected location parameter: " + modifier);
-	pattern = block.parameters.at(1);
+	pattern = block.getParameters().at(1);
 
-	this->setHttpConfigCore(block.directives);
-	this->setHttpConfigCore(block.subBlocks);
+	this->setHttpConfigCore(block.getDirectives());
+	this->setHttpConfigCore(block.getSubBlocks());
 
-	ConfigFile::directives_t::const_iterator it = block.directives.begin();
+	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	bool hasAlias = false, hasRoot = false, hasProxyPass = false, hasCgiPath = false;
-	for (; it != block.directives.end(); it++)
+	for (; it != block.getDirectives().end(); it++)
 	{
 		std::string key = (*it).first;
 		std::string value = (*it).second;
+		size_t numToken = util::string::split(value, ' ').size();
 		if (key == "alias")
 		{
 			if (hasAlias)
 				throw ParseError("\"alias\" directive is duplicate");
 			if (hasRoot)
 				throw ParseError("\"alias\" directive is duplicate, \"root\" directive was specified earlier");
-			if (util::string::split(value, ' ').size() != 1)
+			if (numToken != 1)
 				throw ParseError("invalid number of arguments in \"alias\" directive");
 
 			hasAlias = true;
@@ -75,7 +76,7 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		{
 			if (hasCgiPath)
 				throw ParseError("\"cgi_path\" directive is duplicate");
-			if (util::string::split(value, ' ').size() != 1)
+			if (numToken != 1)
 				throw ParseError("invalid number of arguments in \"cgi_path\" directive");
 			if (File(value).getCode() != File::REGULAR_FILE)
 				throw ParseError("invalid path for cgi file " + value);
