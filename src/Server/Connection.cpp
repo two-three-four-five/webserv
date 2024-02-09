@@ -69,7 +69,7 @@ bool Connection::readRequest(int fd)
 		if (request.getParseStatus() >= Body && targetServer == NULL)
 		{
 			targetServer = Webserv::getInstance().findTargetServer(port, request);
-			targetResource = configureTargetResource(request.getRequestTarget());
+			targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
 		}
 		if (request.getParseStatus() == End)
 		{
@@ -185,7 +185,8 @@ void Connection::buildResponseFromRequest()
 	if (method == "GET")
 	{
 		if (targetFile.getCode() == File::DIRECTORY)
-			build301Response("http://" + request.getHeaders().find("host")->second + request.getRequestTarget() + "/");
+			build301Response("http://" + request.getHeaders().find("host")->second +
+							 request.getRequestTarget().getTargetURI() + "/");
 		else if (targetFile.getCode() == File::REGULAR_FILE || targetLocationConfig.getProxyPass().length() != 0)
 			buildGetResponse();
 		else if (targetFile.getCode() != File::REGULAR_FILE)
@@ -195,7 +196,7 @@ void Connection::buildResponseFromRequest()
 		buildErrorResponse(405);
 	else if (method == "POST")
 	{
-		if (request.getRequestTarget() == "/")
+		if (request.getRequestTarget().getTargetURI() == "/")
 			buildErrorResponse(405);
 		else
 			callCGI(targetResource);

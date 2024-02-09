@@ -5,11 +5,33 @@
 
 using namespace Hafserv;
 
-Request::Request() : parseStatus(Created), bodyLength(0) {}
+Request::Request() : parseStatus(Created), contentLength(0), bodyLength(0) {}
 
-// Request::Request(const Request &other) {}
-// Request::Request &operator=(const Request &rhs) {}
-// Request::~Request() {}
+Request::Request(const Request &other)
+	: parseStatus(other.parseStatus), method(other.method), requestTarget(other.requestTarget), headers(other.headers),
+	  boundary(other.boundary), contentLength(other.contentLength), bodyLength(other.bodyLength), body(other.body),
+	  bodyVec(other.bodyVec), parseBody(other.parseBody)
+{
+}
+
+Request &Request::operator=(const Request &rhs)
+{
+	if (this != &rhs)
+	{
+		parseStatus = rhs.parseStatus;
+		method = rhs.method;
+		requestTarget = rhs.requestTarget;
+		headers = rhs.headers;
+		boundary = rhs.boundary;
+		contentLength = rhs.contentLength;
+		bodyLength = rhs.bodyLength;
+		body = rhs.body;
+		bodyVec = rhs.bodyVec;
+		parseBody = rhs.parseBody;
+	}
+	return *this;
+}
+Request::~Request() {}
 
 int Request::parse(std::string request)
 {
@@ -25,11 +47,12 @@ int Request::parse(std::string request)
 int Request::parseStartLine(const std::string &request)
 {
 	std::istringstream requestStream(request);
-	std::string httpVersion;
+	std::string rTarget, httpVersion;
 
 	// GET /index.html HTTP/1.1
 	std::getline(requestStream, method, ' ');
-	std::getline(requestStream, requestTarget, ' ');
+	std::getline(requestStream, rTarget, ' ');
+	requestTarget = RequestTarget(rTarget);
 	std::getline(requestStream, httpVersion, '\r');
 
 	if (httpVersion.find("HTTP/") != 0)
@@ -224,7 +247,7 @@ void Request::printBody()
 
 const int Hafserv::Request::getParseStatus() const { return parseStatus; }
 
-const std::string Hafserv::Request::getRequestTarget() const { return requestTarget; }
+const RequestTarget &Request::getRequestTarget() const { return requestTarget; }
 
 const HeaderMultiMap &Request::getHeaders() const { return headers; }
 

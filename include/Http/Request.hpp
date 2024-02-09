@@ -6,13 +6,14 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/09 20:07:15 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 20:27:44 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+#include "Http/RequestTarget.hpp"
 #include "Server.hpp"
 #include <ctime>
 #include <fstream>
@@ -40,9 +41,9 @@ class Request
 {
 public:
 	Request();
-	// Request(const Request &other);
-	// Request &operator=(const Request &rhs);
-	// ~Request();
+	Request(const Request &other);
+	Request &operator=(const Request &rhs);
+	~Request();
 	int parse(std::string request);
 	int parseStartLine(const std::string &request);
 	int parseHeaders(const std::string &fieldLine);
@@ -55,19 +56,18 @@ public:
 	void checkHeaderField();
 
 	const int getParseStatus() const;
-	const std::string getRequestTarget() const;
+	const RequestTarget &getRequestTarget() const;
 	const HeaderMultiMap &getHeaders() const;
 	const std::string &getMethod() const;
 	const std::string &getBody() const;
 
 	typedef int (Request::*ParseBodyFunction)(std::string &);
-	friend class Response;
 
 private:
 	RequestParseStatus parseStatus;
 
 	std::string method;
-	std::string requestTarget;
+	RequestTarget requestTarget;
 	HeaderMultiMap headers;
 	std::string boundary;
 	size_t contentLength;
