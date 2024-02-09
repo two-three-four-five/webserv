@@ -39,50 +39,42 @@ Connection::~Connection() {}
 
 bool Connection::readRequest(int fd)
 {
+	char charBuf[BUFFER_SIZE + 1];
 	int str_len;
 	char peekBuf[BUFFER_SIZE + 1];
 	char readBuf[BUFFER_SIZE + 1];
 
-	bzero(peekBuf, BUFFER_SIZE + 1);
-	str_len = recv(fd, peekBuf, BUFFER_SIZE, MSG_PEEK | MSG_DONTWAIT);
-	// peekBuf[str_len] = 0;
-
+	str_len = read(fd, charBuf, BUFFER_SIZE);
+	charBuf[str_len] = '\0';
 	if (str_len == 0)
-	{
-		std::cout << "here" << std::endl;
 		return false;
-	}
 	else
 	{
-		int idx = static_cast<std::string>(peekBuf).find('\n');
-		if (request.getParseStatus() == Body && idx == std::string::npos)
+		buffer += std::string(charBuf);
+		int idx;
+		while ((idx = buffer.find('\n')) != std::string::npos)
 		{
-			idx = BUFFER_SIZE - 1;
-		}
-		else if (idx == std::string::npos)
-			return true;
-		bzero(readBuf, BUFFER_SIZE + 1);
-		str_len = read(fd, readBuf, idx + 1);
-		readBuf[str_len] = 0;
-
-		statusCode = request.parse(static_cast<std::string>(readBuf));
-		if (request.getParseStatus() >= Body && targetServer == NULL)
-		{
-			targetServer = Webserv::getInstance().findTargetServer(port, request);
-			targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
-		}
-		if (request.getParseStatus() == End)
-		{
-			request.printRequest();
-			// Response response(request);
-			// std::string responseString = response.getResponse();
-			buildResponseFromRequest();
-			std::string responseString = response.getResponse();
-			std::cout << "<-------response------->" << std::endl << responseString;
-			std::cout << "<-----response end----->" << std::endl;
-			// send(fd, responseString.c_str(), responseString.length(), 0);
-			write(fd, responseString.c_str(), responseString.length());
-			return false;
+			std::string line = buffer.substr(0, idx);
+			buffer = buffer.substr(idx + 1);
+			statusCode = request.parse(line);
+			if (request.getParseStatus() >= Body && targetServer == NULL)
+			{
+				targetServer = Webserv::getInstance().findTargetServer(port, request);
+				targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
+			}
+			if (request.getParseStatus() == End)
+			{
+				request.printRequest();
+				// Response response(request);
+				// std::string responseString = response.getResponse();
+				buildResponseFromRequest();
+				std::string responseString = response.getResponse();
+				std::cout << "<-------response------->" << std::endl << responseString;
+				std::cout << "<-----response end----->" << std::endl;
+				// send(fd, responseString.c_str(), responseString.length(), 0);
+				write(fd, responseString.c_str(), responseString.length());
+				return false;
+			}
 		}
 	}
 	return true;
@@ -332,7 +324,6 @@ char **Connection::makeEnvp()
 	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	envVec.push_back("SCRIPT_FILENAME=/Users/jinhchoi/Github/webserv/cgi-bin/index.php");
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);

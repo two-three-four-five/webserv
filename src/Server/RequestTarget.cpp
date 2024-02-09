@@ -36,6 +36,8 @@ const std::string &RequestTarget::getQueryString() const { return queryString; }
 
 std::ostream &Hafserv::operator<<(std::ostream &os, const RequestTarget &requestTarget)
 {
-	os << requestTarget.getTargetURI() << "?" << requestTarget.getQueryString();
+	os << requestTarget.getTargetURI();
+	if (requestTarget.getQueryString().length() > 0)
+		os << "?" << requestTarget.getQueryString();
 	return os;
 }

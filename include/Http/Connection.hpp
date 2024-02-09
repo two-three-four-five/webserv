@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/09 21:12:48 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 22:09:18 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ public:
 	const LocationConfig &getTargetLocationConfig() const;
 
 private:
+	std::string buffer;
+
 	Request request;
 	Response response;
 	int socket;
