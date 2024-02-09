@@ -60,8 +60,8 @@ ConfigFile::ConfigFile(const std::string &filename) throw(ParseError) : RegularF
 				ConfigFile newConfig = ConfigFile(*dynamic_cast<RegularFile *>(this));
 				newConfig.blockDirective = *waiting.begin();
 
-				for (size_t j = 1; j < waiting.size(); j++)
-					newConfig.parameters.push_back(waiting.at(j));
+				for (size_t i = 1; i < waiting.size(); i++)
+					newConfig.parameters.push_back(waiting.at(i));
 
 				(*history.back()).subBlocks.push_back(newConfig);
 				history.push_back(--(*history.back()).subBlocks.end());
@@ -86,8 +86,8 @@ ConfigFile::ConfigFile(const std::string &filename) throw(ParseError) : RegularF
 			if (!waiting.empty())
 			{
 				std::string value;
-				for (size_t j = 1; j < waiting.size() - 1; j++)
-					value += waiting.at(j) + " ";
+				for (size_t i = 1; i < waiting.size() - 1; i++)
+					value += waiting.at(i) + " ";
 				value += waiting.back();
 				(*history.back()).directives.insert(std::make_pair(waiting.at(0), value));
 			}

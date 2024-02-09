@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:28:02 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/10 00:12:27 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,9 +158,17 @@ std::ostream &operator<<(std::ostream &os, const LocationConfig &conf)
 	os << conf.getHttpConfigCore();
 	os << "\tmodifier: " << conf.getModifier() << std::endl;
 	os << "\tpattern: " << conf.getPattern() << std::endl;
-	os << "\talias: " << conf.getAlias() << std::endl;
-	os << "\tproxy_pass: " << conf.getProxyPass() << std::endl;
-	os << "\tcgi_path: " << conf.getCgiPath();
-
+	if (conf.getAlias().length())
+		os << "\talias: " << conf.getAlias() << std::endl;
+	else
+		os << "\tno alias" << std::endl;
+	if (conf.getProxyPass().length())
+		os << "\tproxy_pass: " << conf.getProxyPass() << std::endl;
+	else
+		os << "\tno proxy_pass" << std::endl;
+	if (conf.getCgiPath().length())
+		os << "\tcgi_path: " << conf.getCgiPath();
+	else
+		os << "\tno cgi_pass";
 	return os;
 }
