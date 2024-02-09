@@ -1,5 +1,32 @@
 #include "Parse.hpp"
 
+std::vector<std::string> parseTransferEncoding(std::string &str)
+{
+	std::vector<std::string> vec;
+	std::string::iterator it = str.begin();
+
+	while (it != str.end())
+	{
+		if (!readTransferCoding(vec, str, it))
+		{
+			vec.clear();
+			return (vec);
+		}
+	}
+	return (vec);
+}
+
+bool readTransferCoding(std::vector<std::string> &vec, std::string &str, std::string::iterator &it)
+{
+	if (readOWS(it) && readToken(vec, str, it))
+	{
+		while (it != str.end() && *(it++) != ',')
+			;
+		return (true);
+	}
+	return (false);
+}
+
 std::vector<std::string> parseContentType(std::string &str)
 {
 	std::vector<std::string> vec;
@@ -109,6 +136,19 @@ bool readRWS(std::string::iterator &it)
 	while (*it == SP || *it == HTAB)
 		it++;
 	return (initIt != it);
+}
+
+std::string readHex(std::string &str)
+{
+	std::string::iterator it;
+	for (it = str.begin(); it != str.end(); it++)
+	{
+		if (std::isxdigit(*it))
+			it++;
+		else
+			break;
+	}
+	return str.substr(0, it - str.begin());
 }
 
 void printVector(std::vector<std::string> &vec)

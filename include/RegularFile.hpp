@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:45:44 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/29 23:10:20 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 17:37:34 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,13 @@ public:
 	RegularFile &operator=(const RegularFile &other);
 	virtual ~RegularFile();
 
-	const std::vector<std::string> &getContents() const;
-	const std::string getRawContents() const;
+	const std::string &getContents() const;
 	size_t getContentsSize() const;
 	const std::string &getExtension() const;
-	const std::string &getline(size_t lineNum) const;
 
 protected:
 	std::string extension;
-	std::vector<std::string> contents;
+	std::string contents;
 };
 
 } // namespace Hafserv

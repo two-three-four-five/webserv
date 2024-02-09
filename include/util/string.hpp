@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:43:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 23:03:24 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 00:43:08 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ namespace util
 namespace string
 {
 std::pair<bool, int> stoi(const std::string &str);
+
+std::string itos(const int n);
 
 std::vector<std::string> split(const std::string &str, char delimiter);
 

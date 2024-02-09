@@ -1,6 +1,7 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
+#include "Connection.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
 #include <map>
@@ -12,13 +13,15 @@
 namespace Hafserv
 {
 
+class Connection;
+
 typedef std::map<int, Hafserv::Request> RequestMap;
+typedef std::map<int, Connection> ConnectionMap;
 
 class Webserv
 {
 public:
-	Webserv();
-	~Webserv();
+	static Webserv &getInstance();
 
 	void initWebserv();
 
@@ -36,7 +39,12 @@ public:
 	bool inServSocks(int serv_sock);
 	void closeServSocks();
 
+	const std::map<int, std::string> &getStatusCodeMap() const;
+
 private:
+	Webserv();
+	~Webserv();
+
 	int kq;
 
 	std::map<int, std::string> statusCodeMap;
@@ -47,6 +55,7 @@ private:
 	std::vector<Server *> servers;
 
 	RequestMap Requests;
+	ConnectionMap Connections;
 };
 
 } // namespace Hafserv

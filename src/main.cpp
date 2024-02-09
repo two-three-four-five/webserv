@@ -16,8 +16,10 @@ int main(int argc, char *argv[])
 	try
 	{
 		ConfigFile configFile = ConfigFile(argv[1]);
+		configFile.include();
 		WebservConfig config = WebservConfig(configFile);
-		Webserv webserv;
+		std::cout << config << std::endl;
+		Webserv &webserv = Webserv::getInstance();
 
 		for (std::vector<ServerConfig>::const_iterator it = config.getHttpConfig().getServers().begin();
 			 it != config.getHttpConfig().getServers().end(); it++)

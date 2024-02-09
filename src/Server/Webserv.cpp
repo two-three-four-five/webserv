@@ -11,6 +11,12 @@
 
 using namespace Hafserv;
 
+Webserv &Webserv::getInstance()
+{
+	static Webserv webserv;
+	return webserv;
+}
+
 Webserv::Webserv()
 {
 	initWebserv();
@@ -41,7 +47,7 @@ void Webserv::addServer(Server *server)
 		openPort(*it);
 }
 
-void Hafserv::Webserv::openPort(unsigned short port)
+void Webserv::openPort(unsigned short port)
 {
 	if (portToServSock.find(port) == portToServSock.end())
 	{
@@ -87,16 +93,13 @@ void Webserv::initWebserv()
 
 void Webserv::runWebserv()
 {
-	int str_len;
-	char peekBuf[BUF_SIZE + 1];
-	char readBuf[BUF_SIZE + 1];
 	struct kevent event_list[MAX_EVENTS];
 
+	struct timespec timeout;
+	bzero(&timeout, sizeof(struct timespec));
 	while (1)
 	{
 		// 연결된 후 입력이 오랫동안 없는 경우 생각하기
-		struct timespec timeout;
-		bzero(&timeout, sizeof(struct timespec));
 		int events = kevent(kq, NULL, 0, event_list, MAX_EVENTS, &timeout);
 		if (events == -1)
 		{
@@ -112,57 +115,9 @@ void Webserv::runWebserv()
 			}
 			else if (event_list[i].filter == EVFILT_READ)
 			{
-				memset(peekBuf, 0, sizeof(peekBuf));
-				str_len = recv(event_list[i].ident, peekBuf, BUF_SIZE, MSG_PEEK | MSG_DONTWAIT);
-				peekBuf[str_len] = 0;
-
-				if (str_len == 0)
-				{
+				Connection &conn = Connections.find(event_list[i].ident)->second;
+				if (!conn.readRequest(event_list[i].ident))
 					disconnectClient(event_list[i].ident);
-				}
-				else
-				{
-					Request &request = Requests.find(event_list[i].ident)->second;
-					int idx = static_cast<std::string>(peekBuf).find('\n');
-					if (request.getParseStatus() == Body && idx == std::string::npos)
-					{
-						idx = BUF_SIZE - 1;
-					}
-					else if (idx == std::string::npos)
-						continue;
-					memset(readBuf, 0, sizeof(readBuf));
-					str_len = read(event_list[i].ident, readBuf, idx + 1);
-					readBuf[str_len] = 0;
-
-					try
-					{
-						request.parse(static_cast<std::string>(readBuf));
-						if (request.getParseStatus() >= Body && request.getTargetServer() == NULL)
-						{
-							request.setTargetServer(
-								findTargetServer(sockToPort.find(event_list[i].ident)->second, request));
-							request.setTargetLocation();
-						}
-						if (request.getParseStatus() == End)
-						{
-							Hafserv::Response response(request);
-							std::string responseString = response.getResponse();
-							// std::cout << "<-------response------->" << std::endl << responseString;
-							// std::cout << "<-----response end----->" << std::endl;
-							// send(event_list[i].ident, responseString.c_str(), responseString.length(), 0);
-							write(event_list[i].ident, responseString.c_str(), responseString.length());
-							disconnectClient(event_list[i].ident);
-						}
-					}
-					catch (const std::exception &e)
-					{
-						std::cerr << e.what() << std::endl;
-						// client에게 오류메시지 보내기
-						disconnectClient(event_list[i].ident);
-						continue;
-					}
-					// write(event_list[i].ident, buf, str_len);
-				}
 			}
 		}
 		checkTimeout();
@@ -186,12 +141,14 @@ void Webserv::connectClient(int serv_sock)
 	EV_SET(&event, clnt_sock, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
 
-	std::pair<int, Hafserv::Request> p;
+	std::pair<int, Request> p;
 	p.first = clnt_sock;
 	Requests.insert(p);
 
 	int port = servSockToPort.find(serv_sock)->second;
 	sockToPort[clnt_sock] = port;
+
+	Connections.insert(std::make_pair(clnt_sock, Connection(clnt_sock, sockToPort.find(clnt_sock)->second)));
 
 	std::cout << "connected client: " << clnt_sock << std::endl;
 }
@@ -206,6 +163,7 @@ void Webserv::disconnectClient(int socketfd)
 	close(socketfd);
 
 	Requests.erase(socketfd);
+	Connections.erase(socketfd);
 
 	std::map<int, unsigned short>::iterator socketToPortIt = sockToPort.find(socketfd);
 	if (socketToPortIt != sockToPort.end())
@@ -214,7 +172,7 @@ void Webserv::disconnectClient(int socketfd)
 	std::cout << "closed client: " << socketfd << std::endl;
 }
 
-Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &request)
+Server *Webserv::findTargetServer(unsigned short port, const Request &request)
 {
 	Server *defaultServer = NULL;
 	std::string host = request.getHeaders().find("host")->second;
@@ -227,8 +185,8 @@ Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &r
 	{
 		std::vector<std::string> serverNames = (*it)->getNames();
 		std::vector<unsigned short> ports = (*it)->getPorts();
-		std::vector<std::string>::iterator findNameIt = find(serverNames.begin(), serverNames.end(), hostName);
-		std::vector<unsigned short>::iterator findPortIt = find(ports.begin(), ports.end(), port);
+		std::vector<std::string>::iterator findNameIt = std::find(serverNames.begin(), serverNames.end(), hostName);
+		std::vector<unsigned short>::iterator findPortIt = std::find(ports.begin(), ports.end(), port);
 
 		if (defaultServer == NULL && findPortIt != ports.end())
 			defaultServer = *it;
@@ -238,31 +196,31 @@ Server *Hafserv::Webserv::findTargetServer(unsigned short port, const Request &r
 	return defaultServer;
 }
 
-void Hafserv::Webserv::checkTimeout()
+void Webserv::checkTimeout()
 {
 	time_t now = time(NULL);
 	std::vector<int> timeoutSockets;
-	for (RequestMap::iterator it = Requests.begin(); it != Requests.end(); it++)
+	for (ConnectionMap::iterator it = Connections.begin(); it != Connections.end(); it++)
 	{
 		const Server *server = it->second.getTargetServer();
-		const LocationConfig *targetConfig = it->second.getTargetLocationConfig();
-		if (it->second.getParseStatus() < Body)
+		const LocationConfig targetConfig = it->second.getTargetLocationConfig();
+		if (it->second.getRequest().getParseStatus() < Body)
 		{
 			int headerTimeout = 60;
 			if (server != NULL)
 				headerTimeout = server->getServerConfig().getHttpConfigCore().getTimeout().clientHeader;
-			if (targetConfig != NULL)
-				headerTimeout = targetConfig->getHttpConfigCore().getTimeout().clientHeader;
+			if (targetConfig.getHttpConfigCore().getTimeout().clientHeader > 0)
+				headerTimeout = targetConfig.getHttpConfigCore().getTimeout().clientHeader;
 			if (now - it->second.getStartTime() > headerTimeout)
 			{
 				timeoutSockets.push_back(it->first);
 			}
 		}
-		else if (it->second.getParseStatus() == Body)
+		else if (it->second.getRequest().getParseStatus() == Body)
 		{
 			int bodyTimeout = 60;
-			if (targetConfig != NULL)
-				bodyTimeout = targetConfig->getHttpConfigCore().getTimeout().clientBody;
+			if (targetConfig.getHttpConfigCore().getTimeout().clientHeader > 0)
+				bodyTimeout = targetConfig.getHttpConfigCore().getTimeout().clientBody;
 			if (now - it->second.getStartTime() > bodyTimeout)
 			{
 				timeoutSockets.push_back(it->first);
@@ -270,7 +228,9 @@ void Hafserv::Webserv::checkTimeout()
 		}
 	}
 	for (std::vector<int>::iterator it = timeoutSockets.begin(); it != timeoutSockets.end(); it++)
+	{
 		disconnectClient(*it);
+	}
 }
 
 bool Webserv::inServSocks(int serv_sock) { return servSockToPort.find(serv_sock) != servSockToPort.end(); }
@@ -279,6 +239,8 @@ void Webserv::closeServSocks()
 {
 	for (std::map<int, unsigned short>::iterator it = servSockToPort.begin(); it != servSockToPort.end(); it++)
 	{
-		close((*it).first);
+		close(it->first);
 	}
 }
+
+const std::map<int, std::string> &Hafserv::Webserv::getStatusCodeMap() const { return statusCodeMap; }
