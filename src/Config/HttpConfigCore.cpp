@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:28:40 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 21:55:48 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,10 @@ using namespace Hafserv;
 
 HttpConfigCore::Timeout::Timeout() : clientHeader(60), clientBody(60), keepAlive(75), send(60) {}
 
-HttpConfigCore::HttpConfigCore() : root(), indexes(), timeouts(), errorPages(), types(), allowMethods() {}
+HttpConfigCore::HttpConfigCore() : root("html"), indexes(), timeouts(), errorPages(), types(), allowMethods()
+{
+	indexes.push_back("index.html");
+}
 
 HttpConfigCore::HttpConfigCore(const HttpConfigCore &other)
 	: root(other.root), indexes(other.indexes), timeouts(other.timeouts), errorPages(other.errorPages),
@@ -63,7 +66,11 @@ void HttpConfigCore::addErrorPage(int errorCode, const std::string &uri)
 	errorPages.insert(std::make_pair(errorCode, uri));
 }
 
-void HttpConfigCore::addIndex(const std::string &index) { indexes.push_back(index); }
+void HttpConfigCore::addIndex(const std::string &index)
+{
+	if (std::find(indexes.begin(), indexes.end(), index) != indexes.end())
+		indexes.push_back(index);
+}
 
 void HttpConfigCore::addType(const std::string &type, const std::string &extension)
 {

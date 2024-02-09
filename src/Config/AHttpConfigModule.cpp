@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:27:44 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 22:00:45 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,8 +58,10 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 		else if (key == "index")
 		{
 			params = util::string::split(value, ' ');
+			std::vector<std::string> newIndexes;
 			for (size_t i = 0; i < params.size(); i++)
-				core.addIndex(params[i]);
+				newIndexes.push_back(params[i]);
+			core.setIndexes(newIndexes);
 		}
 		else if (key == "client_header_timeout")
 		{
