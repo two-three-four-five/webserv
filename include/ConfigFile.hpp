@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigFile.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 14:35:23 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 18:03:40 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 
 namespace Hafserv
 {
-class ConfigFile
+class ConfigFile : public RegularFile
 {
 public:
 	typedef std::vector<std::string> parameters_t;
@@ -32,27 +32,24 @@ public:
 
 	ConfigFile();
 	ConfigFile(const ConfigFile &other);
+	ConfigFile(const RegularFile &other);
 	ConfigFile(const std::string &filename);
 	ConfigFile &operator=(const ConfigFile &other);
 	virtual ~ConfigFile() throw();
 
-	const std::string &getName() const;
+	const std::string &getBlockDirective() const;
 	const parameters_t &getParameters() const;
 	const directives_t &getDirectives() const;
 	const subblocks_t &getSubBlocks() const;
-	const File &getFile() const;
-
-	void setFile(const RegularFile &file);
-	void setFile(const std::string &filename);
 
 	void include() throw(IncludeError);
 
 private:
 	static const std::string meta;
 
-	RegularFile file;
+	std::vector<std::string> lines;
 
-	std::string name;
+	std::string blockDirective;
 	std::vector<std::string> parameters;
 	std::multimap<std::string, std::string> directives;
 	std::vector<ConfigFile> subBlocks;
