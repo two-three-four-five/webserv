@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Connection.hpp                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
+/*   Updated: 2024/02/09 19:58:14 by jinhchoi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
-#include "Request.hpp"
-#include "Response.hpp"
+#include "Http/Request.hpp"
+#include "Http/Response.hpp"
 #include "Webserv.hpp"
 #include <sys/stat.h>
 

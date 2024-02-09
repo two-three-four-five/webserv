@@ -1,7 +1,7 @@
 #include <iostream>
 
+#include "Config/WebservConfig.hpp"
 #include "Webserv.hpp"
-#include "WebservConfig.hpp"
 
 using namespace Hafserv;
 

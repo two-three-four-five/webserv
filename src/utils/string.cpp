@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:47:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 00:43:39 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 20:03:03 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ std::pair<bool, int> util::string::stoi(const std::string &str)
 
 std::string util::string::itos(const int n)
 {
-	std::stringstream ss(n);
+	std::stringstream ss;
+	ss << n;
 	return ss.str();
 }
 

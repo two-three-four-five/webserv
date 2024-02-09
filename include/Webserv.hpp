@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Webserv.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/09 19:58:58 by jinhchoi          #+#    #+#             */
+/*   Updated: 2024/02/09 19:59:06 by jinhchoi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
-#include "Connection.hpp"
-#include "Request.hpp"
+#include "Http/Connection.hpp"
+#include "Http/Request.hpp"
 #include "Server.hpp"
 #include <map>
 #include <vector>

@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   EventConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 13:58:19 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 20:01:30 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "EventConfig.hpp"
+#include "Config/EventConfig.hpp"
 
 using namespace Hafserv;
 

@@ -6,11 +6,11 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:46:48 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 17:42:35 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 20:01:07 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "RegularFile.hpp"
+#include "File/RegularFile.hpp"
 #include <sstream>
 
 using namespace Hafserv;

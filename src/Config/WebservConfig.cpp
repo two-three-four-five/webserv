@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   WebservConfig.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 18:12:56 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 20:01:48 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "WebservConfig.hpp"
+#include "Config/WebservConfig.hpp"
 
 using namespace Hafserv;
 

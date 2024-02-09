@@ -6,11 +6,11 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:24:51 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 20:28:02 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "LocationConfig.hpp"
+#include "Config/LocationConfig.hpp"
 
 using namespace Hafserv;
 

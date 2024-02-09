@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ConfigFile.hpp"
+#include "File/ConfigFile.hpp"
 #include <sstream>
 
 using namespace Hafserv;

@@ -3,20 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   WebservConfig.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:20:21 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 20:00:05 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERVCONFIG_HPP
 #define WEBSERVCONFIG_HPP
 
-#include "ConfigException.hpp"
-#include "ConfigFile.hpp"
-#include "EventConfig.hpp"
-#include "HttpConfig.hpp"
+#include "Config/ConfigException.hpp"
+#include "Config/EventConfig.hpp"
+#include "Config/HttpConfig.hpp"
+#include "File/ConfigFile.hpp"
 #include <string>
 
 namespace Hafserv

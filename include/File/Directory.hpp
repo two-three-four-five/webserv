@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Directory.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:05:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 20:52:38 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 19:57:43 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef DIRECTORY_HPP
 #define DIRECTORY_HPP
 
-#include "File.hpp"
+#include "File/File.hpp"
 #include "dirent.h"
 #include <iostream>
 #include <utility>
