@@ -6,12 +6,12 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:01:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 18:12:04 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 21:47:39 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ConfigFile.hpp"
-#include "WebservConfig.hpp"
+#include "Config/WebservConfig.hpp"
+#include "File/ConfigFile.hpp"
 #include <iostream>
 
 int main(int argc, char **argv)
@@ -26,8 +26,8 @@ int main(int argc, char **argv)
 	{
 		Hafserv::ConfigFile configFile = Hafserv::ConfigFile(argv[1]);
 		std::cout << configFile << std::endl;
-		configFile.include();
 		std::cout << "-----------------------------------" << std::endl;
+		configFile.include();
 		std::cout << configFile << std::endl;
 		Hafserv::WebservConfig config = Hafserv::WebservConfig(configFile);
 		std::cout << config << std::endl;
