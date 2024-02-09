@@ -95,11 +95,11 @@ void Webserv::runWebserv()
 {
 	struct kevent event_list[MAX_EVENTS];
 
+	struct timespec timeout;
+	bzero(&timeout, sizeof(struct timespec));
 	while (1)
 	{
 		// 연결된 후 입력이 오랫동안 없는 경우 생각하기
-		struct timespec timeout;
-		bzero(&timeout, sizeof(struct timespec));
 		int events = kevent(kq, NULL, 0, event_list, MAX_EVENTS, &timeout);
 		if (events == -1)
 		{

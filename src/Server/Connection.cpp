@@ -79,7 +79,7 @@ bool Connection::readRequest(int fd)
 			std::string responseString = response.getResponse();
 			std::cout << "<-------response------->" << std::endl << responseString;
 			std::cout << "<-----response end----->" << std::endl;
-			send(fd, responseString.c_str(), responseString.length(), 0);
+			// send(fd, responseString.c_str(), responseString.length(), 0);
 			write(fd, responseString.c_str(), responseString.length());
 			return false;
 		}
