@@ -1,6 +1,6 @@
 #include "Webserv.hpp"
-#include "Request.hpp"
-#include "Response.hpp"
+#include "Http/Request.hpp"
+#include "Http/Response.hpp"
 
 #include <algorithm>
 #include <arpa/inet.h>

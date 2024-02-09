@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   HttpConfigCore.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 00:57:26 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 20:01:37 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HttpConfigCore.hpp"
+#include "Config/HttpConfigCore.hpp"
 
 using namespace Hafserv;
 

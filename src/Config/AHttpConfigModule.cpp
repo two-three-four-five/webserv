@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpConfigModule.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 18:14:18 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 19:55:23 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "AHttpConfigModule.hpp"
+#include "Config/AHttpConfigModule.hpp"
 
 using namespace Hafserv;
 

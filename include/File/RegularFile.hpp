@@ -6,14 +6,14 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:45:44 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 17:37:34 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 19:58:00 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REGULARFILE_HPP
 #define REGULARFILE_HPP
 
-#include "File.hpp"
+#include "File/File.hpp"
 
 namespace Hafserv
 {

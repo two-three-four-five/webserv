@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "Response.hpp"
+#include "Http/Response.hpp"
 
 namespace Hafserv
 {

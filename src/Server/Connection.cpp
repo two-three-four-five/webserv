@@ -1,6 +1,6 @@
-#include "Connection.hpp"
+#include "Http/Connection.hpp"
 
-#include "File.hpp"
+#include "File/File.hpp"
 #include <string>
 #include <sys/socket.h>
 

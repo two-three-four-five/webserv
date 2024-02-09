@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Directory.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:05:07 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/20 21:01:00 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 20:01:14 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Directory.hpp"
+#include "File/Directory.hpp"
 
 using namespace Hafserv;
 

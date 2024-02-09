@@ -3,20 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   HttpConfig.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:21:58 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 19:57:02 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPCONFIG_HPP
 #define HTTPCONFIG_HPP
 
-#include "AHttpConfigModule.hpp"
-#include "ConfigException.hpp"
-#include "ConfigFile.hpp"
-#include "ServerConfig.hpp"
+#include "Config/AHttpConfigModule.hpp"
+#include "Config/ConfigException.hpp"
+#include "Config/ServerConfig.hpp"
+#include "File/ConfigFile.hpp"
 #include <string>
 #include <vector>
 

@@ -1,11 +1,15 @@
-#include "Request.hpp"
-#include "Parse.hpp"
+#include "Http/Request.hpp"
+#include "util/Parse.hpp"
 #include "util/string.hpp"
 #include <iostream>
 
 using namespace Hafserv;
 
 Request::Request() : parseStatus(Created), bodyLength(0) {}
+
+// Request::Request(const Request &other) {}
+// Request::Request &operator=(const Request &rhs) {}
+// Request::~Request() {}
 
 int Request::parse(std::string request)
 {

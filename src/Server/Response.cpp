@@ -1,5 +1,5 @@
-#include "Response.hpp"
-#include "File.hpp"
+#include "Http/Response.hpp"
+#include "File/File.hpp"
 #include "Webserv.hpp"
 #include <iostream>
 #include <sstream>

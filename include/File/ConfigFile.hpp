@@ -6,15 +6,15 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 18:03:40 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 19:57:37 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIGFILE_HPP
 #define CONFIGFILE_HPP
 
-#include "ConfigException.hpp"
-#include "RegularFile.hpp"
+#include "Config/ConfigException.hpp"
+#include "File/RegularFile.hpp"
 #include <algorithm>
 #include <list>
 #include <map>

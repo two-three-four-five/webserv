@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Request.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
+/*   Updated: 2024/02/09 20:07:15 by jinhchoi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
@@ -28,6 +40,9 @@ class Request
 {
 public:
 	Request();
+	// Request(const Request &other);
+	// Request &operator=(const Request &rhs);
+	// ~Request();
 	int parse(std::string request);
 	int parseStartLine(const std::string &request);
 	int parseHeaders(const std::string &fieldLine);

@@ -3,19 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 14:48:45 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 19:57:21 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
-#include "AHttpConfigModule.hpp"
-#include "ConfigFile.hpp"
-#include "LocationConfig.hpp"
+#include "Config/AHttpConfigModule.hpp"
+#include "Config/LocationConfig.hpp"
+#include "File/ConfigFile.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
