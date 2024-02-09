@@ -90,8 +90,34 @@ bool Connection::readRequest(int fd)
 std::string Connection::configureTargetResource(std::string requestTarget)
 {
 	int depth = -1;
-	const std::vector<LocationConfig> &locations = targetServer->getServerConfig().getLocations();
-	std::vector<LocationConfig>::const_iterator selectedIt = locations.end();
+	// =
+	const std::vector<LocationConfig> &equalLocations = targetServer->getServerConfig().getLocations().at(0);
+	std::vector<LocationConfig>::const_iterator selectedIt = equalLocations.end();
+
+	for (std::vector<LocationConfig>::const_iterator it = equalLocations.begin(); it != equalLocations.end(); it++)
+	{
+		const std::string &pattern = it->getPattern();
+		if (requestTarget == pattern)
+		{
+			return (requestTarget);
+		}
+	}
+	// $
+	const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
+	selectedIt = endLocations.end();
+
+	for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
+	{
+		const std::string &pattern = it->getPattern();
+		if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+		{
+			return (requestTarget);
+		}
+	}
+
+	// ^
+	const std::vector<LocationConfig> &locations = targetServer->getServerConfig().getLocations().at(2);
+	selectedIt = locations.end();
 
 	for (std::vector<LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); it++)
 	{

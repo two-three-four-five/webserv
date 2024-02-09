@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:09:45 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 13:57:55 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@ WebservConfig::WebservConfig(const WebservConfig &other)
 
 WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : directives(), event(), http()
 {
-	ConfigFile main = configFile.subBlocks.at(0);
+	ConfigFile main = configFile.getSubBlocks().at(0);
 
-	directives = main.directives;
+	directives = main.getDirectives();
 	std::string key, value;
-	ConfigFile::directives_t::const_iterator it = main.directives.begin();
-	for (; it != main.directives.end(); it++)
+	ConfigFile::directives_t::const_iterator it = main.getDirectives().begin();
+	for (; it != main.getDirectives().end(); it++)
 	{
 		key = (*it).first;
 		value = (*it).second;
@@ -47,15 +47,15 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : d
 	}
 
 	ConfigFile subBlock;
-	for (size_t i = 0; i < main.subBlocks.size(); i++)
+	for (size_t i = 0; i < main.getSubBlocks().size(); i++)
 	{
-		subBlock = main.subBlocks.at(i);
-		if (subBlock.name == "events")
+		subBlock = main.getSubBlocks().at(i);
+		if (subBlock.getName() == "events")
 			event = EventConfig(subBlock);
-		else if (subBlock.name == "http")
+		else if (subBlock.getName() == "http")
 			http = HttpConfig(subBlock);
 		else
-			throw ParseError("unexpected block directive: " + subBlock.name);
+			throw ParseError("unexpected block directive: " + subBlock.getName());
 	}
 }
 

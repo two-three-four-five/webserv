@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/23 14:53:52 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 13:56:04 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,17 +22,17 @@ HttpConfig::HttpConfig(const HttpConfig &other)
 }
 
 HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
-	: AHttpConfigModule(), directives(block.directives), servers()
+	: AHttpConfigModule(), directives(block.getDirectives()), servers()
 {
-	this->setHttpConfigCore(block.directives);
-	this->setHttpConfigCore(block.subBlocks);
+	this->setHttpConfigCore(block.getDirectives());
+	this->setHttpConfigCore(block.getSubBlocks());
 
 	std::string subBlockName;
-	for (size_t i = 0; i < block.subBlocks.size(); i++)
+	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
 	{
-		subBlockName = block.subBlocks.at(i).name;
+		subBlockName = block.getSubBlocks().at(i).getName();
 		if (subBlockName == "server")
-			servers.push_back(ServerConfig(block.subBlocks.at(i), core));
+			servers.push_back(ServerConfig(block.getSubBlocks().at(i), core));
 		else if (subBlockName == "types")
 			;
 		else
