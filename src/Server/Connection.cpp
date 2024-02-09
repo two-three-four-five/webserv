@@ -43,7 +43,7 @@ bool Connection::readRequest(int fd)
 	char peekBuf[BUFFER_SIZE + 1];
 	char readBuf[BUFFER_SIZE + 1];
 
-	bzero(peekBuf, BUFFER_SIZE);
+	bzero(peekBuf, BUFFER_SIZE + 1);
 	str_len = recv(fd, peekBuf, BUFFER_SIZE, MSG_PEEK | MSG_DONTWAIT);
 	// peekBuf[str_len] = 0;
 
