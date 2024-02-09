@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/26 21:48:34 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 14:48:45 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,12 @@ public:
 
 	const std::vector<std::string> &getNames() const;
 	const std::vector<unsigned short> &getPorts() const;
-	const std::vector<LocationConfig> &getLocations() const;
+	const std::vector<std::vector<LocationConfig> > &getLocations() const;
 
 private:
 	std::vector<std::string> names;
 	std::vector<unsigned short> ports;
-	std::vector<LocationConfig> locations;
+	std::vector<std::vector<LocationConfig> > locations;
 };
 
 } // namespace Hafserv

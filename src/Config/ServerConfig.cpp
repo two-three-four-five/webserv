@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/26 21:48:31 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/09 15:05:47 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 using namespace Hafserv;
 
-ServerConfig::ServerConfig() : AHttpConfigModule(), names(), ports(), locations() {}
+ServerConfig::ServerConfig() : AHttpConfigModule(), names(), ports(), locations(3) {}
 
 ServerConfig::ServerConfig(const ServerConfig &other)
 	: AHttpConfigModule(other.core), names(other.names), ports(other.ports), locations(other.locations)
@@ -22,13 +22,13 @@ ServerConfig::ServerConfig(const ServerConfig &other)
 }
 
 ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
-	: AHttpConfigModule(core), names(), ports(), locations()
+	: AHttpConfigModule(core), names(), ports(), locations(3)
 {
-	this->setHttpConfigCore(block.directives);
-	this->setHttpConfigCore(block.subBlocks);
+	this->setHttpConfigCore(block.getDirectives());
+	this->setHttpConfigCore(block.getSubBlocks());
 
-	ConfigFile::directives_t::const_iterator it = block.directives.begin();
-	for (; it != block.directives.end(); it++)
+	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
+	for (; it != block.getDirectives().end(); it++)
 	{
 		std::string key = (*it).first;
 		std::string value = (*it).second;
@@ -44,11 +44,18 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 			names.push_back(value);
 		}
 	}
-	for (size_t i = 0; i < block.subBlocks.size(); i++)
+	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
 	{
-		if (block.subBlocks.at(i).name == "location")
+		// locations.push_back(LocationConfig(block.getSubBlocks().at(i), core));
+		if (block.getSubBlocks().at(i).getName() == "location")
 		{
-			locations.push_back(LocationConfig(block.subBlocks.at(i), core));
+			LocationConfig conf = LocationConfig(block.getSubBlocks().at(i), core);
+			if (conf.getModifier() == "=")
+				locations[0].push_back(conf);
+			else if (conf.getModifier() == "$")
+				locations[1].push_back(conf);
+			else if (conf.getModifier() == "^")
+				locations[2].push_back(conf);
 		}
 	}
 }
@@ -71,7 +78,7 @@ const std::vector<std::string> &ServerConfig::getNames() const { return names; }
 
 const std::vector<unsigned short> &ServerConfig::getPorts() const { return ports; }
 
-const std::vector<LocationConfig> &ServerConfig::getLocations() const { return locations; }
+const std::vector<std::vector<LocationConfig> > &ServerConfig::getLocations() const { return locations; }
 
 std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 {
@@ -90,6 +97,7 @@ std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 	os << std::endl;
 
 	for (size_t i = 0; i < conf.getLocations().size(); i++)
-		os << conf.getLocations().at(i) << std::endl;
+		for (size_t j = 0; j < conf.getLocations()[i].size(); j++)
+			os << conf.getLocations()[i][j] << std::endl;
 	return os;
 }

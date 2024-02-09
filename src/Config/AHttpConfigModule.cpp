@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/06 17:00:33 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/08 13:55:32 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,13 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 	{
 		key = (*it).first;
 		value = (*it).second;
+		size_t numToken = util::string::split(value, ' ').size();
 		if (key == "root")
 		{
 			if (hasRoot)
 				throw ParseError("\"root\" directive is duplicate");
+			if (numToken != 1)
+				throw ParseError("invalid number of arguments in \"root\" directive");
 			hasRoot = true;
 			core.setRoot(value);
 		}
@@ -60,23 +63,36 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 		}
 		else if (key == "client_header_timeout")
 		{
-			if (util::string::stoi(value).first)
-				core.setClientHeaderTimeout(util::string::stoi(value).second);
+			if (numToken != 1)
+				throw ParseError("invalid number of arguments in \"client_header_timeout\" directive");
+			if (!util::string::stoi(value).first)
+				throw ParseError("\"client_header_timeout\" directive invalid value");
+
+			core.setClientHeaderTimeout(util::string::stoi(value).second);
 		}
 		else if (key == "client_body_timeout")
 		{
-			if (util::string::stoi(value).first)
-				core.setClientBodyTimeout(util::string::stoi(value).second);
+			if (numToken != 1)
+				throw ParseError("invalid number of arguments in \"client_body_timeout\" directive");
+			if (!util::string::stoi(value).first)
+				throw ParseError("\"client_body_timeout\" directive invalid value");
+			core.setClientBodyTimeout(util::string::stoi(value).second);
 		}
 		else if (key == "keepalive_timeout")
 		{
-			if (util::string::stoi(value).first)
-				core.setKeepAliveTimeout(util::string::stoi(value).second);
+			if (numToken != 1)
+				throw ParseError("invalid number of arguments in \"keepalive_timeout\" directive");
+			if (!util::string::stoi(value).first)
+				throw ParseError("\"keepalive_timeout\" directive invalid value");
+			core.setKeepAliveTimeout(util::string::stoi(value).second);
 		}
 		else if (key == "send_timeout")
 		{
-			if (util::string::stoi(value).first)
-				core.setSendTimeout(util::string::stoi(value).second);
+			if (numToken != 1)
+				throw ParseError("invalid number of arguments in \"send_timeout\" directive");
+			if (!util::string::stoi(value).first)
+				throw ParseError("\"send_timeout\" directive invalid value");
+			core.setSendTimeout(util::string::stoi(value).second);
 		}
 		else if (key == "error_page")
 		{
@@ -103,11 +119,11 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::subblocks_t &subBloc
 	std::string subBlockName, type, extension;
 	for (size_t i = 0; i < subBlocks.size(); i++)
 	{
-		subBlockName = subBlocks.at(i).name;
+		subBlockName = subBlocks.at(i).getName();
 		if (subBlockName == "types")
 		{
-			ConfigFile::directives_t::const_iterator it = subBlocks.at(i).directives.begin();
-			for (; it != subBlocks.at(i).directives.end(); it++)
+			ConfigFile::directives_t::const_iterator it = subBlocks.at(i).getDirectives().begin();
+			for (; it != subBlocks.at(i).getDirectives().end(); it++)
 			{
 				type = (*it).first;
 				extension = (*it).second;
