@@ -27,10 +27,10 @@ ConfigFile::ConfigFile(const ConfigFile &other)
 
 ConfigFile::ConfigFile(const RegularFile &other) : RegularFile(other) {}
 
-ConfigFile::ConfigFile(const std::string &filename) : RegularFile(filename), blockDirective("head")
+ConfigFile::ConfigFile(const std::string &filename) throw(ParseError) : RegularFile(filename), blockDirective("head")
 {
 	if (code != File::REGULAR_FILE)
-		; // throw config error
+		throw ParseError("IS NOT A REGULAR FILE");
 
 	ConfigFile main = ConfigFile();
 	main.blockDirective = "main";
@@ -39,8 +39,8 @@ ConfigFile::ConfigFile(const std::string &filename) : RegularFile(filename), blo
 	std::vector<std::vector<ConfigFile>::iterator> history;
 	history.push_back(subBlocks.begin());
 
-	std::vector<std::string> waiting;
 	std::string remainder, front;
+	std::vector<std::string> waiting;
 	size_t min = -1;
 
 	for (remainder = contents; remainder.size(); remainder = remainder.substr(min + 1, remainder.size() - (min + 1)))
@@ -70,9 +70,14 @@ ConfigFile::ConfigFile(const std::string &filename) : RegularFile(filename), blo
 			break;
 
 		case '}':
-			if (!front.empty() || !waiting.empty())
-				exit(1); // TODO: ERROR
-			history.pop_back();
+			if (!front.empty())
+				waiting.push_back(front + "}");
+			else if (!waiting.empty())
+				throw ParseError("unexpected \"}\"");
+			else if (history.size() == 1)
+				throw ParseError("unexpected \"}\"");
+			else
+				history.pop_back();
 			break;
 
 		case ';':
