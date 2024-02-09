@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 18:14:18 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 20:24:16 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 using namespace Hafserv;
 
-AHttpConfigModule::AHttpConfigModule() : core() {}
+AHttpConfigModule::AHttpConfigModule() : core() { core.addAllowMethod("GET"); }
 
 AHttpConfigModule::AHttpConfigModule(const AHttpConfigModule &other) : core(other.core) {}
 
@@ -109,6 +109,16 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 					; // error
 			}
 		}
+		else if (key == "allow_methods")
+		{
+			params = util::string::split(value, ' ');
+			for (size_t i = 0; i < numToken; i++)
+			{
+				if (params[i] != "GET" && params[i] != "POST" && params[i] != "DELETE")
+					throw ParseError("\"allow_methods\" directive invalid value: " + value);
+				core.addAllowMethod(params[i]);
+			}
+		}
 		else
 			;
 	}
@@ -139,7 +149,7 @@ bool AHttpConfigModule::isCoreDirective(const std::string &directive)
 {
 	if (directive == "root" || directive == "index" || directive == "client_header_timeout" ||
 		directive == "client_body_timeout" || directive == "keepalive_timeout" || directive == "send_timeout" ||
-		directive == "error_page")
+		directive == "error_page" || directive == "allow_methods")
 		return true;
 	else
 		return false;

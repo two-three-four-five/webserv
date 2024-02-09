@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 13:56:48 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 20:24:51 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,8 @@ bool LocationConfig::isMatching(const std::string &url)
 bool LocationConfig::isCoreDirective(const std::string &directive)
 {
 	if (directive == "root" || directive == "index" || directive == "client_body_timeout" ||
-		directive == "keepalive_timeout" || directive == "send_timeout" || directive == "error_page")
+		directive == "keepalive_timeout" || directive == "send_timeout" || directive == "error_page" ||
+		directive == "allow_methods")
 		return true;
 	else
 		return false;

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/01/22 22:41:33 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/09 19:54:06 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ public:
 	const Timeout &getTimeout() const;
 	const std::map<int, std::string> &getErrorPages() const;
 	const std::multimap<std::string, std::string> &getTypes() const;
+	const std::vector<std::string> &getAllowMethods() const;
 
 	void setRoot(const std::string &root);
 	void setIndexes(const std::vector<std::string> &indexes);
@@ -53,16 +54,19 @@ public:
 	void setSendTimeout(int timeout);
 	void setErrorPages(const std::map<int, std::string> &errorPages);
 	void setTypes(const std::multimap<std::string, std::string> &types);
+	void setAllowMethods(const std::vector<std::string> allowMethods);
 
 	void addIndex(const std::string &index);
 	void addErrorPage(int errorCode, const std::string &uri);
 	void addType(const std::string &type, const std::string &extension);
+	void addAllowMethod(const std::string &method);
 
 	std::string root;
 	std::vector<std::string> indexes;
 	Timeout timeouts;
 	std::map<int, std::string> errorPages; // value must be between 300 and 599
 	std::multimap<std::string, std::string> types;
+	std::vector<std::string> allowMethods;
 
 private:
 };
