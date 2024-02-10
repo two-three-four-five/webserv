@@ -39,42 +39,72 @@ Connection::~Connection() {}
 
 bool Connection::readRequest(int fd)
 {
+	ssize_t str_len;
 	char charBuf[BUFFER_SIZE + 1];
-	int str_len;
 	char peekBuf[BUFFER_SIZE + 1];
 	char readBuf[BUFFER_SIZE + 1];
 
-	str_len = read(fd, charBuf, BUFFER_SIZE);
-	charBuf[str_len] = '\0';
-	if (str_len == 0)
-		return false;
+	if (request.getParseStatus() == Body)
+	{
+		int len = std::stoi(request.getHeaders().find("content-length")->second);
+		int totalBytesReceived = 0;
+
+		while (totalBytesReceived < len)
+		{
+			int remainingBytes = len - totalBytesReceived;
+			int bytesToReceive = std::min(remainingBytes, BUFFER_SIZE);
+			ssize_t bytesRead = recv(fd, charBuf, bytesToReceive, 0);
+
+			if (bytesRead > 0)
+			{
+				totalBytesReceived += bytesRead;
+				request.parseFormBody(charBuf, bytesRead);
+			}
+			else
+				break;
+		}
+	}
 	else
 	{
-		buffer += std::string(charBuf);
-		int idx;
-		while ((idx = buffer.find('\n')) != std::string::npos)
+		str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
 		{
-			std::string line = buffer.substr(0, idx + 1);
-			buffer = buffer.substr(idx + 1);
-			statusCode = request.parse(line);
-			if (request.getParseStatus() >= Body && targetServer == NULL)
+			charBuf[str_len] = '\0';
+			if (str_len == 0)
 			{
-				targetServer = Webserv::getInstance().findTargetServer(port, request);
-				targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
-			}
-			if (request.getParseStatus() == End)
-			{
-				request.printRequest();
-				buildResponseFromRequest();
-				std::string responseString = response.getResponse();
-				std::cout << "<-------response------->" << std::endl << responseString;
-				std::cout << "<-----response end----->" << std::endl;
-				write(fd, responseString.c_str(), responseString.length());
-				bzero(charBuf, sizeof(charBuf));
 				return false;
+			}
+			else
+			{
+				int idx;
+				{
+					buffer += std::string(charBuf);
+					while ((idx = buffer.find('\n')) != std::string::npos)
+					{
+						std::string line = buffer.substr(0, idx + 1);
+						buffer = buffer.substr(idx + 1);
+						statusCode = request.parse(line);
+						if (request.getParseStatus() >= Body && targetServer == NULL)
+						{
+							targetServer = Webserv::getInstance().findTargetServer(port, request);
+							targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
+						}
+					}
+				}
 			}
 		}
 	}
+	if (request.getParseStatus() == End)
+	{
+		// request.printRequest();
+		buildResponseFromRequest();
+		std::string responseString = response.getResponse();
+		std::cout << "<-------response------->" << std::endl << responseString;
+		std::cout << "<-----response end----->" << std::endl;
+		write(fd, responseString.c_str(), responseString.length());
+		bzero(charBuf, sizeof(charBuf));
+		return false;
+	}
+
 	return true;
 }
 

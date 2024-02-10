@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/09 20:27:44 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/10 19:56:45 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ public:
 	int parseByContentLength(std::string &line);
 	int parseByBoundary(std::string &line);
 	int parseByTransferEncoding(std::string &line);
+	void parseFormBody(char charBuf[], const int &bytesRead);
 	std::string getRawRequest();
 	void printRequest();
 	void printBody();
@@ -60,6 +61,7 @@ public:
 	const HeaderMultiMap &getHeaders() const;
 	const std::string &getMethod() const;
 	const std::string &getBody() const;
+	const void setBody(std::string body);
 
 	typedef int (Request::*ParseBodyFunction)(std::string &);
 

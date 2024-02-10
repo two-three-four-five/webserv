@@ -215,6 +215,15 @@ int Request::parseByTransferEncoding(std::string &line)
 	return 0;
 }
 
+void Request::parseFormBody(char charBuf[], const int &bytesRead)
+{
+	body.append(charBuf, bytesRead);
+	if (body.length() == contentLength)
+	{
+		parseStatus = End;
+	}
+}
+
 std::string Request::getRawRequest()
 {
 	std::stringstream ss;
@@ -256,3 +265,9 @@ const HeaderMultiMap &Request::getHeaders() const { return headers; }
 const std::string &Hafserv::Request::getMethod() const { return method; }
 
 const std::string &Hafserv::Request::getBody() const { return body; }
+
+const void Hafserv::Request::setBody(std::string body)
+{
+	this->body = body;
+	parseStatus = End;
+}
