@@ -54,7 +54,7 @@ bool Connection::readRequest(int fd)
 		int idx;
 		while ((idx = buffer.find('\n')) != std::string::npos)
 		{
-			std::string line = buffer.substr(0, idx);
+			std::string line = buffer.substr(0, idx + 1);
 			buffer = buffer.substr(idx + 1);
 			statusCode = request.parse(line);
 			if (request.getParseStatus() >= Body && targetServer == NULL)
@@ -65,14 +65,12 @@ bool Connection::readRequest(int fd)
 			if (request.getParseStatus() == End)
 			{
 				request.printRequest();
-				// Response response(request);
-				// std::string responseString = response.getResponse();
 				buildResponseFromRequest();
 				std::string responseString = response.getResponse();
 				std::cout << "<-------response------->" << std::endl << responseString;
 				std::cout << "<-----response end----->" << std::endl;
-				// send(fd, responseString.c_str(), responseString.length(), 0);
 				write(fd, responseString.c_str(), responseString.length());
+				bzero(charBuf, sizeof(charBuf));
 				return false;
 			}
 		}
@@ -259,7 +257,6 @@ void Connection::build301Response(const std::string &redirectTarget)
 
 void Connection::buildCGIResponse(const std::string &scriptPath)
 {
-	std::string body;
 	/* 예시
 	// std::string home_path = getenv("HOME");
 	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
