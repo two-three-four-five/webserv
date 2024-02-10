@@ -94,6 +94,7 @@ int Request::parseHeaders(const std::string &fieldLine)
 			parseStatus = End;
 		else
 			parseStatus = Body;
+		checkHeaderField();
 		return 0;
 	}
 	std::istringstream iss(fieldLine);
@@ -232,6 +233,7 @@ void Request::printRequest()
 	std::cout << method << " " << requestTarget << " HTTP/1.1\r\n";
 	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++)
 		std::cout << it->first << ": " << it->second << "\r\n";
+	std::cout << body;
 	// if (method == "POST")
 	// 	std::cout << "\r\n" << body[0] << "\r\n";
 	std::cout << "<-----request end----->" << std::endl;
