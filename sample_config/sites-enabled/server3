@@ -18,6 +18,10 @@ server {
 	location $ .php {
 		cgi_path cgi-bin/index.php;
 	}
+	
+	location $ .py {
+		cgi_path cgi-bin/index.php;
+	}
 
 	location ^ /google {
 		proxy_pass http://www.google.com;
