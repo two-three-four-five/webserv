@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpConfigModule.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:05 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 19:56:04 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/11 18:35:50 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef ACONFIG_HPP
-#define ACONFIG_HPP
+#ifndef AHTTPCONFIGMODULE_HPP
+#define AHTTPCONFIGMODULE_HPP
 
 #include "Config/ConfigException.hpp"
 #include "Config/HttpConfigCore.hpp"

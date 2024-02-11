@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpConfig.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:01:34 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/11 19:42:12 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,54 @@
 
 using namespace Hafserv;
 
-HttpConfig::HttpConfig() : AHttpConfigModule(), directives(), servers() {}
+HttpConfig::HttpConfig() : AConfig(), AHttpConfigModule(), directives(), servers() {}
 
 HttpConfig::HttpConfig(const HttpConfig &other)
-	: AHttpConfigModule(), directives(other.directives), servers(other.servers)
+	: AConfig(other), AHttpConfigModule(other.core), directives(other.directives), servers(other.servers)
 {
 }
 
 HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
-	: AHttpConfigModule(), directives(block.getDirectives()), servers()
+	: AConfig(), AHttpConfigModule(), directives(block.getDirectives()), servers()
 {
 	this->setHttpConfigCore(block.getDirectives());
 	this->setHttpConfigCore(block.getSubBlocks());
 
-	std::string subBlockName;
+	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
+	for (; it != block.getDirectives().end(); it++)
+	{
+		const std::string &key = (*it).first;
+		const std::string &value = (*it).second;
+
+		if (blockDirectives.count(key))
+			throw NoBraceError(key);
+		else if (!simpleDirectives.count(key))
+			throw UnknownDirectiveError(key);
+		else if (key == "default_type")
+			;
+		else if (key == "sendfile")
+			;
+		else if (!isCoreDirective(key))
+			throw DisallowDirectiveError(key);
+		else
+			;
+	}
+
 	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
 	{
-		subBlockName = block.getSubBlocks().at(i).getBlockDirective();
-		if (subBlockName == "server")
+		const ConfigFile &subBlock = block.getSubBlocks().at(i);
+		const std::string &subBlockName = subBlock.getBlockDirective();
+
+		if (simpleDirectives.count(subBlockName))
+			throw NoSemicolonError(subBlockName);
+		else if (!blockDirectives.count(subBlockName))
+			throw UnknownDirectiveError(subBlockName);
+		else if (subBlockName == "server")
 			servers.push_back(ServerConfig(block.getSubBlocks().at(i), core));
 		else if (subBlockName == "types")
 			;
 		else
-			throw ParseError("unexpected http context block: " + subBlockName);
+			throw DisallowDirectiveError(subBlockName);
 	}
 }
 
@@ -44,6 +69,7 @@ HttpConfig &HttpConfig::operator=(const HttpConfig &other)
 {
 	if (this != &other)
 	{
+		AConfig::operator=(other);
 		core = other.core;
 		directives = other.directives;
 		servers = other.servers;

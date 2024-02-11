@@ -3,28 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 19:57:21 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/11 18:28:49 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
+#include "Config/AConfig.hpp"
 #include "Config/AHttpConfigModule.hpp"
 #include "Config/LocationConfig.hpp"
 #include "File/ConfigFile.hpp"
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
-#include <sstream>
-
 namespace Hafserv
 {
-class ServerConfig : public AHttpConfigModule
+class ServerConfig : public AConfig, public AHttpConfigModule
 {
 public:
 	ServerConfig();

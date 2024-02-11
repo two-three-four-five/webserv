@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/10 00:12:27 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 19:43:13 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,19 @@
 
 using namespace Hafserv;
 
-LocationConfig::LocationConfig() : AHttpConfigModule(), modifier(), pattern(), alias(), proxyPass(), cgiPath() {}
+LocationConfig::LocationConfig()
+	: AConfig(), AHttpConfigModule(), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+{
+}
 
 LocationConfig::LocationConfig(const LocationConfig &other)
-	: AHttpConfigModule(other.core), modifier(other.modifier), pattern(other.pattern), alias(other.alias),
-	  proxyPass(other.proxyPass), cgiPath(other.cgiPath)
+	: AConfig(other), AHttpConfigModule(other.core), modifier(other.modifier), pattern(other.pattern),
+	  alias(other.alias), proxyPass(other.proxyPass), cgiPath(other.cgiPath)
 {
 }
 
 LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &core)
-	: AHttpConfigModule(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+	: AConfig(), AHttpConfigModule(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
 {
 	/* SAMPLE LOCATION BLOCK
 	 * location modifier(=, $, ^) pattern {
@@ -47,15 +50,20 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 	bool hasAlias = false, hasRoot = false, hasProxyPass = false, hasCgiPath = false;
 	for (; it != block.getDirectives().end(); it++)
 	{
-		std::string key = (*it).first;
-		std::string value = (*it).second;
+		const std::string &key = (*it).first;
+		const std::string &value = (*it).second;
 		size_t numToken = util::string::split(value, ' ').size();
-		if (key == "alias")
+
+		if (blockDirectives.count(key))
+			throw NoBraceError(key);
+		else if (!simpleDirectives.count(key))
+			throw UnknownDirectiveError(key);
+		else if (key == "alias")
 		{
 			if (hasAlias)
-				throw ParseError("\"alias\" directive is duplicate");
+				throw DuplicateDirectiveError(key);
 			if (hasRoot)
-				throw ParseError("\"alias\" directive is duplicate, \"root\" directive was specified earlier");
+				throw DuplicateDirectiveError(key, "root");
 			if (numToken != 1)
 				throw ParseError("invalid number of arguments in \"alias\" directive");
 
@@ -65,7 +73,7 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		else if (key == "proxy_pass")
 		{
 			if (hasProxyPass)
-				throw ParseError("\"proxy_pass\" directive is duplicate");
+				throw DuplicateDirectiveError(key);
 			if (false) // TODO: check if proxy_pass is valid URL
 				;
 
@@ -75,7 +83,7 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		else if (key == "cgi_path")
 		{
 			if (hasCgiPath)
-				throw ParseError("\"cgi_path\" directive is duplicate");
+				throw DuplicateDirectiveError(key);
 			if (numToken != 1)
 				throw ParseError("invalid number of arguments in \"cgi_path\" directive");
 			if (File(value).getCode() != File::REGULAR_FILE)
@@ -87,14 +95,22 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		else if (key == "root")
 		{
 			if (hasAlias)
-				throw ParseError("\"root\" directive is duplicate, \"alias\" directive was specified earlier");
+				throw DuplicateDirectiveError(key, "alias");
 		}
 		else if (!isCoreDirective(key))
-		{
-			throw ParseError("unknown directive \"" + key + "\"");
-		}
+			throw DisallowDirectiveError(key);
 		else
 			;
+		// else if (!isCoreDirective(key))
+		// {
+		// 	throw ParseError("unknown directive \"" + key + "\"");
+		// }
+	}
+
+	if (block.getSubBlocks().size())
+	{
+		const std::string &subBlockName = block.getSubBlocks().front().getBlockDirective();
+		throw DisallowDirectiveError(subBlockName);
 	}
 }
 
@@ -102,6 +118,7 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &other)
 {
 	if (this != &other)
 	{
+		AConfig::operator=(other);
 		core = other.core;
 		modifier = other.modifier;
 		pattern = other.pattern;

@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   HttpConfig.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 19:57:02 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/11 18:36:30 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPCONFIG_HPP
 #define HTTPCONFIG_HPP
 
+#include "Config/AConfig.hpp"
 #include "Config/AHttpConfigModule.hpp"
 #include "Config/ConfigException.hpp"
 #include "Config/ServerConfig.hpp"
@@ -22,7 +23,7 @@
 
 namespace Hafserv
 {
-class HttpConfig : public AHttpConfigModule
+class HttpConfig : public AConfig, public AHttpConfigModule
 {
 public:
 	HttpConfig();

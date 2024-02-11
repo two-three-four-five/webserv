@@ -39,7 +39,7 @@ ConfigFile::ConfigFile(const std::string &filename) throw(ParseError) : RegularF
 	std::vector<std::vector<ConfigFile>::iterator> history;
 	history.push_back(subBlocks.begin());
 
-	std::string remainder, front;
+	std::string remainder, front, value;
 	std::vector<std::string> waiting;
 	size_t min = -1;
 
@@ -85,7 +85,7 @@ ConfigFile::ConfigFile(const std::string &filename) throw(ParseError) : RegularF
 				waiting.push_back(front);
 			if (!waiting.empty())
 			{
-				std::string value;
+				value.clear();
 				for (size_t i = 1; i < waiting.size() - 1; i++)
 					value += waiting.at(i) + " ";
 				value += waiting.back();

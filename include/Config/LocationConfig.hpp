@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConfig.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 19:57:11 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/11 18:36:35 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef LOCATIONCONFIG_HPP
 #define LOCATIONCONFIG_HPP
 
+#include "Config/AConfig.hpp"
 #include "Config/AHttpConfigModule.hpp"
 #include "Config/ConfigException.hpp"
 #include "File/ConfigFile.hpp"
@@ -21,7 +22,7 @@
 
 namespace Hafserv
 {
-class LocationConfig : public AHttpConfigModule
+class LocationConfig : public AConfig, public AHttpConfigModule
 {
 public:
 	LocationConfig();
