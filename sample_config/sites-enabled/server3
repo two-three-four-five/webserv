@@ -23,6 +23,10 @@ server {
 		cgi_path cgi-bin/index.php;
 	}
 
+	location $ .bla {
+		cgi_path cgi_tester;
+	}
+
 	location ^ /google {
 		proxy_pass http://www.google.com;
 	}
