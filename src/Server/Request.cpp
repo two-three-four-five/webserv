@@ -201,7 +201,7 @@ int Request::parseByTransferEncoding(std::string &line)
 			for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
 				oss << *it;
 			body = oss.str();
-			body += (char)26;
+			// body += (char)26;
 			parseStatus = End;
 			chunkSize = 0;
 			contentLength = bodyLength;
@@ -210,6 +210,9 @@ int Request::parseByTransferEncoding(std::string &line)
 	else
 	{
 		int length = line.length();
+
+		if (length > chunkSize)
+			length = chunkSize;
 
 		bodyLength += length;
 		chunkSize -= length;

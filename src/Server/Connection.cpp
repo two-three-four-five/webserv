@@ -82,7 +82,7 @@ bool Connection::readRequest(int fd)
 					{
 						std::string line = buffer.substr(0, idx + 1);
 						buffer = buffer.substr(idx + 1);
-						std::cout << "line : " << line;
+						// std::cout << "line : " << line;
 						statusCode = request.parse(line);
 						if (request.getParseStatus() >= Body && targetServer == NULL)
 						{
@@ -96,7 +96,7 @@ bool Connection::readRequest(int fd)
 	}
 	if (request.getParseStatus() == End)
 	{
-		request.printRequest();
+		// request.printRequest();
 		buildResponseFromRequest();
 		std::string responseString = response.getResponse();
 		std::cout << "<-------response------->" << std::endl << responseString;
@@ -201,17 +201,18 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 void Connection::buildResponseFromRequest()
 {
 	std::cout << std::endl << "TARGET\n" << targetResource << std::endl;
-	File targetFile(targetResource);
 	std::string method = request.getMethod();
 
+	response.setStatusLine("HTTP/1.1 200 OK");
 	response.addToHeaders("Server", "Hafserv/1.0.0");
 
-	if (targetLocationConfig.getCgiPath().length() > 0)
+	if (method == "POST" && targetLocationConfig.getCgiPath().length() > 0)
 	{
-		buildCGIResponse(targetResource);
+		buildCGIResponse(targetLocationConfig.getCgiPath());
 	}
 	else if (method == "GET")
 	{
+		File targetFile(targetResource);
 		if (targetFile.getCode() == File::DIRECTORY)
 			build301Response("http://" + request.getHeaders().find("host")->second +
 							 request.getRequestTarget().getTargetURI() + "/");
@@ -231,6 +232,7 @@ void Connection::buildResponseFromRequest()
 	}
 	else if (method == "DELETE")
 	{
+		File targetFile(targetResource);
 		if (targetFile.getCode() != File::REGULAR_FILE)
 			buildErrorResponse(404);
 		else
@@ -301,6 +303,12 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 
 	pipe(outward_fd);
 	pipe(inward_fd);
+
+	fcntl(outward_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	fcntl(outward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	fcntl(inward_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	fcntl(inward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+
 	int pid = fork();
 	if (pid == 0)
 	{
@@ -308,15 +316,13 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		close(inward_fd[1]);
 		dup2(outward_fd[1], STDOUT_FILENO);
 		dup2(inward_fd[0], STDIN_FILENO);
-		close(outward_fd[1]);
-		close(inward_fd[0]);
 
 		struct stat fileStat;
 		File target(scriptPath);
 		if (target.getCode() == File::REGULAR_FILE && stat(scriptPath.c_str(), &fileStat) == 0 &&
 			(fileStat.st_mode & S_IXUSR))
 		{
-			execve(scriptPath.c_str(), argv, envp);
+			execve(argv[0], argv, envp);
 		}
 		else
 		{
@@ -328,22 +334,42 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	}
 	else
 	{
-		char buffer[4096];
+		close(outward_fd[1]);
+		close(inward_fd[0]);
+		char buffer[BUFFER_SIZE + 1];
 		ssize_t bytes_read;
 		std::ostringstream output;
 
-		close(outward_fd[1]);
-		close(inward_fd[0]);
+		std::cout << "##@" << request.getBody().length() << std::endl;
+		// const char *body = request.getBody().c_str();
+		// int writtenByte = 0;
+		// size_t bodyLen = request.getBody().length();
+		// while (writtenByte < bodyLen)
+		// {
+		// 	writtenByte += write(inward_fd[1], body + writtenByte, 10000);
+		// 	perror("why");
+		// }
+		std::ofstream ofs("b.txt");
+		ofs << request.getBody();
+		ofs.close();
 		write(inward_fd[1], request.getBody().c_str(), request.getBody().length());
 		int status;
-		while (!waitpid(pid, &status, WNOHANG) && (bytes_read = read(outward_fd[0], buffer, sizeof(buffer))) > 0)
+		while ((bytes_read = read(outward_fd[0], buffer, BUFFER_SIZE)) > 0)
+		{
 			output.write(buffer, bytes_read);
-		close(outward_fd[0]);
+			std::cout << buffer;
+		}
+		std::cout << "WHAT";
+		// bytes_read = read(outward_fd[0], buffer, sizeof(buffer));
+		// waitpid(pid, &status, 0);
+
 		close(inward_fd[1]);
+		close(outward_fd[0]);
 		response.setStatusLine("HTTP/1.1 200 OK");
 		response.addToHeaders("Content-Type", "text/html");
 		response.addToHeaders("Content-Length", util::string::itos(output.str().length()));
 		response.setBody(output.str());
+		std::cout << ">>" << std::endl;
 	}
 }
 
