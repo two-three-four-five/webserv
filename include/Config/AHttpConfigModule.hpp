@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:05 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 18:35:50 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 21:24:36 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "Config/HttpConfigCore.hpp"
 #include "File/ConfigFile.hpp"
 #include "util/string.hpp"
+#include <set>
 #include <string>
 #include <vector>
 
@@ -35,8 +36,6 @@ public:
 	void setHttpConfigCore(const HttpConfigCore &core);
 	void setHttpConfigCore(const ConfigFile::directives_t &directives);
 	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks);
-
-	virtual bool isCoreDirective(const std::string &directive);
 
 protected:
 	HttpConfigCore core;

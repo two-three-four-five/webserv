@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 19:42:58 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 21:58:10 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,9 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 		const std::string &key = (*it).first;
 		const std::string &value = (*it).second;
 
-		if (blockDirectives.count(key))
+		if (allBlockDirectives.count(key))
 			throw NoBraceError(key);
-		else if (!simpleDirectives.count(key))
+		else if (!allSimpleDirectives.count(key))
 			throw UnknownDirectiveError(key);
 		else if (key == "listen")
 		{
@@ -58,9 +58,9 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 		const ConfigFile &subBlock = block.getSubBlocks().at(i);
 		const std::string &subBlockName = subBlock.getBlockDirective();
 
-		if (simpleDirectives.count(subBlockName))
+		if (allSimpleDirectives.count(subBlockName))
 			throw NoSemicolonError(subBlockName);
-		else if (!blockDirectives.count(subBlockName))
+		else if (!allBlockDirectives.count(subBlockName))
 			throw UnknownDirectiveError(subBlockName);
 		else if (block.getSubBlocks().at(i).getBlockDirective() == "location")
 		{

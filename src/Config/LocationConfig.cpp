@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 19:43:13 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 21:40:58 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,9 +54,9 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		const std::string &value = (*it).second;
 		size_t numToken = util::string::split(value, ' ').size();
 
-		if (blockDirectives.count(key))
+		if (allBlockDirectives.count(key))
 			throw NoBraceError(key);
-		else if (!simpleDirectives.count(key))
+		else if (!allSimpleDirectives.count(key))
 			throw UnknownDirectiveError(key);
 		else if (key == "alias")
 		{
@@ -107,11 +107,11 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		// }
 	}
 
-	if (block.getSubBlocks().size())
-	{
-		const std::string &subBlockName = block.getSubBlocks().front().getBlockDirective();
-		throw DisallowDirectiveError(subBlockName);
-	}
+	// if (block.getSubBlocks().size())
+	// {
+	// 	const std::string &subBlockName = block.getSubBlocks().front().getBlockDirective();
+	// 	throw DisallowDirectiveError(subBlockName);
+	// }
 }
 
 LocationConfig &LocationConfig::operator=(const LocationConfig &other)
@@ -154,16 +154,6 @@ void LocationConfig::setCgiPath(const std::string &cgiPath) { this->cgiPath = cg
 bool LocationConfig::isMatching(const std::string &url)
 {
 	if (pattern.find(url) == 0)
-		return true;
-	else
-		return false;
-}
-
-bool LocationConfig::isCoreDirective(const std::string &directive)
-{
-	if (directive == "root" || directive == "index" || directive == "client_body_timeout" ||
-		directive == "keepalive_timeout" || directive == "send_timeout" || directive == "error_page" ||
-		directive == "allow_methods")
 		return true;
 	else
 		return false;

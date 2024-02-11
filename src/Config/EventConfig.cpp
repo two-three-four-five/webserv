@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 19:36:44 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 20:35:28 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,9 @@ EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : AConfig(),
 	{
 		const std::string &key = (*it).first;
 		const std::string &value = (*it).second;
-		if (blockDirectives.count(key))
+		if (allBlockDirectives.count(key))
 			throw NoBraceError(key);
-		else if (!simpleDirectives.count(key))
+		else if (!allSimpleDirectives.count(key))
 			throw UnknownDirectiveError(key);
 		else if (key == "worker_connections")
 		{

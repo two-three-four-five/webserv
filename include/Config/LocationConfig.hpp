@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 18:36:35 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 20:56:11 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,10 @@ public:
 	void setCgiPath(const std::string &cgiPath);
 
 	bool isMatching(const std::string &url);
-	virtual bool isCoreDirective(const std::string &directive);
+
+protected:
+	virtual void initSimpleDirectives();
+	virtual void initBlockDirectives();
 
 private:
 	std::string modifier;

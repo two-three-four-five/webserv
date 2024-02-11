@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 22:00:45 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 21:25:09 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,14 +145,4 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::subblocks_t &subBloc
 			}
 		}
 	}
-}
-
-bool AHttpConfigModule::isCoreDirective(const std::string &directive)
-{
-	if (directive == "root" || directive == "index" || directive == "client_header_timeout" ||
-		directive == "client_body_timeout" || directive == "keepalive_timeout" || directive == "send_timeout" ||
-		directive == "error_page" || directive == "allow_methods")
-		return true;
-	else
-		return false;
 }

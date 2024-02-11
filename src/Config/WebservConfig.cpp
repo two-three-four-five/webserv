@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 19:29:06 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 20:47:42 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,14 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 		const std::string &key = (*it).first;
 		const std::string &value = (*it).second;
 
-		if (blockDirectives.count(key))
+		if (allBlockDirectives.count(key))
 			throw NoBraceError(key);
-		else if (!simpleDirectives.count(key))
+		else if (!allSimpleDirectives.count(key))
 			throw UnknownDirectiveError(key);
-		else if (key == "user")
+		else if (!simpleDirectives.count(key))
+			throw DisallowDirectiveError(key);
+
+		if (key == "user")
 			;
 		else if (key == "worker_processes")
 			;
@@ -46,8 +49,6 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 			;
 		else if (key == "worker_rlimit_nofile")
 			;
-		else
-			throw DisallowDirectiveError(key);
 	}
 
 	bool hasEvent = false, hasHttp = false;
@@ -56,11 +57,14 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 		const ConfigFile &subBlock = main.getSubBlocks().at(i);
 		const std::string &subBlockName = subBlock.getBlockDirective();
 
-		if (simpleDirectives.count(subBlockName))
+		if (allSimpleDirectives.count(subBlockName))
 			throw NoSemicolonError(subBlockName);
-		else if (!blockDirectives.count(subBlockName))
+		else if (!allBlockDirectives.count(subBlockName))
 			throw UnknownDirectiveError(subBlockName);
-		else if (subBlockName == "events")
+		else if (!blockDirectives.count(subBlockName))
+			throw DisallowDirectiveError(subBlockName);
+
+		if (subBlockName == "events")
 		{
 			if (hasEvent)
 				throw DuplicateDirectiveError("events");
@@ -74,8 +78,6 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 			hasHttp = true;
 			http = HttpConfig(subBlock);
 		}
-		else
-			throw DisallowDirectiveError(subBlockName);
 	}
 }
 
@@ -92,6 +94,21 @@ WebservConfig &WebservConfig::operator=(const WebservConfig &other)
 }
 
 WebservConfig::~WebservConfig() {}
+
+void WebservConfig::initSimpleDirectives()
+{
+	simpleDirectives.insert("user");
+	simpleDirectives.insert("worker_processes");
+	simpleDirectives.insert("error_log");
+	simpleDirectives.insert("pid");
+	simpleDirectives.insert("worker_rlimit_nofile");
+}
+
+void WebservConfig::initBlockDirectives()
+{
+	blockDirectives.insert("http");
+	blockDirectives.insert("events");
+}
 
 const ConfigFile::directives_t &WebservConfig::getDirectives() const { return directives; }
 

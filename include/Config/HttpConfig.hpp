@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 18:36:30 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 20:44:06 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,10 @@ public:
 
 	const ConfigFile::directives_t &getDirectives() const;
 	const std::vector<ServerConfig> &getServers() const;
+
+protected:
+	virtual void initSimpleDirectives();
+	virtual void initBlockDirectives();
 
 private:
 	ConfigFile::directives_t directives;
