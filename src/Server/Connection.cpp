@@ -44,7 +44,7 @@ bool Connection::readRequest(int fd)
 	char peekBuf[BUFFER_SIZE + 1];
 	char readBuf[BUFFER_SIZE + 1];
 
-	if (request.getParseStatus() == Body)
+	if (request.getParseStatus() == Body && request.getHeaders().find("content-length") != request.getHeaders().end())
 	{
 		int len = std::stoi(request.getHeaders().find("content-length")->second);
 		int totalBytesReceived = 0;
@@ -82,6 +82,7 @@ bool Connection::readRequest(int fd)
 					{
 						std::string line = buffer.substr(0, idx + 1);
 						buffer = buffer.substr(idx + 1);
+						std::cout << "line : " << line;
 						statusCode = request.parse(line);
 						if (request.getParseStatus() >= Body && targetServer == NULL)
 						{
@@ -95,7 +96,7 @@ bool Connection::readRequest(int fd)
 	}
 	if (request.getParseStatus() == End)
 	{
-		// request.printRequest();
+		request.printRequest();
 		buildResponseFromRequest();
 		std::string responseString = response.getResponse();
 		std::cout << "<-------response------->" << std::endl << responseString;
@@ -351,6 +352,7 @@ char **Connection::makeEnvp()
 	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	envVec.push_back("PATH_INFO=/");
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);
@@ -365,6 +367,7 @@ char **Connection::makeEnvp()
 	std::string contentLength("CONTENT_LENGTH=");
 	contentLength += ss.str();
 	envVec.push_back(contentLength);
+	std::cout << "!!!!!!!!!!!!!!!!!!!!!!!" << request.getContentLength() << std::endl;
 	char **envp = new char *[envVec.size() + 1];
 	for (size_t i = 0; i < envVec.size(); i++)
 	{

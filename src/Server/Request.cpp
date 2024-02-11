@@ -189,27 +189,31 @@ int Request::parseByBoundary(std::string &line)
 
 int Request::parseByTransferEncoding(std::string &line)
 {
+	// std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
 	static int chunkSize;
-	std::istringstream iss(line);
 
 	if (!chunkSize)
 	{
-		chunkSize = std::stoi(readHex(line), NULL, 16) + 2;
-		if (chunkSize == 2)
+		chunkSize = std::stoi(readHex(line), NULL, 16);
+		if (chunkSize == 0)
 		{
 			std::ostringstream oss;
 			for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
 				oss << *it;
 			body = oss.str();
+			body += (char)26;
 			parseStatus = End;
+			chunkSize = 0;
+			contentLength = bodyLength;
 		}
 	}
 	else
 	{
-		int lineLength = line.length();
+		int length = line.length();
 
-		bodyLength += lineLength;
-		chunkSize -= lineLength;
+		bodyLength += length;
+		chunkSize -= length;
+		line.resize(length);
 		bodyVec.push_back(line);
 	}
 	return 0;
@@ -271,3 +275,5 @@ const void Hafserv::Request::setBody(std::string body)
 	this->body = body;
 	parseStatus = End;
 }
+
+const size_t Hafserv::Request::getContentLength() const { return contentLength; }

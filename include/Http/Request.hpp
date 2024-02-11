@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/10 19:56:45 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/11 12:34:33 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ public:
 	const HeaderMultiMap &getHeaders() const;
 	const std::string &getMethod() const;
 	const std::string &getBody() const;
+	const size_t getContentLength() const;
 	const void setBody(std::string body);
 
 	typedef int (Request::*ParseBodyFunction)(std::string &);
