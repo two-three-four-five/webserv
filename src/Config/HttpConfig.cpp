@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 20:35:28 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 22:45:32 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,13 +37,12 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 			throw NoBraceError(key);
 		else if (!allSimpleDirectives.count(key))
 			throw UnknownDirectiveError(key);
-		else if (key == "default_type")
+		else if (!httpSimpleDirectives.count(key))
+			throw DisallowDirectiveError(key);
+
+		if (key == "default_type")
 			;
 		else if (key == "sendfile")
-			;
-		else if (!isCoreDirective(key))
-			throw DisallowDirectiveError(key);
-		else
 			;
 	}
 
@@ -56,12 +55,13 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 			throw NoSemicolonError(subBlockName);
 		else if (!allBlockDirectives.count(subBlockName))
 			throw UnknownDirectiveError(subBlockName);
-		else if (subBlockName == "server")
+		else if (!httpBlockDirectives.count(subBlockName))
+			throw DisallowDirectiveError(subBlockName);
+
+		if (subBlockName == "server")
 			servers.push_back(ServerConfig(block.getSubBlocks().at(i), core));
 		else if (subBlockName == "types")
 			;
-		else
-			throw DisallowDirectiveError(subBlockName);
 	}
 }
 

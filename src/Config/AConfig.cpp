@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/11 17:46:49 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 21:57:51 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 22:50:44 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ std::set<std::string> AConfig::eventsSimpleDirectives;
 std::set<std::string> AConfig::httpSimpleDirectives;
 std::set<std::string> AConfig::serverSimpleDirectives;
 std::set<std::string> AConfig::locationSimpleDirectives;
+std::set<std::string> AConfig::coreSimpleDirectives;
 
 std::set<std::string> AConfig::allBlockDirectives;
 std::set<std::string> AConfig::mainBlockDirectives;
@@ -27,13 +28,38 @@ std::set<std::string> AConfig::eventsBlockDirectives;
 std::set<std::string> AConfig::httpBlockDirectives;
 std::set<std::string> AConfig::serverBlockDirectives;
 std::set<std::string> AConfig::locationBlockDirectives;
+std::set<std::string> AConfig::coreBlockDirectives;
 
 AConfig::AConfig()
 {
 	if (allSimpleDirectives.empty())
 		initAllSimpleDirectives();
+	if (mainSimpleDirectives.empty())
+		initMainSimpleDirectives();
+	if (eventsSimpleDirectives.empty())
+		initEventsSimpleDirectives();
+	if (httpSimpleDirectives.empty())
+		initHttpSimpleDirectives();
+	if (serverSimpleDirectives.empty())
+		initServerSimpleDirectives();
+	if (locationSimpleDirectives.empty())
+		initLocationSimpleDirectives();
+	if (coreSimpleDirectives.empty())
+		initCoreSimpleDirectives();
 	if (allBlockDirectives.empty())
 		initAllBlockDirectives();
+	if (mainBlockDirectives.empty())
+		initMainBlockDirectives();
+	if (eventsBlockDirectives.empty())
+		initEventsBlockDirectives();
+	if (httpBlockDirectives.empty())
+		initHttpBlockDirectives();
+	if (serverBlockDirectives.empty())
+		initServerBlockDirectives();
+	if (locationBlockDirectives.empty())
+		initLocationBlockDirectives();
+	if (coreBlockDirectives.empty())
+		initCoreBlockDirectives();
 }
 
 AConfig::AConfig(const AConfig &other) {}
@@ -89,16 +115,16 @@ void AConfig::initAllSimpleDirectives()
 void AConfig::initMainSimpleDirectives()
 {
 	/*		WebservSimpleDirectives		*/
-	allSimpleDirectives.insert("user");
-	allSimpleDirectives.insert("worker_processes");
-	allSimpleDirectives.insert("error_log");
-	allSimpleDirectives.insert("pid");
-	allSimpleDirectives.insert("worker_rlimit_nofile");
+	mainSimpleDirectives.insert("user");
+	mainSimpleDirectives.insert("worker_processes");
+	mainSimpleDirectives.insert("error_log");
+	mainSimpleDirectives.insert("pid");
+	mainSimpleDirectives.insert("worker_rlimit_nofile");
 }
 
 void AConfig::initEventsSimpleDirectives()
 { /*		EventSimpleDirectives		*/
-	allSimpleDirectives.insert("worker_connections");
+	eventsSimpleDirectives.insert("worker_connections");
 }
 
 void AConfig::initHttpSimpleDirectives()
@@ -114,8 +140,8 @@ void AConfig::initHttpSimpleDirectives()
 	httpSimpleDirectives.insert("allow_methods");
 
 	/*		HttpSimpleDirectives		*/
-	httpBlockDirectives.insert("default_type");
-	httpBlockDirectives.insert("sendfile");
+	httpSimpleDirectives.insert("default_type");
+	httpSimpleDirectives.insert("sendfile");
 }
 
 void AConfig::initServerSimpleDirectives()
@@ -131,8 +157,8 @@ void AConfig::initServerSimpleDirectives()
 	serverSimpleDirectives.insert("allow_methods");
 
 	/*		ServerSimpleDirectives		*/
-	httpBlockDirectives.insert("listen");
-	httpBlockDirectives.insert("server_name");
+	serverSimpleDirectives.insert("listen");
+	serverSimpleDirectives.insert("server_name");
 }
 
 void AConfig::initLocationSimpleDirectives()
@@ -147,9 +173,9 @@ void AConfig::initLocationSimpleDirectives()
 	locationSimpleDirectives.insert("allow_methods");
 
 	/*		LocationSimpleDirectives		*/
-	httpBlockDirectives.insert("alias");
-	httpBlockDirectives.insert("proxy_pass");
-	httpBlockDirectives.insert("cgi_path");
+	locationSimpleDirectives.insert("alias");
+	locationSimpleDirectives.insert("proxy_pass");
+	locationSimpleDirectives.insert("cgi_path");
 }
 
 void AConfig::initCoreSimpleDirectives()

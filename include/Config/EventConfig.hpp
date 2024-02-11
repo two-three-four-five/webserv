@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:12 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 20:44:09 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 22:39:20 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,6 @@ public:
 	~EventConfig();
 
 	int getWorkerConnections() const;
-
-protected:
-	virtual void initSimpleDirectives();
-	virtual void initBlockDirectives();
 
 private:
 	int workerConnections;

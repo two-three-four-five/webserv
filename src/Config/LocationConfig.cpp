@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 21:40:58 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 22:44:50 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 			throw NoBraceError(key);
 		else if (!allSimpleDirectives.count(key))
 			throw UnknownDirectiveError(key);
+		else if (!locationSimpleDirectives.count(key))
+			throw DisallowDirectiveError(key);
 		else if (key == "alias")
 		{
 			if (hasAlias)
@@ -97,21 +99,20 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 			if (hasAlias)
 				throw DuplicateDirectiveError(key, "alias");
 		}
-		else if (!isCoreDirective(key))
-			throw DisallowDirectiveError(key);
-		else
-			;
-		// else if (!isCoreDirective(key))
-		// {
-		// 	throw ParseError("unknown directive \"" + key + "\"");
-		// }
 	}
 
-	// if (block.getSubBlocks().size())
-	// {
-	// 	const std::string &subBlockName = block.getSubBlocks().front().getBlockDirective();
-	// 	throw DisallowDirectiveError(subBlockName);
-	// }
+	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
+	{
+		const ConfigFile &subBlock = block.getSubBlocks().at(i);
+		const std::string &subBlockName = subBlock.getBlockDirective();
+
+		if (allSimpleDirectives.count(subBlockName))
+			throw NoSemicolonError(subBlockName);
+		else if (!allBlockDirectives.count(subBlockName))
+			throw UnknownDirectiveError(subBlockName);
+		else if (!serverBlockDirectives.count(subBlockName))
+			throw DisallowDirectiveError(subBlockName);
+	}
 }
 
 LocationConfig &LocationConfig::operator=(const LocationConfig &other)

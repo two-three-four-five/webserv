@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 20:47:42 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 22:39:50 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 			throw NoBraceError(key);
 		else if (!allSimpleDirectives.count(key))
 			throw UnknownDirectiveError(key);
-		else if (!simpleDirectives.count(key))
+		else if (!mainSimpleDirectives.count(key))
 			throw DisallowDirectiveError(key);
 
 		if (key == "user")
@@ -61,7 +61,7 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 			throw NoSemicolonError(subBlockName);
 		else if (!allBlockDirectives.count(subBlockName))
 			throw UnknownDirectiveError(subBlockName);
-		else if (!blockDirectives.count(subBlockName))
+		else if (!mainBlockDirectives.count(subBlockName))
 			throw DisallowDirectiveError(subBlockName);
 
 		if (subBlockName == "events")
@@ -94,21 +94,6 @@ WebservConfig &WebservConfig::operator=(const WebservConfig &other)
 }
 
 WebservConfig::~WebservConfig() {}
-
-void WebservConfig::initSimpleDirectives()
-{
-	simpleDirectives.insert("user");
-	simpleDirectives.insert("worker_processes");
-	simpleDirectives.insert("error_log");
-	simpleDirectives.insert("pid");
-	simpleDirectives.insert("worker_rlimit_nofile");
-}
-
-void WebservConfig::initBlockDirectives()
-{
-	blockDirectives.insert("http");
-	blockDirectives.insert("events");
-}
 
 const ConfigFile::directives_t &WebservConfig::getDirectives() const { return directives; }
 

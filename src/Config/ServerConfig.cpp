@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 21:58:10 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/11 22:44:26 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,10 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 			throw NoBraceError(key);
 		else if (!allSimpleDirectives.count(key))
 			throw UnknownDirectiveError(key);
-		else if (key == "listen")
+		else if (!serverSimpleDirectives.count(key))
+			throw DisallowDirectiveError(key);
+
+		if (key == "listen")
 		{
 			std::stringstream ss(value);
 			unsigned short us;
@@ -45,14 +48,9 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 			ports.push_back(us);
 		}
 		else if (key == "server_name")
-		{
 			names.push_back(value);
-		}
-		else if (!isCoreDirective(key))
-			throw DisallowDirectiveError(key);
-		else
-			;
 	}
+
 	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
 	{
 		const ConfigFile &subBlock = block.getSubBlocks().at(i);
@@ -62,7 +60,10 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 			throw NoSemicolonError(subBlockName);
 		else if (!allBlockDirectives.count(subBlockName))
 			throw UnknownDirectiveError(subBlockName);
-		else if (block.getSubBlocks().at(i).getBlockDirective() == "location")
+		else if (!serverBlockDirectives.count(subBlockName))
+			throw DisallowDirectiveError(subBlockName);
+
+		if (subBlockName == "location")
 		{
 			LocationConfig conf = LocationConfig(block.getSubBlocks().at(i), core);
 			if (conf.getModifier() == "=")
@@ -72,8 +73,6 @@ ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
 			else if (conf.getModifier() == "^")
 				locations[2].push_back(conf);
 		}
-		else
-			throw DisallowDirectiveError(subBlockName);
 	}
 }
 
