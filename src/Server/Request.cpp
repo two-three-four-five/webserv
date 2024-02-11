@@ -33,14 +33,114 @@ Request &Request::operator=(const Request &rhs)
 }
 Request::~Request() {}
 
-int Request::parse(std::string request)
+void Request::readRequest(const int &fd)
+{
+	int idx;
+
+	if (parseStatus < Body)
+	{
+		int str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
+
+		buffer += std::string(charBuf, str_len);
+		while ((idx = buffer.find('\n')) != std::string::npos)
+		{
+			std::string line = buffer.substr(0, idx + 1);
+			buffer = buffer.substr(idx + 1);
+			parse(line);
+			std::cout << "line : " << line;
+		}
+	}
+	else
+	{
+		if (!buffer.empty())
+		{
+			oss << buffer;
+			buffer.clear();
+		}
+
+		(this->*parseBody)(fd);
+	}
+}
+
+int Request::parseByBoundary(const int &fd)
+{
+	ssize_t bytesRead = 0;
+
+	while ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	{
+		oss.write(charBuf, bytesRead);
+		bodyLength += bytesRead;
+		if (bodyLength == contentLength)
+		{
+			body = oss.str();
+			parseStatus = End;
+			break;
+		}
+	}
+}
+
+int Request::parseByTransferEncoding(const int &fd)
+{
+	int idx;
+	static int chunkSize;
+	ssize_t bytesHave;
+
+	//
+	std::stringstream ss;
+	while ((bytesHave = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	{
+		if (!chunkSize)
+		{
+			ss << chunkSize;
+		}
+	}
+
+	// 우선 읽고
+	while ((bytesHave = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	{
+		// chunkSize가 없으면 일단 읽어서 chunkSize받아옴
+		if (!chunkSize)
+		{
+			if ((idx = buffer.find('\n')) != std::string::npos)
+			{
+				std::string line = buffer.substr(0, idx + 1);
+				buffer = buffer.substr(idx + 1);
+				chunkSize = std::stoi(readHex(line), NULL, 16);
+			}
+		}
+		// 읽은 게 chunkSize보다 많으면 chunk만큼 oss에 넣고
+		// 새로운 chunkSize읽기 시도
+		while (bytesHave > chunkSize)
+		{
+			oss.write(buffer, chunkSize);
+			bytesHave -= chunkSize;
+			buffer = buffer.substr(chunkSize + 1);
+			// 새로운 chunkSize가 있으면 새로 정의하고 while문으로 감
+			if ((idx = buffer.find('\n')) != std::string::npos)
+			{
+				std::string line = buffer.substr(0, idx + 1);
+				buffer = buffer.substr(idx + 1);
+				bytesHave -= (idx + 1);
+				chunkSize = std::stoi(readHex(line), NULL, 16);
+			}
+			// 새로운 chunkSize를 읽을만큼은 없으면 더 읽어옴.
+			else
+				continue;
+		}
+		if (bytesHave <= chunkSize)
+		{
+			oss.write(buffer, bytesHave);
+			chunkSize -= bytesHave;
+		}
+	}
+}
+
+int Request::parse(std::string &request)
 {
 	if (parseStatus == Created)
 		return parseStartLine(request);
 	else if (parseStatus == Header)
 		return parseHeaders(request);
-	else if (parseStatus == Body)
-		return (this->*parseBody)(request);
 	return 0;
 }
 
@@ -156,68 +256,67 @@ void Request::checkHeaderField()
 	}
 }
 
-int Request::parseByContentLength(std::string &line)
+int Request::parseByContentLength(const int &fd)
 {
-	bodyVec.push_back(line);
-	bodyLength += line.length();
-	if (line == "\r\n")
-	{
-		std::ostringstream oss;
-		for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
-			oss << *it;
-		body = oss.str();
-		parseStatus = End;
-	}
-	return 0;
+	// 	bodyVec.push_back(line);
+	// 	bodyLength += line.length();
+	// 	if (line == "\r\n")
+	// 	{
+	// 		std::ostringstream oss;
+	// 		for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
+	// 			oss << *it;
+	// 		body = oss.str();
+	// 		parseStatus = End;
+	// 	}
+	// 	return 0;
 }
 
-int Request::parseByBoundary(std::string &line)
-{
-	// 계속 읽다가 Boundary--일때면 멈춤
-	bodyVec.push_back(line);
-	bodyLength += line.length();
-	if (line.substr(2, line.length() - 6) == boundary)
-	{
-		std::ostringstream oss;
-		for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
-			oss << *it;
-		body = oss.str();
-		parseStatus = End;
-	}
-	return 0;
-}
+// int Request::parseByBoundary(std::string &line)
+// {
+// 	// 계속 읽다가 Boundary--일때면 멈춤
+// 	bodyVec.push_back(line);
+// 	bodyLength += line.length();
+// 	if (line.substr(2, line.length() - 6) == boundary)
+// 	{
+// 		std::ostringstream oss;
+// 		for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
+// 			oss << *it;
+// 		body = oss.str();
+// 		parseStatus = End;
+// 	}
+// 	return 0;
+// }
 
-int Request::parseByTransferEncoding(std::string &line)
-{
-	// std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
-	static int chunkSize;
+// int Request::parseByTransferEncoding(std::string &line)
+// {
+// 	static int chunkSize;
 
-	if (!chunkSize)
-	{
-		chunkSize = std::stoi(readHex(line), NULL, 16);
-		if (chunkSize == 0)
-		{
-			std::ostringstream oss;
-			for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
-				oss << *it;
-			body = oss.str();
-			body += (char)26;
-			parseStatus = End;
-			chunkSize = 0;
-			contentLength = bodyLength;
-		}
-	}
-	else
-	{
-		int length = line.length();
+// 	if (!chunkSize)
+// 	{
+// 		chunkSize = std::stoi(readHex(line), NULL, 16);
+// 		if (chunkSize == 0)
+// 		{
+// 			std::ostringstream oss;
+// 			for (std::vector<std::string>::iterator it = bodyVec.begin(); it != bodyVec.end(); it++)
+// 				oss << *it;
+// 			body = oss.str();
+// 			body += (char)26;
+// 			parseStatus = End;
+// 			chunkSize = 0;
+// 			contentLength = bodyLength;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		int length = line.length();
 
-		bodyLength += length;
-		chunkSize -= length;
-		line.resize(length);
-		bodyVec.push_back(line);
-	}
-	return 0;
-}
+// 		bodyLength += length;
+// 		chunkSize -= length;
+// 		line.resize(length);
+// 		bodyVec.push_back(line);
+// 	}
+// 	return 0;
+// }
 
 void Request::parseFormBody(char charBuf[], const int &bytesRead)
 {

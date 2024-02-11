@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/11 12:34:33 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/11 18:26:03 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,10 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <sys/socket.h>
 #include <vector>
+
+#define BUFFER_SIZE 100000
 
 namespace Hafserv
 {
@@ -44,12 +47,13 @@ public:
 	Request(const Request &other);
 	Request &operator=(const Request &rhs);
 	~Request();
-	int parse(std::string request);
+	void readRequest(const int &fd);
+	int parse(std::string &request);
 	int parseStartLine(const std::string &request);
 	int parseHeaders(const std::string &fieldLine);
-	int parseByContentLength(std::string &line);
-	int parseByBoundary(std::string &line);
-	int parseByTransferEncoding(std::string &line);
+	int parseByContentLength(const int &fd);
+	int parseByBoundary(const int &fd);
+	int parseByTransferEncoding(const int &fd);
 	void parseFormBody(char charBuf[], const int &bytesRead);
 	std::string getRawRequest();
 	void printRequest();
@@ -64,7 +68,7 @@ public:
 	const size_t getContentLength() const;
 	const void setBody(std::string body);
 
-	typedef int (Request::*ParseBodyFunction)(std::string &);
+	typedef int (Request::*ParseBodyFunction)(const int &);
 
 private:
 	RequestParseStatus parseStatus;
@@ -77,7 +81,12 @@ private:
 	size_t bodyLength;
 	std::string body;
 	std::vector<std::string> bodyVec;
+	std::ostringstream bodyStream;
 	ParseBodyFunction parseBody;
+
+	std::string buffer;
+	std::ostringstream oss;
+	char charBuf[BUFFER_SIZE + 1];
 };
 
 } // namespace Hafserv
