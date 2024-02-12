@@ -117,8 +117,22 @@ void Webserv::runWebserv()
 			else if (event_list[i].filter == EVFILT_READ)
 			{
 				Connection &conn = Connections.find(event_list[i].ident)->second;
+				if (conn.getRequest().getParseStatus() == End)
+					continue;
 				if (!conn.readRequest(event_list[i].ident))
 					disconnectClient(event_list[i].ident);
+			}
+			else if (event_list[i].filter == EVFILT_WRITE)
+			{
+				Connection &conn = Connections.find(event_list[i].ident)->second;
+				if (conn.getResponse().getResponseState() == Response::Ready)
+					conn.sendResponse();
+				else if (conn.getResponse().getResponseState() == Response::Sending)
+					conn.sendResponse();
+				if (conn.getResponse().getResponseState() == Response::End)
+				{
+					conn.reset();
+				}
 			}
 		}
 		checkTimeout();

@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:58 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/09 19:59:06 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/12 16:37:13 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 
 #define BUF_SIZE 512
 #define MAX_EVENTS 50
+#define CRLF "\r\n"
 
 namespace Hafserv
 {

@@ -33,9 +33,10 @@ Request &Request::operator=(const Request &rhs)
 }
 Request::~Request() {}
 
-void Request::readRequest(const int &fd)
+void Request::readRequest(const int fd)
 {
 	int idx;
+	std::cout << "ok unitl here" << parseStatus << std::endl;
 
 	if (parseStatus < Body)
 	{
@@ -46,8 +47,8 @@ void Request::readRequest(const int &fd)
 		{
 			std::string line = buffer.substr(0, idx + 1);
 			buffer = buffer.substr(idx + 1);
+			std::cout << line;
 			parse(line);
-			std::cout << "line : " << line;
 		}
 	}
 	else
@@ -337,11 +338,11 @@ std::string Request::getRawRequest()
 	return ss.str();
 }
 
-void Request::printRequest()
+void Request::printRequest() const
 {
 	std::cout << "<-------request------->" << std::endl;
 	std::cout << method << " " << requestTarget << " HTTP/1.1\r\n";
-	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++)
+	for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); it++)
 		std::cout << it->first << ": " << it->second << "\r\n";
 	std::cout << body;
 	// if (method == "POST")

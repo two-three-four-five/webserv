@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/12 21:00:00 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/12 22:05:17 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ public:
 	Request(const Request &other);
 	Request &operator=(const Request &rhs);
 	~Request();
-	void readRequest(const int &fd);
+	void readRequest(const int fd);
 	int parse(std::string &request);
 	int parseStartLine(const std::string &request);
 	int parseHeaders(const std::string &fieldLine);
@@ -56,7 +56,7 @@ public:
 	int parseByTransferEncoding(const int &fd);
 	void parseFormBody(char charBuf[], const int &bytesRead);
 	std::string getRawRequest();
-	void printRequest();
+	void printRequest() const;
 	void printBody();
 	void checkHeaderField();
 

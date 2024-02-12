@@ -50,11 +50,11 @@ bool Connection::readRequest(int fd)
 	{
 		// request.printRequest();
 		buildResponseFromRequest();
-		std::string responseString = response.getResponse();
+		// std::string responseString = response.getResponse();
 		// std::cout << "<-------response------->" << std::endl << responseString;
 		// std::cout << "<-----response end----->" << std::endl;
-		write(fd, responseString.c_str(), responseString.length());
-		return false;
+		// write(fd, responseString.c_str(), responseString.length());
+		// return false;
 	}
 
 	return true;
@@ -189,6 +189,7 @@ void Connection::buildResponseFromRequest()
 		else
 			buildDeleteResponse();
 	}
+	response.setResponseBuffer();
 }
 
 void Connection::buildDeleteResponse()
@@ -405,7 +406,6 @@ char **Connection::makeEnvp()
 	std::string contentLength("CONTENT_LENGTH=");
 	contentLength += ss.str();
 	envVec.push_back(contentLength);
-	std::cout << "!!!!!!!!!!!!!!!!!!!!!!!" << request.getContentLength() << std::endl;
 	char **envp = new char *[envVec.size() + 1];
 	for (size_t i = 0; i < envVec.size(); i++)
 	{
@@ -418,7 +418,17 @@ char **Connection::makeEnvp()
 	return envp;
 }
 
+void Connection::sendResponse() { response.send(socket); }
+
+void Connection::reset()
+{
+	request = Request();
+	response = Response();
+}
+
 const Request &Connection::getRequest() const { return request; }
+
+const Response &Connection::getResponse() const { return response; }
 
 const Server *Connection::getTargetServer() const { return targetServer; }
 
