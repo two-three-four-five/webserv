@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/12 16:21:09 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/12 22:00:49 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 
 namespace Hafserv
 {
+
+#define BUFFER_SIZE 100000
 
 class Webserv;
 

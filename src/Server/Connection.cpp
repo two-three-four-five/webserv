@@ -40,27 +40,6 @@ Connection::~Connection() {}
 
 bool Connection::readRequest(int fd)
 {
-	// else
-	// {
-	// 	str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
-	// 	{
-	// 		int idx;
-	// 		charBuf[str_len] = '\0';
-	// 		buffer += std::string(charBuf);
-	// 		while ((idx = buffer.find('\n')) != std::string::npos)
-	// 		{
-	// 			std::string line = buffer.substr(0, idx + 1);
-	// 			buffer = buffer.substr(idx + 1);
-	// 			statusCode = request.parse(line);
-	// 			if (request.getParseStatus() >= Body && targetServer == NULL)
-	// 			{
-	// 				targetServer = Webserv::getInstance().findTargetServer(port, request);
-	// 				targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 	request.readRequest(fd);
 	if (request.getParseStatus() >= Body && targetServer == NULL)
 	{

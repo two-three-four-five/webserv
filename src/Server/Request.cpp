@@ -60,77 +60,77 @@ int Request::parseByBoundary(const int &fd)
 {
 	ssize_t bytesRead = 0;
 
-	while ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
 	{
 		oss.write(charBuf, bytesRead);
 		bodyLength += bytesRead;
-		if (bodyLength == contentLength)
-		{
-			body = oss.str();
-			parseStatus = End;
-			break;
-		}
+	}
+	if (bodyLength == contentLength)
+	{
+		body = oss.str();
+		parseStatus = End;
 	}
 }
 
 int Request::parseByTransferEncoding(const int &fd)
 {
-	int idx;
-	static int chunkSize;
-	ssize_t bytesHave;
+	int idx = 0, newIdx = 0;
+	static int chunkSize = 0;
+	ssize_t bytesRead;
 
-	// 우선 읽고
-	while ((bytesHave = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
 	{
-		std::cout << "---------charBuf-----------\n" << charBuf << std::endl;
-		std::cout << "bytesHave : " << bytesHave << std::endl;
-		buffer += std::string(charBuf);
-		// chunkSize가 없으면 일단 읽어서 chunkSize받아옴
+		buffer = std::string(charBuf, bytesRead);
 		if (!chunkSize)
 		{
 			if ((idx = buffer.find('\n')) != std::string::npos)
 			{
-				std::cout << "\n----------To get chunkSize--------" << std::endl;
-				chunkSize = std::stoi(readHex(buffer), NULL, 16);
-				std::cout << "chunkSize : " << chunkSize << std::endl;
+				chunkSize = std::stol(readHex(buffer), NULL, 16);
 				if (!chunkSize)
 				{
 					body = oss.str();
 					parseStatus = End;
+					std::ofstream ofs("b.pdf", std::ios::binary);
+					ofs << body;
+					ofs.close();
 				}
 				buffer.erase(buffer.begin(), buffer.begin() + idx + 1);
-				std::cout << "afterBuffer : \n" << buffer << std::endl;
-				bytesHave -= (idx + 1);
 			}
-		}
-		// 읽은 게 chunkSize보다 많으면 chunk만큼 oss에 넣고
-		// 새로운 chunkSize읽기 시도
-		while (bytesHave > chunkSize)
-		{
-			oss.write(charBuf + idx + 1, chunkSize);
-			buffer.erase(buffer.begin(), buffer.begin() + chunkSize + 1);
-			bytesHave -= chunkSize;
-			chunkSize = 0;
-			// 새로운 chunkSize가 있으면 새로 정의하고 while문으로 감
-			if ((idx = buffer.find('\n')) != std::string::npos)
-			{
-				chunkSize = std::stoi(readHex(buffer), NULL, 16);
-				if (!chunkSize)
-				{
-					body = oss.str();
-					parseStatus = End;
-				}
-				buffer.erase(buffer.begin(), buffer.begin() + idx + 1);
-				bytesHave -= (idx + 1);
-			}
-			// 새로운 chunkSize를 읽을만큼은 없으면 더 읽어옴.
 			else
-				continue;
+				; // error
 		}
-		// if (bytesHave <= chunkSize)
-		// {
-		// 	// ex) 12/r/n abc 이렇게까지만 나오고 짤려있으면 더 읽어오게 해
-		// }
+		else
+			idx = -1;
+	}
+	// else
+	// 	return (1);
+
+	while (chunkSize && buffer.length() > chunkSize)
+	{
+		oss.write(charBuf + idx + 1, chunkSize);
+		buffer.erase(buffer.begin(), buffer.begin() + chunkSize + 2);
+		idx += chunkSize + 3;
+		chunkSize = 0;
+		// 새로운 chunkSize가 있으면 새로 정의하고 while문으로 감
+		if ((newIdx = buffer.find('\n')) != std::string::npos)
+		{
+			chunkSize = std::stol(readHex(buffer), NULL, 16);
+			if (!chunkSize)
+			{
+				body = oss.str();
+				parseStatus = End;
+				std::ofstream ofs("c.pdf", std::ios::binary);
+				ofs << body;
+				ofs.close();
+			}
+			buffer.erase(buffer.begin(), buffer.begin() + newIdx + 1);
+			idx += newIdx;
+		}
+	}
+	if (chunkSize)
+	{
+		oss.write(charBuf + idx + 1, buffer.length());
+		chunkSize -= (buffer.length());
 	}
 }
 
