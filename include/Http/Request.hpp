@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/11 18:26:03 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/12 21:00:00 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 #include <sys/socket.h>
 #include <vector>
 
-#define BUFFER_SIZE 100000
+#define BUFFER_SIZE 10000
 
 namespace Hafserv
 {

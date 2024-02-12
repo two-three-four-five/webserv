@@ -47,7 +47,7 @@ bool Connection::readRequest(int fd)
 	}
 	if (request.getParseStatus() == End)
 	{
-		request.printRequest();
+		// request.printRequest();
 		buildResponseFromRequest();
 		std::string responseString = response.getResponse();
 		std::cout << "<-------response------->" << std::endl << responseString;

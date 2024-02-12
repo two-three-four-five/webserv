@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/10 14:51:36 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/12 21:00:28 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 namespace Hafserv
 {
 
-#define BUFFER_SIZE 100000
+#define BUFFER_SIZE 10000
 
 class Webserv;
 
