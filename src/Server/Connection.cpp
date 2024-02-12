@@ -2,6 +2,7 @@
 
 #include "File/File.hpp"
 #include <string>
+#include <sys/event.h>
 #include <sys/socket.h>
 
 using namespace Hafserv;
@@ -99,8 +100,8 @@ bool Connection::readRequest(int fd)
 		// request.printRequest();
 		buildResponseFromRequest();
 		std::string responseString = response.getResponse();
-		std::cout << "<-------response------->" << std::endl << responseString;
-		std::cout << "<-----response end----->" << std::endl;
+		// std::cout << "<-------response------->" << std::endl << responseString;
+		// std::cout << "<-----response end----->" << std::endl;
 		write(fd, responseString.c_str(), responseString.length());
 		bzero(charBuf, sizeof(charBuf));
 		return false;
@@ -340,36 +341,97 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		ssize_t bytes_read;
 		std::ostringstream output;
 
-		std::cout << "##@" << request.getBody().length() << std::endl;
-		// const char *body = request.getBody().c_str();
-		// int writtenByte = 0;
-		// size_t bodyLen = request.getBody().length();
-		// while (writtenByte < bodyLen)
-		// {
-		// 	writtenByte += write(inward_fd[1], body + writtenByte, 10000);
-		// 	perror("why");
-		// }
-		std::ofstream ofs("b.txt");
-		ofs << request.getBody();
-		ofs.close();
-		write(inward_fd[1], request.getBody().c_str(), request.getBody().length());
-		int status;
-		while ((bytes_read = read(outward_fd[0], buffer, BUFFER_SIZE)) > 0)
+		int kq = kqueue();
+		if (kq == -1)
 		{
-			output.write(buffer, bytes_read);
-			std::cout << buffer;
+			std::cerr << "kqueue() error" << std::endl;
+			exit(1);
 		}
-		std::cout << "WHAT";
-		// bytes_read = read(outward_fd[0], buffer, sizeof(buffer));
+		int status;
+
+		struct kevent event;
+		EV_SET(&event, outward_fd[0], EVFILT_READ, EV_ADD, 0, 0, NULL);
+		kevent(kq, &event, 1, NULL, 0, NULL);
+		EV_SET(&event, inward_fd[1], EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+		kevent(kq, &event, 1, NULL, 0, NULL);
+		struct kevent evList[2];
+		struct timespec timeout;
+		bzero(&timeout, sizeof(struct timespec));
+		bool isWriteEnd = false;
+		const char *wrBuffer = request.getBody().c_str();
+		size_t wrBytes = request.getBody().length();
+		size_t written = 0;
+		size_t readen = 0;
+		int events;
+		while (!waitpid(pid, &status, WNOHANG))
+		{
+			events = kevent(kq, NULL, 0, evList, 2, &timeout);
+			if (events == -1)
+			{
+				std::cerr << "kevent() error" << std::endl;
+				continue;
+			}
+			for (int i = 0; i < events; i++)
+			{
+				if (evList[i].filter == EVFILT_WRITE)
+				{
+					int bytesToWrite = wrBytes - written;
+					if (bytesToWrite > BUFFER_SIZE)
+						bytesToWrite = BUFFER_SIZE;
+					int ret = write(evList[i].ident, wrBuffer + written, bytesToWrite);
+					if (ret > 0)
+					{
+						std::cout << "written: " << written << std::endl;
+						written += ret;
+					}
+					else if (ret == 0)
+					{
+						EV_SET(&event, evList[i].ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+						kevent(kq, &event, 1, NULL, 0, NULL);
+					}
+				}
+				else if (evList[i].filter == EVFILT_READ)
+				{
+					bytes_read = read(outward_fd[0], buffer, BUFFER_SIZE);
+					if (bytes_read == 0)
+					{
+						EV_SET(&event, evList[i].ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+						kevent(kq, &event, 1, NULL, 0, NULL);
+					}
+					if (bytes_read > 0)
+					{
+						output.write(buffer, bytes_read);
+						readen += bytes_read;
+						std::cout << "read: " << readen << ", " << bytes_read << std::endl;
+					}
+					if (bytes_read < 0)
+					{
+						perror("HWY");
+					}
+				}
+			}
+		}
+
+		// TODO: waitpid child process
+		// int status;
 		// waitpid(pid, &status, 0);
 
 		close(inward_fd[1]);
 		close(outward_fd[0]);
+
+		std::string returned = output.str();
+
+		std::cout << returned.length() << std::endl;
+		returned = returned.substr(returned.find('\n') + 1);
+		returned = returned.substr(returned.find('\n') + 1);
+		returned = returned.substr(returned.find('\n') + 1);
+		returned += "\r\n";
+
 		response.setStatusLine("HTTP/1.1 200 OK");
-		response.addToHeaders("Content-Type", "text/html");
-		response.addToHeaders("Content-Length", util::string::itos(output.str().length()));
-		response.setBody(output.str());
-		std::cout << ">>" << std::endl;
+		response.addToHeaders("Content-Type", "text/html; charset=utf-8");
+		response.addToHeaders("Content-Length", util::string::itos(returned.length()));
+
+		response.setBody(returned);
 	}
 }
 
