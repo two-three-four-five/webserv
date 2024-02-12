@@ -130,9 +130,8 @@ void Webserv::runWebserv()
 				else if (conn.getResponse().getResponseState() == Response::Sending)
 					conn.sendResponse();
 				if (conn.getResponse().getResponseState() == Response::End)
-				{
+					// disconnectClient(event_list[i].ident);
 					conn.reset();
-				}
 			}
 		}
 		checkTimeout();

@@ -422,6 +422,10 @@ void Connection::sendResponse() { response.send(socket); }
 
 void Connection::reset()
 {
+	startTime = time(NULL);
+	targetServer = NULL;
+	targetResource = "";
+	targetLocationConfig = LocationConfig();
 	request = Request();
 	response = Response();
 }

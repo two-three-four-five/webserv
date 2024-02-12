@@ -106,7 +106,7 @@ void Response::send(int fd)
 	{
 		writtenBytes += ret;
 	}
-	else if (ret == 0)
+	if (writtenBytes == responseBytes)
 	{
 		responseState = End;
 	}

@@ -36,7 +36,6 @@ Request::~Request() {}
 void Request::readRequest(const int fd)
 {
 	int idx;
-	std::cout << "ok unitl here" << parseStatus << std::endl;
 
 	if (parseStatus < Body)
 	{
@@ -178,10 +177,7 @@ int Request::parseStartLine(const std::string &request)
 			return 505;
 		} // 505 HTTP version not supported
 	}
-	if (method == "HEAD")
-		parseStatus = End;
-	else
-		parseStatus = Header;
+	parseStatus = Header;
 	return 0;
 }
 
