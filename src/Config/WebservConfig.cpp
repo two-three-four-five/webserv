@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 22:39:50 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/12 13:13:10 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 {
 	ConfigFile main = configFile.getSubBlocks().at(0);
 
-	directives = main.getDirectives();
 	ConfigFile::directives_t::const_iterator it = main.getDirectives().begin();
 	for (; it != main.getDirectives().end(); it++)
 	{
@@ -38,17 +37,6 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 			throw UnknownDirectiveError(key);
 		else if (!mainSimpleDirectives.count(key))
 			throw DisallowDirectiveError(key);
-
-		if (key == "user")
-			;
-		else if (key == "worker_processes")
-			;
-		else if (key == "error_log")
-			;
-		else if (key == "pid")
-			;
-		else if (key == "worker_rlimit_nofile")
-			;
 	}
 
 	bool hasEvent = false, hasHttp = false;

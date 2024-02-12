@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/11 17:46:49 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 22:50:44 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/12 13:12:29 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,18 +79,11 @@ AConfig::~AConfig() {}
 void AConfig::initAllSimpleDirectives()
 {
 	/*		WebservSimpleDirectives		*/
-	allSimpleDirectives.insert("user");
-	allSimpleDirectives.insert("worker_processes");
-	allSimpleDirectives.insert("error_log");
-	allSimpleDirectives.insert("pid");
-	allSimpleDirectives.insert("worker_rlimit_nofile");
 
 	/*		EventSimpleDirectives		*/
 	allSimpleDirectives.insert("worker_connections");
 
 	/*		HttpSimpleDirectives		*/
-	allSimpleDirectives.insert("default_type");
-	allSimpleDirectives.insert("sendfile");
 
 	/*		ServerSimpleDirectives		*/
 	allSimpleDirectives.insert("listen");
@@ -102,6 +95,7 @@ void AConfig::initAllSimpleDirectives()
 	allSimpleDirectives.insert("cgi_path");
 
 	/*		HttpSimpleDirectives		*/
+	allSimpleDirectives.insert("default_type");
 	allSimpleDirectives.insert("root");
 	allSimpleDirectives.insert("index");
 	allSimpleDirectives.insert("client_header_timeout");
@@ -113,23 +107,19 @@ void AConfig::initAllSimpleDirectives()
 }
 
 void AConfig::initMainSimpleDirectives()
-{
-	/*		WebservSimpleDirectives		*/
-	mainSimpleDirectives.insert("user");
-	mainSimpleDirectives.insert("worker_processes");
-	mainSimpleDirectives.insert("error_log");
-	mainSimpleDirectives.insert("pid");
-	mainSimpleDirectives.insert("worker_rlimit_nofile");
+{ /*		WebservSimpleDirectives		*/
 }
 
 void AConfig::initEventsSimpleDirectives()
-{ /*		EventSimpleDirectives		*/
+{
+	/*		EventSimpleDirectives		*/
 	eventsSimpleDirectives.insert("worker_connections");
 }
 
 void AConfig::initHttpSimpleDirectives()
 {
 	/*		CoreSimpleDirectives		*/
+	httpSimpleDirectives.insert("default_type");
 	httpSimpleDirectives.insert("root");
 	httpSimpleDirectives.insert("index");
 	httpSimpleDirectives.insert("client_header_timeout");
@@ -140,13 +130,12 @@ void AConfig::initHttpSimpleDirectives()
 	httpSimpleDirectives.insert("allow_methods");
 
 	/*		HttpSimpleDirectives		*/
-	httpSimpleDirectives.insert("default_type");
-	httpSimpleDirectives.insert("sendfile");
 }
 
 void AConfig::initServerSimpleDirectives()
 {
 	/*		CoreSimpleDirectives		*/
+	serverSimpleDirectives.insert("default_type");
 	serverSimpleDirectives.insert("root");
 	serverSimpleDirectives.insert("index");
 	serverSimpleDirectives.insert("client_header_timeout");
@@ -164,6 +153,7 @@ void AConfig::initServerSimpleDirectives()
 void AConfig::initLocationSimpleDirectives()
 {
 	/*		CoreSimpleDirectives		*/
+	locationSimpleDirectives.insert("default_type");
 	locationSimpleDirectives.insert("root");
 	locationSimpleDirectives.insert("index");
 	locationSimpleDirectives.insert("client_body_timeout");
@@ -181,6 +171,7 @@ void AConfig::initLocationSimpleDirectives()
 void AConfig::initCoreSimpleDirectives()
 {
 	/*		CoreSimpleDirectives		*/
+	coreSimpleDirectives.insert("default_type");
 	coreSimpleDirectives.insert("root");
 	coreSimpleDirectives.insert("index");
 	coreSimpleDirectives.insert("client_header_timeout");

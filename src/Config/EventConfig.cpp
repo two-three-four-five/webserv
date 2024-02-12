@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 22:47:30 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/12 13:03:07 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,18 @@ EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : AConfig(),
 		}
 	}
 
-	// if (block.getSubBlocks().size())
-	// {
-	// 	const std::string &subBlockName = block.getSubBlocks().front().getBlockDirective();
-	// 	throw DisallowDirectiveError(subBlockName);
-	// }
+	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
+	{
+		const ConfigFile &subBlock = block.getSubBlocks().at(i);
+		const std::string &subBlockName = subBlock.getBlockDirective();
+
+		if (allSimpleDirectives.count(subBlockName))
+			throw NoSemicolonError(subBlockName);
+		else if (!allBlockDirectives.count(subBlockName))
+			throw UnknownDirectiveError(subBlockName);
+		else if (!serverBlockDirectives.count(subBlockName))
+			throw DisallowDirectiveError(subBlockName);
+	}
 }
 
 EventConfig &EventConfig::operator=(const EventConfig &other)

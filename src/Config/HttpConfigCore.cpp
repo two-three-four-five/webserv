@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 21:55:48 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/12 13:01:43 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,15 @@ using namespace Hafserv;
 
 HttpConfigCore::Timeout::Timeout() : clientHeader(60), clientBody(60), keepAlive(75), send(60) {}
 
-HttpConfigCore::HttpConfigCore() : root("html"), indexes(), timeouts(), errorPages(), types(), allowMethods()
+HttpConfigCore::HttpConfigCore()
+	: root("html"), indexes(), timeouts(), errorPages(), defaultType("text/plain"), types(), allowMethods()
 {
 	indexes.push_back("index.html");
 }
 
 HttpConfigCore::HttpConfigCore(const HttpConfigCore &other)
 	: root(other.root), indexes(other.indexes), timeouts(other.timeouts), errorPages(other.errorPages),
-	  types(other.types), allowMethods(other.allowMethods)
+	  defaultType(other.defaultType), types(other.types), allowMethods(other.allowMethods)
 {
 }
 
@@ -35,6 +36,7 @@ HttpConfigCore &HttpConfigCore::operator=(const HttpConfigCore &other)
 		indexes = other.indexes;
 		timeouts = other.timeouts;
 		errorPages = other.errorPages;
+		defaultType = other.defaultType;
 		types = other.types;
 		allowMethods = other.allowMethods;
 	}
@@ -47,6 +49,7 @@ const std::string &HttpConfigCore::getRoot() const { return root; }
 const std::vector<std::string> &HttpConfigCore::getIndexes() const { return indexes; }
 const HttpConfigCore::Timeout &HttpConfigCore::getTimeout() const { return timeouts; }
 const std::map<int, std::string> &HttpConfigCore::getErrorPages() const { return errorPages; }
+const std::string &HttpConfigCore::getDefaultType() const { return defaultType; }
 const std::multimap<std::string, std::string> &HttpConfigCore::getTypes() const { return types; }
 const std::vector<std::string> &HttpConfigCore::getAllowMethods() const { return allowMethods; }
 
@@ -58,6 +61,7 @@ void HttpConfigCore::setClientBodyTimeout(int timeout) { this->timeouts.clientBo
 void HttpConfigCore::setKeepAliveTimeout(int timeout) { this->timeouts.keepAlive = timeout; }
 void HttpConfigCore::setSendTimeout(int timeout) { this->timeouts.send = timeout; }
 void HttpConfigCore::setErrorPages(const std::map<int, std::string> &errorPages) { this->errorPages = errorPages; }
+void HttpConfigCore::setDefaultType(const std::string &defaultType) { this->defaultType = defaultType; }
 void HttpConfigCore::setTypes(const std::multimap<std::string, std::string> &types) { this->types = types; }
 void HttpConfigCore::setAllowMethods(const std::vector<std::string> allowMethods) { this->allowMethods = allowMethods; }
 
@@ -86,6 +90,7 @@ void HttpConfigCore::addAllowMethod(const std::string &method)
 std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 {
 	os << "\t[HttpConfigCore]" << std::endl;
+	os << "\t\tdefault_types: " << conf.getDefaultType() << std::endl;
 	os << "\t\troot: " << conf.getRoot() << std::endl;
 	os << "\t\tindexes: ";
 	for (size_t i = 0; i < conf.getIndexes().size(); i++)

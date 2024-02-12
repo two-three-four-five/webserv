@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 22:45:32 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/12 13:13:31 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,11 +39,6 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 			throw UnknownDirectiveError(key);
 		else if (!httpSimpleDirectives.count(key))
 			throw DisallowDirectiveError(key);
-
-		if (key == "default_type")
-			;
-		else if (key == "sendfile")
-			;
 	}
 
 	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
@@ -60,8 +55,6 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 
 		if (subBlockName == "server")
 			servers.push_back(ServerConfig(block.getSubBlocks().at(i), core));
-		else if (subBlockName == "types")
-			;
 	}
 }
 
