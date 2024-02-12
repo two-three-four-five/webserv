@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:14:44 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/12 13:19:57 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 	this->setHttpConfigCore(block.getDirectives());
 	this->setHttpConfigCore(block.getSubBlocks());
 
-	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	bool hasAlias = false, hasRoot = false, hasProxyPass = false, hasCgiPath = false;
+	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
 	{
 		const std::string &key = (*it).first;
@@ -60,17 +60,18 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 			throw UnknownDirectiveError(key);
 		else if (!locationSimpleDirectives.count(key))
 			throw DisallowDirectiveError(key);
-		else if (key == "alias")
+
+		if (key == "alias")
 		{
 			if (hasAlias)
 				throw DuplicateDirectiveError(key);
-			if (hasRoot)
+			else if (hasRoot)
 				throw DuplicateDirectiveError(key, "root");
-			if (numToken != 1)
-				throw ParseError("invalid number of arguments in \"alias\" directive");
+			else if (numToken != 1)
+				throw InvalidNumberArgumentError(key);
 
-			hasAlias = true;
 			this->alias = value;
+			hasAlias = true;
 		}
 		else if (key == "proxy_pass")
 		{
@@ -87,9 +88,9 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 			if (hasCgiPath)
 				throw DuplicateDirectiveError(key);
 			if (numToken != 1)
-				throw ParseError("invalid number of arguments in \"cgi_path\" directive");
+				throw InvalidNumberArgumentError(key);
 			if (File(value).getCode() != File::REGULAR_FILE)
-				throw ParseError("invalid path for cgi file " + value);
+				throw InvalidArgumentError(key);
 
 			hasCgiPath = true;
 			this->cgiPath = value;
