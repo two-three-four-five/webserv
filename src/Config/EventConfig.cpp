@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:01:30 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/12 13:03:07 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,24 @@
 
 using namespace Hafserv;
 
-EventConfig::EventConfig() : workerConnections() {}
+EventConfig::EventConfig() : AConfig(), workerConnections() {}
 
-EventConfig::EventConfig(const EventConfig &other) : workerConnections(other.workerConnections) {}
+EventConfig::EventConfig(const EventConfig &other) : AConfig(other), workerConnections(other.workerConnections) {}
 
-EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : workerConnections()
+EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : AConfig(), workerConnections()
 {
-	std::string key, value;
 	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
 	{
-		key = (*it).first;
-		value = (*it).second;
+		const std::string &key = (*it).first;
+		const std::string &value = (*it).second;
+		if (allBlockDirectives.count(key))
+			throw NoBraceError(key);
+		else if (!allSimpleDirectives.count(key))
+			throw UnknownDirectiveError(key);
+		else if (!eventsSimpleDirectives.count(key))
+			throw DisallowDirectiveError(key);
+
 		if (key == "worker_connections")
 		{
 			if (util::string::stoi(value).first)
@@ -33,8 +39,19 @@ EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : workerConn
 			else
 				throw ParseError("stoi failed: " + value);
 		}
-		else
-			throw ParseError("unexpected block context directive: " + key);
+	}
+
+	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
+	{
+		const ConfigFile &subBlock = block.getSubBlocks().at(i);
+		const std::string &subBlockName = subBlock.getBlockDirective();
+
+		if (allSimpleDirectives.count(subBlockName))
+			throw NoSemicolonError(subBlockName);
+		else if (!allBlockDirectives.count(subBlockName))
+			throw UnknownDirectiveError(subBlockName);
+		else if (!serverBlockDirectives.count(subBlockName))
+			throw DisallowDirectiveError(subBlockName);
 	}
 }
 
@@ -42,6 +59,7 @@ EventConfig &EventConfig::operator=(const EventConfig &other)
 {
 	if (this != &other)
 	{
+		AConfig::operator=(other);
 		workerConnections = other.workerConnections;
 	}
 	return *this;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebservConfig.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:01:48 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/12 13:13:10 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,48 +14,58 @@
 
 using namespace Hafserv;
 
-WebservConfig::WebservConfig() : directives(), event(), http() {}
+WebservConfig::WebservConfig() : AConfig(), directives(), event(), http() {}
 
 WebservConfig::WebservConfig(const WebservConfig &other)
-	: directives(other.directives), event(other.event), http(other.http)
+	: AConfig(other), directives(other.directives), event(other.event), http(other.http)
 {
 }
 
-WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : directives(), event(), http()
+WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : AConfig(), directives(), event(), http()
 {
 	ConfigFile main = configFile.getSubBlocks().at(0);
 
-	directives = main.getDirectives();
-	std::string key, value;
 	ConfigFile::directives_t::const_iterator it = main.getDirectives().begin();
 	for (; it != main.getDirectives().end(); it++)
 	{
-		key = (*it).first;
-		value = (*it).second;
-		if (key == "user")
-			;
-		else if (key == "worker_processes")
-			;
-		else if (key == "error_log")
-			;
-		else if (key == "pid")
-			;
-		else if (key == "worker_rlimit_nofile")
-			;
-		else
-			throw ParseError("unexpected main context directive: " + key);
+		const std::string &key = (*it).first;
+		const std::string &value = (*it).second;
+
+		if (allBlockDirectives.count(key))
+			throw NoBraceError(key);
+		else if (!allSimpleDirectives.count(key))
+			throw UnknownDirectiveError(key);
+		else if (!mainSimpleDirectives.count(key))
+			throw DisallowDirectiveError(key);
 	}
 
-	ConfigFile subBlock;
+	bool hasEvent = false, hasHttp = false;
 	for (size_t i = 0; i < main.getSubBlocks().size(); i++)
 	{
-		subBlock = main.getSubBlocks().at(i);
-		if (subBlock.getBlockDirective() == "events")
+		const ConfigFile &subBlock = main.getSubBlocks().at(i);
+		const std::string &subBlockName = subBlock.getBlockDirective();
+
+		if (allSimpleDirectives.count(subBlockName))
+			throw NoSemicolonError(subBlockName);
+		else if (!allBlockDirectives.count(subBlockName))
+			throw UnknownDirectiveError(subBlockName);
+		else if (!mainBlockDirectives.count(subBlockName))
+			throw DisallowDirectiveError(subBlockName);
+
+		if (subBlockName == "events")
+		{
+			if (hasEvent)
+				throw DuplicateDirectiveError("events");
+			hasEvent = true;
 			event = EventConfig(subBlock);
-		else if (subBlock.getBlockDirective() == "http")
+		}
+		else if (subBlockName == "http")
+		{
+			if (hasHttp)
+				throw DuplicateDirectiveError("http");
+			hasHttp = true;
 			http = HttpConfig(subBlock);
-		else
-			throw ParseError("unexpected block directive: " + subBlock.getBlockDirective());
+		}
 	}
 }
 
@@ -63,6 +73,7 @@ WebservConfig &WebservConfig::operator=(const WebservConfig &other)
 {
 	if (this != &other)
 	{
+		AConfig::operator=(other);
 		directives = other.directives;
 		event = other.event;
 		http = other.http;

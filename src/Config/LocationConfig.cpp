@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConfig.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:01:42 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/12 13:19:57 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,19 @@
 
 using namespace Hafserv;
 
-LocationConfig::LocationConfig() : AHttpConfigModule(), modifier(), pattern(), alias(), proxyPass(), cgiPath() {}
+LocationConfig::LocationConfig()
+	: AConfig(), AHttpConfigModule(), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+{
+}
 
 LocationConfig::LocationConfig(const LocationConfig &other)
-	: AHttpConfigModule(other.core), modifier(other.modifier), pattern(other.pattern), alias(other.alias),
-	  proxyPass(other.proxyPass), cgiPath(other.cgiPath)
+	: AConfig(other), AHttpConfigModule(other.core), modifier(other.modifier), pattern(other.pattern),
+	  alias(other.alias), proxyPass(other.proxyPass), cgiPath(other.cgiPath)
 {
 }
 
 LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &core)
-	: AHttpConfigModule(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+	: AConfig(), AHttpConfigModule(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
 {
 	/* SAMPLE LOCATION BLOCK
 	 * location modifier(=, $, ^) pattern {
@@ -43,29 +46,37 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 	this->setHttpConfigCore(block.getDirectives());
 	this->setHttpConfigCore(block.getSubBlocks());
 
-	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	bool hasAlias = false, hasRoot = false, hasProxyPass = false, hasCgiPath = false;
+	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
 	{
-		std::string key = (*it).first;
-		std::string value = (*it).second;
+		const std::string &key = (*it).first;
+		const std::string &value = (*it).second;
 		size_t numToken = util::string::split(value, ' ').size();
+
+		if (allBlockDirectives.count(key))
+			throw NoBraceError(key);
+		else if (!allSimpleDirectives.count(key))
+			throw UnknownDirectiveError(key);
+		else if (!locationSimpleDirectives.count(key))
+			throw DisallowDirectiveError(key);
+
 		if (key == "alias")
 		{
 			if (hasAlias)
-				throw ParseError("\"alias\" directive is duplicate");
-			if (hasRoot)
-				throw ParseError("\"alias\" directive is duplicate, \"root\" directive was specified earlier");
-			if (numToken != 1)
-				throw ParseError("invalid number of arguments in \"alias\" directive");
+				throw DuplicateDirectiveError(key);
+			else if (hasRoot)
+				throw DuplicateDirectiveError(key, "root");
+			else if (numToken != 1)
+				throw InvalidNumberArgumentError(key);
 
-			hasAlias = true;
 			this->alias = value;
+			hasAlias = true;
 		}
 		else if (key == "proxy_pass")
 		{
 			if (hasProxyPass)
-				throw ParseError("\"proxy_pass\" directive is duplicate");
+				throw DuplicateDirectiveError(key);
 			if (false) // TODO: check if proxy_pass is valid URL
 				;
 
@@ -75,11 +86,11 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		else if (key == "cgi_path")
 		{
 			if (hasCgiPath)
-				throw ParseError("\"cgi_path\" directive is duplicate");
+				throw DuplicateDirectiveError(key);
 			if (numToken != 1)
-				throw ParseError("invalid number of arguments in \"cgi_path\" directive");
+				throw InvalidNumberArgumentError(key);
 			if (File(value).getCode() != File::REGULAR_FILE)
-				throw ParseError("invalid path for cgi file " + value);
+				throw InvalidArgumentError(key);
 
 			hasCgiPath = true;
 			this->cgiPath = value;
@@ -87,14 +98,21 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		else if (key == "root")
 		{
 			if (hasAlias)
-				throw ParseError("\"root\" directive is duplicate, \"alias\" directive was specified earlier");
+				throw DuplicateDirectiveError(key, "alias");
 		}
-		else if (!isCoreDirective(key))
-		{
-			throw ParseError("unknown directive \"" + key + "\"");
-		}
-		else
-			;
+	}
+
+	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
+	{
+		const ConfigFile &subBlock = block.getSubBlocks().at(i);
+		const std::string &subBlockName = subBlock.getBlockDirective();
+
+		if (allSimpleDirectives.count(subBlockName))
+			throw NoSemicolonError(subBlockName);
+		else if (!allBlockDirectives.count(subBlockName))
+			throw UnknownDirectiveError(subBlockName);
+		else if (!serverBlockDirectives.count(subBlockName))
+			throw DisallowDirectiveError(subBlockName);
 	}
 }
 
@@ -102,6 +120,7 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &other)
 {
 	if (this != &other)
 	{
+		AConfig::operator=(other);
 		core = other.core;
 		modifier = other.modifier;
 		pattern = other.pattern;
@@ -142,24 +161,23 @@ bool LocationConfig::isMatching(const std::string &url)
 		return false;
 }
 
-bool LocationConfig::isCoreDirective(const std::string &directive)
-{
-	if (directive == "root" || directive == "index" || directive == "client_body_timeout" ||
-		directive == "keepalive_timeout" || directive == "send_timeout" || directive == "error_page")
-		return true;
-	else
-		return false;
-}
-
 std::ostream &operator<<(std::ostream &os, const LocationConfig &conf)
 {
 	os << "[LocationConfig]" << std::endl;
 	os << conf.getHttpConfigCore();
 	os << "\tmodifier: " << conf.getModifier() << std::endl;
 	os << "\tpattern: " << conf.getPattern() << std::endl;
-	os << "\talias: " << conf.getAlias() << std::endl;
-	os << "\tproxy_pass: " << conf.getProxyPass() << std::endl;
-	os << "\tcgi_path: " << conf.getCgiPath();
-
+	if (conf.getAlias().length())
+		os << "\talias: " << conf.getAlias() << std::endl;
+	else
+		os << "\tno alias" << std::endl;
+	if (conf.getProxyPass().length())
+		os << "\tproxy_pass: " << conf.getProxyPass() << std::endl;
+	else
+		os << "\tno proxy_pass" << std::endl;
+	if (conf.getCgiPath().length())
+		os << "\tcgi_path: " << conf.getCgiPath();
+	else
+		os << "\tno cgi_pass";
 	return os;
 }

@@ -3,20 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpConfigModule.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:05 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 19:56:04 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/11 21:24:36 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef ACONFIG_HPP
-#define ACONFIG_HPP
+#ifndef AHTTPCONFIGMODULE_HPP
+#define AHTTPCONFIGMODULE_HPP
 
 #include "Config/ConfigException.hpp"
 #include "Config/HttpConfigCore.hpp"
 #include "File/ConfigFile.hpp"
 #include "util/string.hpp"
+#include <set>
 #include <string>
 #include <vector>
 
@@ -35,8 +36,6 @@ public:
 	void setHttpConfigCore(const HttpConfigCore &core);
 	void setHttpConfigCore(const ConfigFile::directives_t &directives);
 	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks);
-
-	virtual bool isCoreDirective(const std::string &directive);
 
 protected:
 	HttpConfigCore core;

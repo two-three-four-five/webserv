@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   WebservConfig.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:00:05 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/11 21:17:17 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERVCONFIG_HPP
 #define WEBSERVCONFIG_HPP
 
+#include "Config/AConfig.hpp"
 #include "Config/ConfigException.hpp"
 #include "Config/EventConfig.hpp"
 #include "Config/HttpConfig.hpp"
@@ -21,7 +22,7 @@
 
 namespace Hafserv
 {
-class WebservConfig
+class WebservConfig : public AConfig
 {
 public:
 	WebservConfig();

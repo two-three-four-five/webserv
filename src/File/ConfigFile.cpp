@@ -15,29 +15,22 @@
 
 using namespace Hafserv;
 
-const std::string ConfigFile::meta = " \t{};#";
+const std::string ConfigFile::meta = " \t\n{};#";
 
 ConfigFile::ConfigFile() {}
 
 ConfigFile::ConfigFile(const ConfigFile &other)
-	: RegularFile(other), lines(other.lines), blockDirective(other.blockDirective),
-	  parameters(parameters_t(other.parameters)), directives(directives_t(other.directives)),
-	  subBlocks(subblocks_t(other.subBlocks))
+	: RegularFile(other), blockDirective(other.blockDirective), parameters(parameters_t(other.parameters)),
+	  directives(directives_t(other.directives)), subBlocks(subblocks_t(other.subBlocks))
 {
 }
 
 ConfigFile::ConfigFile(const RegularFile &other) : RegularFile(other) {}
 
-ConfigFile::ConfigFile(const std::string &filename) : RegularFile(filename), blockDirective("head")
+ConfigFile::ConfigFile(const std::string &filename) throw(ParseError) : RegularFile(filename), blockDirective("head")
 {
 	if (code != File::REGULAR_FILE)
-		; // throw config error
-
-	// initialize lines
-	std::stringstream ss(contents);
-	std::string temp;
-	while (std::getline(ss, temp))
-		lines.push_back(temp);
+		throw ParseError("IS NOT A REGULAR FILE");
 
 	ConfigFile main = ConfigFile();
 	main.blockDirective = "main";
@@ -46,75 +39,66 @@ ConfigFile::ConfigFile(const std::string &filename) : RegularFile(filename), blo
 	std::vector<std::vector<ConfigFile>::iterator> history;
 	history.push_back(subBlocks.begin());
 
+	std::string remainder, front, value;
 	std::vector<std::string> waiting;
-	std::vector<size_t> indexes;
-	std::string line, front;
 	size_t min = -1;
 
-	for (size_t i = 0; i < lines.size(); i++)
+	for (remainder = contents; remainder.size(); remainder = remainder.substr(min + 1, remainder.size() - (min + 1)))
 	{
-		for (line = lines[i]; line.size(); line = line.substr(min + 1, line.size() - (min + 1)))
+		min = remainder.find_first_of(meta, 0);
+		if (min == std::string::npos)
+			min = remainder.size();
+		front = remainder.substr(0, min);
+
+		switch (remainder[min])
 		{
-			indexes.clear();
-			for (size_t j = 0; j < meta.size(); j++)
-				indexes.push_back(line.find(meta.at(j)));
-			indexes.push_back(std::string::npos);
-
-			min = *std::min_element(indexes.begin(), indexes.end());
-			front = line.substr(0, min);
-
-			switch (line[min])
+		case '{':
+			if (!front.empty())
+				waiting.push_back(front);
+			if (!waiting.empty())
 			{
-			case ' ':
-			case '\t':
-				if (!front.empty())
-					waiting.push_back(front);
-				break;
+				ConfigFile newConfig = ConfigFile(*dynamic_cast<RegularFile *>(this));
+				newConfig.blockDirective = *waiting.begin();
 
-			case '{':
-				if (!front.empty())
-					waiting.push_back(front);
-				if (!waiting.empty())
-				{
-					ConfigFile newConfig = ConfigFile(*dynamic_cast<RegularFile *>(this));
-					newConfig.blockDirective = *waiting.begin();
+				for (size_t i = 1; i < waiting.size(); i++)
+					newConfig.parameters.push_back(waiting.at(i));
 
-					for (size_t j = 1; j < waiting.size(); j++)
-						newConfig.parameters.push_back(waiting.at(j));
+				(*history.back()).subBlocks.push_back(newConfig);
+				history.push_back(--(*history.back()).subBlocks.end());
+			}
+			waiting.clear();
+			break;
 
-					(*history.back()).subBlocks.push_back(newConfig);
-					history.push_back(--(*history.back()).subBlocks.end());
-				}
-				waiting.clear();
-				break;
-
-			case '}':
-				if (!front.empty() || !waiting.empty())
-					exit(1); // TODO: ERROR
+		case '}':
+			if (!front.empty())
+				waiting.push_back(front + "}");
+			else if (!waiting.empty())
+				throw ParseError("unexpected \"}\"");
+			else if (history.size() == 1)
+				throw ParseError("unexpected \"}\"");
+			else
 				history.pop_back();
-				break;
+			break;
 
-			case ';':
-				if (!front.empty())
-					waiting.push_back(front);
-				if (!waiting.empty())
-				{
-					std::string value;
-					for (size_t j = 1; j < waiting.size() - 1; j++)
-						value += waiting.at(j) + " ";
-					value += waiting.back();
-					(*history.back()).directives.insert(std::make_pair(waiting.at(0), value));
-				}
-				waiting.clear();
-				break;
+		case ';':
+			if (!front.empty())
+				waiting.push_back(front);
+			if (!waiting.empty())
+			{
+				value.clear();
+				for (size_t i = 1; i < waiting.size() - 1; i++)
+					value += waiting.at(i) + " ";
+				value += waiting.back();
+				(*history.back()).directives.insert(std::make_pair(waiting.at(0), value));
+			}
+			waiting.clear();
+			break;
 
-			default:
-				if (!front.empty())
-					waiting.push_back(front);
-				min = line.size() - 1;
-				break;
-			};
-		}
+		default: // ' ', '\t', '\n'
+			if (!front.empty())
+				waiting.push_back(front);
+			break;
+		};
 	}
 }
 
