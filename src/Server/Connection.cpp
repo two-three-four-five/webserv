@@ -41,20 +41,13 @@ Connection::~Connection() {}
 bool Connection::readRequest(int fd)
 {
 	request.readRequest(fd);
-	if (request.getParseStatus() >= Body && targetServer == NULL)
-	{
-		targetServer = Webserv::getInstance().findTargetServer(port, request);
-		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
-	}
 	if (request.getParseStatus() == End)
 	{
 		// request.printRequest();
+		std::cout << "parseEnd" << std::endl;
+		targetServer = Webserv::getInstance().findTargetServer(port, request);
+		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
 		buildResponseFromRequest();
-		// std::string responseString = response.getResponse();
-		// std::cout << "<-------response------->" << std::endl << responseString;
-		// std::cout << "<-----response end----->" << std::endl;
-		// write(fd, responseString.c_str(), responseString.length());
-		// return false;
 	}
 
 	return true;
