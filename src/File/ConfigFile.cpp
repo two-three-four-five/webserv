@@ -17,20 +17,20 @@ using namespace Hafserv;
 
 const std::string ConfigFile::meta = " \t\n{};#";
 
-ConfigFile::ConfigFile() {}
+ConfigFile::ConfigFile() : RegularFile() {}
 
 ConfigFile::ConfigFile(const ConfigFile &other)
-	: RegularFile(other), blockDirective(other.blockDirective), parameters(parameters_t(other.parameters)),
-	  directives(directives_t(other.directives)), subBlocks(subblocks_t(other.subBlocks))
+	: RegularFile(other), blockDirective(other.blockDirective), parameters(other.parameters),
+	  directives(other.directives), subBlocks(other.subBlocks)
 {
 }
 
 ConfigFile::ConfigFile(const RegularFile &other) : RegularFile(other) {}
 
-ConfigFile::ConfigFile(const std::string &filename) throw(ParseError) : RegularFile(filename), blockDirective("head")
+ConfigFile::ConfigFile(const std::string &name) throw(ParseError) : RegularFile(name), blockDirective("head")
 {
-	if (code != File::REGULAR_FILE)
-		throw ParseError("IS NOT A REGULAR FILE");
+	if (error())
+		throw ParseError(getErrorMsg());
 
 	ConfigFile main = ConfigFile();
 	main.blockDirective = "main";
@@ -130,18 +130,15 @@ void ConfigFile::include() throw(IncludeError)
 	{
 		std::string filename = this->name.substr(0, this->name.rfind('/') + 1) + (*incBegin).second;
 		RegularFile toInclude = RegularFile(filename);
-		if (toInclude.getCode() == File::REGULAR_FILE)
-		{
-			ConfigFile file = ConfigFile(toInclude.getName());
-			directives_t::iterator toIncBegin = file.subBlocks.at(0).directives.begin();
-			directives_t::iterator toIncEnd = file.subBlocks.at(0).directives.end();
-			for (; toIncBegin != toIncEnd; ++toIncBegin)
-				this->directives.insert(*toIncBegin);
-			for (size_t i = 0; i < file.subBlocks.at(0).subBlocks.size(); i++)
-				this->subBlocks.push_back(file.subBlocks.at(0).subBlocks.at(i));
-		}
-		else
-			throw IncludeError("NO FILE EXIST : " + toInclude.getName());
+		if (toInclude.error())
+			throw IncludeError("include error : " + toInclude.getErrorMsg());
+		ConfigFile file = ConfigFile(toInclude.getName());
+		directives_t::iterator toIncBegin = file.subBlocks.at(0).directives.begin();
+		directives_t::iterator toIncEnd = file.subBlocks.at(0).directives.end();
+		for (; toIncBegin != toIncEnd; ++toIncBegin)
+			this->directives.insert(*toIncBegin);
+		for (size_t i = 0; i < file.subBlocks.at(0).subBlocks.size(); i++)
+			this->subBlocks.push_back(file.subBlocks.at(0).subBlocks.at(i));
 	}
 	if (this->subBlocks.size())
 	{

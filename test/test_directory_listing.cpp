@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   test_file.cpp                                      :+:      :+:    :+:   */
+/*   test_directory_listing.cpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 21:30:38 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/13 16:06:27 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/13 17:21:55 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	Hafserv::RegularFile file = Hafserv::RegularFile(argv[1]);
-	std::cout << file << std::endl;
-
-	std::cout << std::endl;
-
 	Hafserv::Directory dir = Hafserv::Directory(argv[1]);
-	std::cout << dir << std::endl;
+	std::cout << dir.toHtml();
 	return 0;
 }

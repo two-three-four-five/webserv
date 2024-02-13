@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Directory.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:05:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 19:57:43 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/13 17:25:31 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,9 @@
 
 #include "File/File.hpp"
 #include "dirent.h"
+#include <iomanip>
 #include <iostream>
+#include <util/string.hpp>
 #include <utility>
 #include <vector>
 
@@ -30,12 +32,13 @@ public:
 	Directory &operator=(const Directory &other);
 	virtual ~Directory();
 
-	const std::vector<std::pair<int, std::string> > getContents() const;
-
-	void printContents() const;
+	const std::vector<std::pair<std::string, struct stat> > getContents() const;
+	const std::string toHtml() const;
 
 private:
-	std::vector<std::pair<int, std::string> > contents;
+	static const std::string htmlHeader;
+
+	std::vector<std::pair<std::string, struct stat> > contents;
 };
 
 } // namespace Hafserv

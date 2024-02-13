@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RegularFile.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:45:44 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 19:58:00 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/13 15:28:37 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class RegularFile : public File
 public:
 	RegularFile();
 	RegularFile(const RegularFile &other);
-	RegularFile(const std::string &filename);
+	RegularFile(const std::string &name);
 	RegularFile &operator=(const RegularFile &other);
 	virtual ~RegularFile();
 

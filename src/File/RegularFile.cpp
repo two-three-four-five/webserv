@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RegularFile.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:46:48 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:01:07 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/13 16:16:04 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,31 +17,38 @@ using namespace Hafserv;
 
 RegularFile::RegularFile() : File(), extension(""), contents() {}
 
-RegularFile::RegularFile(const RegularFile &other)
-	: File(other.code, other.name), extension(other.extension), contents(other.contents)
+RegularFile::RegularFile(const RegularFile &other) : File(other), extension(other.extension), contents(other.contents)
 {
 }
 
-RegularFile::RegularFile(const std::string &filename) : File(filename), extension(""), contents()
+RegularFile::RegularFile(const std::string &name) : File(name), extension(""), contents()
 {
-	if (code != REGULAR_FILE)
+	if (error())
 		return;
-
-	if (filename.rfind('.') != std::string::npos)
-		extension = filename.substr(filename.rfind('.') + 1, filename.size() - filename.rfind('.'));
-
-	std::ifstream fs;
-	fs.open(filename.c_str(), std::fstream::binary);
-	if (!fs.is_open())
+	else if (!isRegularFile())
 	{
-		code = UNKNOWN_ERROR;
+		errorCode = FILE_TYPE_NOT_MATCHING;
+		return;
+	}
+	else if (!isReadable())
+	{
+		errorCode = FILE_NO_PERMISSION;
 		return;
 	}
 
+	if (name.rfind('.') != std::string::npos)
+		extension = name.substr(name.rfind('.') + 1, name.size() - name.rfind('.'));
+
+	std::ifstream fs;
+	fs.open(name.c_str(), std::fstream::binary);
+	if (!fs.is_open())
+	{
+		errorCode = FILE_UNKNOWN;
+		return;
+	}
 	std::stringstream ss;
 	ss << fs.rdbuf();
 	contents = ss.str();
-
 	fs.close();
 }
 
@@ -66,16 +73,12 @@ const std::string &RegularFile::getExtension() const { return extension; }
 
 std::ostream &operator<<(std::ostream &os, const RegularFile &file)
 {
-	os << "code: " << file.getCode() << std::endl;
-	os << "name: " << file.getName() << std::endl;
-	if (file.getCode() == File::REGULAR_FILE)
+	os << File(file) << std::endl;
+	if (file.valid())
 	{
 		std::cout << "Extension: " << file.getExtension() << std::endl;
 		std::cout << "Contents-length: " << file.getContentsSize() << std::endl;
 		std::cout << file.getContents();
 	}
-	else
-		std::cout << "not a regular file. error code : " << file.getCode();
-
 	return os;
 }
