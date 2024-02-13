@@ -155,10 +155,6 @@ void Webserv::connectClient(int serv_sock)
 	EV_SET(&event, clnt_sock, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
 
-	std::pair<int, Request> p;
-	p.first = clnt_sock;
-	Requests.insert(p);
-
 	int port = servSockToPort.find(serv_sock)->second;
 	sockToPort[clnt_sock] = port;
 
@@ -176,7 +172,6 @@ void Webserv::disconnectClient(int socketfd)
 	kevent(kq, &event, 1, NULL, 0, NULL);
 	close(socketfd);
 
-	Requests.erase(socketfd);
 	Connections.erase(socketfd);
 
 	std::map<int, unsigned short>::iterator socketToPortIt = sockToPort.find(socketfd);

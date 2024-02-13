@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:58 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/12 16:37:13 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/13 12:41:49 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ namespace Hafserv
 
 class Connection;
 
-typedef std::map<int, Hafserv::Request> RequestMap;
 typedef std::map<int, Connection> ConnectionMap;
 
 class Webserv
@@ -67,7 +66,6 @@ private:
 	std::map<int, unsigned short> sockToPort;
 	std::vector<Server *> servers;
 
-	RequestMap Requests;
 	ConnectionMap Connections;
 };
 
