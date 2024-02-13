@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:01:43 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/13 19:51:17 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,15 @@ using namespace Hafserv;
 HttpConfigCore::Timeout::Timeout() : clientHeader(60), clientBody(60), keepAlive(75), send(60) {}
 
 HttpConfigCore::HttpConfigCore()
-	: root("html"), indexes(), timeouts(), errorPages(), defaultType("text/plain"), types(), allowMethods()
+	: autoIndex(false), root("html"), indexes(), timeouts(), errorPages(), defaultType("text/plain"), types(),
+	  allowMethods()
 {
 	indexes.push_back("index.html");
 }
 
 HttpConfigCore::HttpConfigCore(const HttpConfigCore &other)
-	: root(other.root), indexes(other.indexes), timeouts(other.timeouts), errorPages(other.errorPages),
-	  defaultType(other.defaultType), types(other.types), allowMethods(other.allowMethods)
+	: autoIndex(other.autoIndex), root(other.root), indexes(other.indexes), timeouts(other.timeouts),
+	  errorPages(other.errorPages), defaultType(other.defaultType), types(other.types), allowMethods(other.allowMethods)
 {
 }
 
@@ -32,6 +33,7 @@ HttpConfigCore &HttpConfigCore::operator=(const HttpConfigCore &other)
 {
 	if (this != &other)
 	{
+		autoIndex = other.autoIndex;
 		root = other.root;
 		indexes = other.indexes;
 		timeouts = other.timeouts;
@@ -45,6 +47,7 @@ HttpConfigCore &HttpConfigCore::operator=(const HttpConfigCore &other)
 
 HttpConfigCore::~HttpConfigCore() {}
 
+const bool HttpConfigCore::getAutoIndex() const { return autoIndex; }
 const std::string &HttpConfigCore::getRoot() const { return root; }
 const std::vector<std::string> &HttpConfigCore::getIndexes() const { return indexes; }
 const HttpConfigCore::Timeout &HttpConfigCore::getTimeout() const { return timeouts; }
@@ -53,6 +56,7 @@ const std::string &HttpConfigCore::getDefaultType() const { return defaultType; 
 const std::multimap<std::string, std::string> &HttpConfigCore::getTypes() const { return types; }
 const std::vector<std::string> &HttpConfigCore::getAllowMethods() const { return allowMethods; }
 
+void HttpConfigCore::setAutoIndex(const bool autoIndex) { this->autoIndex = autoIndex; }
 void HttpConfigCore::setRoot(const std::string &root) { this->root = root; }
 void HttpConfigCore::setIndexes(const std::vector<std::string> &indexes) { this->indexes = indexes; }
 void HttpConfigCore::setTimeouts(const Timeout &timeouts) { this->timeouts = timeouts; }
@@ -91,6 +95,7 @@ std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 {
 	os << "\t[HttpConfigCore]" << std::endl;
 	os << "\t\tdefault_types: " << conf.getDefaultType() << std::endl;
+	os << "\t\tautoindex: " << (conf.getAutoIndex() ? "on" : "off") << std::endl;
 	os << "\t\troot: " << conf.getRoot() << std::endl;
 	os << "\t\tindexes: ";
 	for (size_t i = 0; i < conf.getIndexes().size(); i++)

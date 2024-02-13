@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:25:29 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/13 19:52:32 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,19 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 
 		params = util::string::split(value, ' ');
 		numToken = params.size();
-		if (key == "root")
+		if (key == "autoindex")
+		{
+			if (numToken != 1)
+				throw InvalidNumberArgumentError(key);
+
+			if (value == "on")
+				core.setAutoIndex(true);
+			else if (value == "off")
+				core.setAutoIndex(false);
+			else
+				throw InvalidArgumentError(key, value);
+		}
+		else if (key == "root")
 		{
 			if (hasRoot)
 				throw DuplicateDirectiveError(key);

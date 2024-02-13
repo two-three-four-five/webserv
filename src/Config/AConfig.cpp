@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/11 17:46:49 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:12:29 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/13 19:59:12 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,7 @@ void AConfig::initAllSimpleDirectives()
 	allSimpleDirectives.insert("default_type");
 	allSimpleDirectives.insert("root");
 	allSimpleDirectives.insert("index");
+	allSimpleDirectives.insert("autoindex");
 	allSimpleDirectives.insert("client_header_timeout");
 	allSimpleDirectives.insert("client_body_timeout");
 	allSimpleDirectives.insert("keepalive_timeout");
@@ -122,6 +123,7 @@ void AConfig::initHttpSimpleDirectives()
 	httpSimpleDirectives.insert("default_type");
 	httpSimpleDirectives.insert("root");
 	httpSimpleDirectives.insert("index");
+	httpSimpleDirectives.insert("autoindex");
 	httpSimpleDirectives.insert("client_header_timeout");
 	httpSimpleDirectives.insert("client_body_timeout");
 	httpSimpleDirectives.insert("keepalive_timeout");
@@ -138,6 +140,7 @@ void AConfig::initServerSimpleDirectives()
 	serverSimpleDirectives.insert("default_type");
 	serverSimpleDirectives.insert("root");
 	serverSimpleDirectives.insert("index");
+	serverSimpleDirectives.insert("autoindex");
 	serverSimpleDirectives.insert("client_header_timeout");
 	serverSimpleDirectives.insert("client_body_timeout");
 	serverSimpleDirectives.insert("keepalive_timeout");
@@ -156,6 +159,7 @@ void AConfig::initLocationSimpleDirectives()
 	locationSimpleDirectives.insert("default_type");
 	locationSimpleDirectives.insert("root");
 	locationSimpleDirectives.insert("index");
+	locationSimpleDirectives.insert("autoindex");
 	locationSimpleDirectives.insert("client_body_timeout");
 	locationSimpleDirectives.insert("keepalive_timeout");
 	locationSimpleDirectives.insert("send_timeout");
@@ -174,6 +178,7 @@ void AConfig::initCoreSimpleDirectives()
 	coreSimpleDirectives.insert("default_type");
 	coreSimpleDirectives.insert("root");
 	coreSimpleDirectives.insert("index");
+	coreSimpleDirectives.insert("autoindex");
 	coreSimpleDirectives.insert("client_header_timeout");
 	coreSimpleDirectives.insert("client_body_timeout");
 	coreSimpleDirectives.insert("keepalive_timeout");
