@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   test_file.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 21:30:38 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 17:56:34 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/13 16:06:27 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Directory.hpp"
-#include "RegularFile.hpp"
+#include "File/Directory.hpp"
+#include "File/RegularFile.hpp"
 #include <iostream>
 
 int main(int argc, char **argv)

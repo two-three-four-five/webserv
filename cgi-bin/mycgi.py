@@ -7,18 +7,21 @@ import cgitb
 cgitb.enable()
 
 def save_uploaded_file(fileitem):
-    # Get the filename from the file item
-    filename = os.path.basename(fileitem.filename)
-    
-    # Specify the path to save the file (in the current working directory)
-    filepath = os.path.join(os.getcwd(), filename)
+    try:
+        # Get the filename from the file item
+        filename = os.path.basename(fileitem.filename)
+        
+        # Specify the path to save the file (in the current working directory)
+        filepath = os.path.join(os.getcwd(), filename)
 
-    # Open the file for writing in binary mode
-    with open(filepath, 'wb') as f:
-        # Write the file data
-        f.write(fileitem.file.read())
+        # Open the file for writing in binary mode
+        with open(filepath, 'wb') as f:
+            # Write the file data
+            f.write(fileitem.file.read())
 
-    return filepath
+        return filepath
+    except Exception as e:
+        raise RuntimeError(f"Error saving the file: {e}")
 
 def main():
     print("Content-type: text/html\n")
@@ -27,7 +30,7 @@ def main():
     form = cgi.FieldStorage()
 
     # Get the file item from the form
-    fileitem = form['file']
+    fileitem = form['fileToUpload']
 
     # Check if the file was uploaded
     if fileitem.filename:

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:19:57 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/13 19:41:29 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,8 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 				throw DuplicateDirectiveError(key);
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			if (File(value).getCode() != File::REGULAR_FILE)
-				throw InvalidArgumentError(key);
+			if (RegularFile(value).error())
+				throw InvalidArgumentError(key, value);
 
 			hasCgiPath = true;
 			this->cgiPath = value;

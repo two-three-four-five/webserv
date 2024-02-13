@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+         #
+#    By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/16 16:53:40 by gyoon             #+#    #+#              #
-#    Updated: 2024/02/06 20:50:35 by jinhchoi         ###   ########.fr        #
+#    Updated: 2024/02/13 19:37:31 by gyoon            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -145,3 +145,15 @@ CONFIG_OBJS	= 	${CONFIG_SRCS:.cpp=.o}
 
 config.test: $(CONFIG_OBJS)
 	$(CC) $(CXXFLAGS) $(CONFIG_OBJS) -o $@ -I $(INC)
+
+
+# **************************************************************************** #
+
+DLISTING_SRCS	= 	test/test_directory_listing.cpp \
+					$(wildcard src/File/*.cpp) \
+					$(wildcard src/utils/*.cpp)
+
+DLISTING_OBJS	= 	${DLISTING_SRCS:.cpp=.o}
+
+dlist.test: $(DLISTING_OBJS)
+	$(CC) $(CXXFLAGS) $(DLISTING_OBJS) -o $@ -I $(INC)

@@ -20,6 +20,18 @@ server {
 		error_page   404 /404.html;
 	}
 
+	location $ .php {
+		cgi_path cgi-bin/index.php;
+	}
+
+	location $ .py {
+		cgi_path cgi-bin/mycgi.py;
+	}
+
+	location $ .bla {
+		cgi_path cgi_tester;
+	}
+
 	location ^ /google {
 		proxy_pass http://www.google.com;
 	}
