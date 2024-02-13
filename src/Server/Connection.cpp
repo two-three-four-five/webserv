@@ -162,8 +162,7 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 				defaultTargetResource = tempTargetResource + indexes[0];
 			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
 			{
-				File index(tempTargetResource + *it);
-				if (index.getCode() == File::REGULAR_FILE)
+				if (RegularFile(tempTargetResource + *it).valid())
 				{
 					return tempTargetResource + *it;
 				}
@@ -184,12 +183,12 @@ void Connection::buildResponseFromRequest()
 
 	if (method == "GET")
 	{
-		if (targetFile.getCode() == File::DIRECTORY)
+		if (targetFile.isDirectory())
 			build301Response("http://" + request.getHeaders().find("host")->second +
 							 request.getRequestTarget().getTargetURI() + "/");
-		else if (targetFile.getCode() == File::REGULAR_FILE || targetLocationConfig.getProxyPass().length() != 0)
+		else if (targetFile.isRegularFile() || targetLocationConfig.getProxyPass().length() != 0)
 			buildGetResponse();
-		else if (targetFile.getCode() != File::REGULAR_FILE)
+		else if (!targetFile.isRegularFile())
 			buildErrorResponse(404);
 	}
 	else if (method == "HEAD")
@@ -203,7 +202,7 @@ void Connection::buildResponseFromRequest()
 	}
 	else if (method == "DELETE")
 	{
-		if (targetFile.getCode() != File::REGULAR_FILE)
+		if (!targetFile.isRegularFile())
 			buildErrorResponse(404);
 		else
 			buildDeleteResponse();
@@ -286,8 +285,7 @@ void Hafserv::Connection::callCGI(const std::string &scriptPath)
 
 		struct stat fileStat;
 		File target(scriptPath);
-		if (target.getCode() == File::REGULAR_FILE && stat(scriptPath.c_str(), &fileStat) == 0 &&
-			(fileStat.st_mode & S_IXUSR))
+		if (target.isRegularFile() && target.valid() && target.isExecutable())
 		{
 			execve(scriptPath.c_str(), argv, envp);
 		}
