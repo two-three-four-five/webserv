@@ -44,7 +44,7 @@ bool Connection::readRequest(int fd)
 	// std::cout << "sc" << request.getParseStatus() << std::endl;
 	if (request.getParseStatus() == End)
 	{
-		// request.printRequest();
+		request.printRequest();
 		std::cout << "parseEnd" << std::endl;
 		targetServer = Webserv::getInstance().findTargetServer(port, request);
 		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
@@ -353,7 +353,7 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 					{
 						output.write(buffer, bytes_read);
 						readen += bytes_read;
-						std::cout << "read: " << readen << ", " << bytes_read << std::endl;
+						// std::cout << "read: " << readen << ", " << bytes_read << std::endl;
 					}
 					if (bytes_read < 0)
 					{
@@ -376,7 +376,6 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		returned = returned.substr(returned.find('\n') + 1);
 		returned = returned.substr(returned.find('\n') + 1);
 		returned = returned.substr(returned.find('\n') + 1);
-		returned += "\r\n";
 
 		response.setStatusLine("HTTP/1.1 200 OK");
 		response.addToHeaders("Content-Type", "text/html; charset=utf-8");
@@ -395,6 +394,7 @@ char **Connection::makeEnvp()
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);
+
 	if (request.getHeaders().find("content-type") != request.getHeaders().end())
 	{
 		std::string contentType("CONTENT_TYPE=");
