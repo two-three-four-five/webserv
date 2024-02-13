@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/13 00:46:57 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/13 20:06:55 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ public:
 
 	void buildResponseFromRequest();
 	void buildGetResponse();
+	void buildDirectoryResponse();
 	void buildDeleteResponse();
 	void buildErrorResponse(int statusCode);
 	void build301Response(const std::string &redirectTarget);

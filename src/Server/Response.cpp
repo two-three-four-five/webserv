@@ -58,7 +58,11 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 
 void Response::setStatusLine(std::string statusLine) { this->statusLine = statusLine; }
 
-void Response::setBody(const std::string &bodyString) { body = bodyString; }
+void Response::setBody(const std::string &bodyString)
+{
+	body = bodyString;
+	addToHeaders("Content-Length", util::string::itos(body.length()));
+}
 
 std::string Response::getResponse()
 {

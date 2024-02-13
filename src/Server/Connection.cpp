@@ -1,5 +1,6 @@
 #include "Http/Connection.hpp"
 
+#include "File/Directory.hpp"
 #include "File/File.hpp"
 #include <string>
 #include <sys/event.h>
@@ -123,20 +124,28 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 			tempTargetResource = selectedIt->getHttpConfigCore().getRoot() + requestTarget;
 		if (tempTargetResource.back() == '/')
 		{
-			std::vector<std::string> indexes = selectedIt->getHttpConfigCore().getIndexes();
-			std::string defaultTargetResource;
-			if (indexes.size() == 0)
-				defaultTargetResource = tempTargetResource + "index.html";
-			else
-				defaultTargetResource = tempTargetResource + indexes[0];
-			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
+			std::cout << selectedIt->getHttpConfigCore().getAutoIndex() << "?" << std::endl;
+			if (selectedIt->getHttpConfigCore().getAutoIndex())
 			{
-				if (RegularFile(tempTargetResource + *it).valid())
-				{
-					return tempTargetResource + *it;
-				}
+				return tempTargetResource;
 			}
-			tempTargetResource = defaultTargetResource;
+			else
+			{
+				std::vector<std::string> indexes = selectedIt->getHttpConfigCore().getIndexes();
+				std::string defaultTargetResource;
+				if (indexes.size() == 0)
+					defaultTargetResource = tempTargetResource + "index.html";
+				else
+					defaultTargetResource = tempTargetResource + indexes[0];
+				for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
+				{
+					if (RegularFile(tempTargetResource + *it).valid())
+					{
+						return tempTargetResource + *it;
+					}
+				}
+				tempTargetResource = defaultTargetResource;
+			}
 		}
 	}
 	return tempTargetResource;
@@ -163,7 +172,12 @@ void Connection::buildResponseFromRequest()
 		else if (method == "GET")
 		{
 			File targetFile(targetResource);
-			if (targetFile.isDirectory())
+			if (targetFile.isDirectory() && targetLocationConfig.getHttpConfigCore().getAutoIndex() &&
+				targetResource.back() == '/')
+			{
+				buildDirectoryResponse();
+			}
+			else if (targetFile.isDirectory())
 				build301Response("http://" + request.getHeaders().find("host")->second +
 								 request.getRequestTarget().getTargetURI() + "/");
 			else if (targetFile.isRegularFile() || targetLocationConfig.getProxyPass().length() != 0)
@@ -210,6 +224,13 @@ void Connection::buildGetResponse()
 		response.setStatusLine(std::string("HTTP/1.1 200 OK"));
 		response.makeBody(targetLocationConfig, targetResource);
 	}
+}
+
+void Hafserv::Connection::buildDirectoryResponse()
+{
+	Directory dir(targetResource);
+	response.setBody(dir.toHtml());
+	response.addToHeaders("Content-Type", "text/html; charset=utf-8");
 }
 
 void Connection::buildErrorResponse(int statusCode)

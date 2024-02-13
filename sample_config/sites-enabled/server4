@@ -15,6 +15,13 @@ server {
 		error_page   404 /404.html;
 	}
 
+	location ^ /auto {
+		allow_methods GET;
+
+		root html;
+		autoindex on;
+	}
+
 	location $ .php {
 		cgi_path cgi-bin/index.php;
 	}

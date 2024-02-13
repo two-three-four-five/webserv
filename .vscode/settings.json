@@ -82,7 +82,10 @@
 		"__bits": "cpp",
 		"compare": "cpp",
 		"concepts": "cpp",
-		"filesystem": "cpp"
+		"filesystem": "cpp",
+		"__memory": "cpp",
+		"set": "cpp",
+		"__functional_03": "cpp"
 	},
 
 }

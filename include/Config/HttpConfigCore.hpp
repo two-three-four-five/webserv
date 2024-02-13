@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:02:03 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/13 19:49:23 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ public:
 	HttpConfigCore &operator=(const HttpConfigCore &other);
 	~HttpConfigCore();
 
+	const bool getAutoIndex() const;
 	const std::string &getRoot() const;
 	const std::vector<std::string> &getIndexes() const;
 	const Timeout &getTimeout() const;
@@ -46,6 +47,7 @@ public:
 	const std::multimap<std::string, std::string> &getTypes() const;
 	const std::vector<std::string> &getAllowMethods() const;
 
+	void setAutoIndex(const bool autoIndex);
 	void setRoot(const std::string &root);
 	void setIndexes(const std::vector<std::string> &indexes);
 	void setTimeouts(const Timeout &timeouts);
@@ -63,6 +65,7 @@ public:
 	void addType(const std::string &type, const std::string &extension);
 	void addAllowMethod(const std::string &method);
 
+	bool autoIndex;
 	std::string root;
 	std::vector<std::string> indexes;
 	Timeout timeouts;
