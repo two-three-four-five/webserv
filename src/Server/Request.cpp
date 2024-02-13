@@ -237,7 +237,7 @@ int Request::parseByTransferEncoding(const int &fd)
 			}
 		}
 		// read chunksize
-		if (isEnd && buffer.length() == 2) // length말고 첫 두글자
+		if (isEnd && buffer.substr(0, 2) == "\r\n") // length말고 첫 두글자
 		{
 			body = oss.str();
 			// std::cout << "END" << std::endl;
