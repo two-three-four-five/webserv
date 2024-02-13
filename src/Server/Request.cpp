@@ -33,26 +33,38 @@ Request &Request::operator=(const Request &rhs)
 }
 Request::~Request() {}
 
-void Request::readRequest(const int fd)
+int Request::readRequest(const int fd)
 {
+
 	int idx;
 
+	// std::cout << "Buf len[Init] : " << buffer.length() << std::endl;
 	if (parseStatus < Body)
 	{
 		int str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
 
 		buffer += std::string(charBuf, str_len);
+		// std::cout << "Buf len[Added] : " << buffer.length() << std::endl;
 		while ((idx = buffer.find('\n')) != std::string::npos)
 		{
 			std::string line = buffer.substr(0, idx + 1);
-			buffer.erase(buffer.begin(), buffer.begin() + idx + 1);
-			parse(line);
+			std::cout << "line : " << line;
+			// std::cout << "line len : " << line.length() << std::endl;
+			// std::cout << "idx : " << idx << std::endl;
+			int status;
+
+			// buffer.erase(buffer.begin(), buffer.begin() + idx + 1);
+			buffer = buffer.substr(idx + 1);
+			if ((status = parse(line)))
+				return status;
 		}
+		// std::cout << "Buf len[Erased] : " << buffer.length() << std::endl;
 	}
 	else
 	{
-		(this->*parseBody)(fd);
+		return (this->*parseBody)(fd);
 	}
+	return 0;
 }
 
 int Request::parse(std::string &request)
@@ -175,6 +187,7 @@ int Request::parseByBoundary(const int &fd)
 {
 	ssize_t bytesRead = 0;
 
+	// ++ \r\n까지읽기
 	if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
 	{
 		oss.write(charBuf, bytesRead);
@@ -185,65 +198,101 @@ int Request::parseByBoundary(const int &fd)
 		body = oss.str();
 		parseStatus = End;
 	}
+	return 0;
 }
 
 int Request::parseByTransferEncoding(const int &fd)
 {
-	static int chunkSize = 0;
+	// static int chunkSize = 0;
+	// static
 	int idx = 0, newIdx = 0;
 	ssize_t bytesRead;
 
 	if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
 	{
-		charBuf[bytesRead] = 0;
 		buffer += std::string(charBuf, bytesRead);
-		if (!chunkSize)
+		if (buffer.find("0\r\n\r\n") != std::string::npos)
 		{
-			if ((idx = buffer.find('\n')) != std::string::npos)
-			{
-				if (idx == 1)
-				{
-					parseStatus = End;
-					return 0;
-				}
-				if (!(chunkSize = std::stol(readHex(buffer), NULL, 16)))
-					body = oss.str();
-				buffer.erase(buffer.begin(), buffer.begin() + idx + 1);
-			}
-			else
-				return 0; // error
+			parseStatus = End;
 		}
-		else
-			idx = -1;
 	}
-	// else
-	// 	return (1);
 
-	while (chunkSize && buffer.length() > chunkSize)
-	{
-		oss.write(charBuf + idx + 1, chunkSize);
-		buffer.erase(buffer.begin(), buffer.begin() + chunkSize + 2);
-		idx += chunkSize + 3;
-		chunkSize = 0;
-		// 새로운 chunkSize가 있으면 새로 정의하고 while문으로 감
-		if ((newIdx = buffer.find('\n')) != std::string::npos)
-		{
-			chunkSize = std::stol(readHex(buffer), NULL, 16);
-			if (!chunkSize)
-			{
-				body = oss.str();
-				parseStatus = End;
-			}
-			buffer.erase(buffer.begin(), buffer.begin() + newIdx + 1);
-			idx += newIdx;
-		}
-	}
-	if (chunkSize)
-	{
-		oss.write(charBuf + idx + 1, buffer.length());
-		chunkSize -= (buffer.length());
-		buffer.empty();
-	}
+	// bzero(charBuf, sizeof(charBuf));
+	// if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	// {
+	// 	charBuf[bytesRead] = 0;
+	// 	buffer += std::string(charBuf, bytesRead);
+	// 	// std::cout << "BytesRead : " << bytesRead << std::endl;
+	// 	// for (int i = 0; i < bytesRead; i++)
+	// 	// 	std::cout << (int)charBuf[i] << " ";
+	// 	if (!chunkSize)
+	// 	{
+	// 		if ((idx = buffer.find('\n')) != std::string::npos)
+	// 		{
+	// 			if (idx == 1)
+	// 			{
+	// 				parseStatus = End;
+	// 				return 0;
+	// 			}
+	// 			std::cout << "Buffer : " << buffer.substr(0, 10) << std::endl;
+	// 			std::cout << "Buffer Len : " << buffer.length() << std::endl;
+	// 			if (!(chunkSize = std::stol(readHex(buffer), NULL, 16)))
+	// 			{
+	// 				body = oss.str();
+	// 			}
+	// 			buffer.erase(buffer.begin(), buffer.begin() + idx + 1);
+	// 			std::cout << "chunkSize : " << chunkSize << std::endl;
+	// 			std::cout << "Buffer[after erase size] : " << buffer.substr(0, 10) << std::endl;
+	// 			std::cout << "Buffer Len : " << buffer.length() << std::endl;
+	// 		}
+	// 		else
+	// 			return 0; // error
+	// 	}
+	// 	else
+	// 		idx = -1;
+	// }
+	// // else
+	// // 	return (1);
+
+	// while (chunkSize && buffer.length() > chunkSize)
+	// {
+	// 	oss.write(charBuf + idx + 1, chunkSize);
+	// 	buffer.erase(buffer.begin(), buffer.begin() + chunkSize + 2);
+	// 	std::cout << "Buffer : " << buffer.substr(0, 10) << std::endl;
+	// 	std::cout << "buffer[after erase chunk] : " << buffer;
+	// 	std::cout << "Buffer Len : " << buffer.length() << std::endl;
+	// 	idx += chunkSize + 3;
+	// 	chunkSize = 0;
+	// 	// 새로운 chunkSize가 있으면 새로 정의하고 while문으로 감
+	// 	if ((newIdx = buffer.find('\n')) != std::string::npos)
+	// 	{
+	// 		std::cout << "stoi : " << buffer.substr(0, 10) << std::endl;
+	// 		chunkSize = std::stol(readHex(buffer), NULL, 16);
+	// 		if (newIdx == 1)
+	// 		{
+	// 			parseStatus = End;
+	// 			return 0;
+	// 		}
+	// 		if (!chunkSize)
+	// 		{
+	// 			body = oss.str();
+	// 		}
+	// 		buffer.erase(buffer.begin(), buffer.begin() + newIdx + 1);
+	// 		idx += newIdx;
+	// 	}
+	// }
+	// if (chunkSize)
+	// {
+	// 	std::cout << "chunkSize : " << chunkSize << std::endl;
+	// 	oss.write(charBuf + idx + 1, buffer.length());
+	// 	chunkSize -= (buffer.length());
+	// 	buffer.erase(buffer.begin(), buffer.begin() + buffer.length());
+	// 	std::cout << "chunkSize[after Write] : " << chunkSize << std::endl;
+	// 	std::cout << "buffer[after erase chunk] : " << buffer;
+	// 	std::cout << "Buffer Len : " << buffer.length() << std::endl;
+	// 	// buffer.empty();
+	// }
+	// return 0;
 }
 
 int Request::parseByContentLength(const int &fd)
@@ -260,6 +309,7 @@ int Request::parseByContentLength(const int &fd)
 		body = oss.str();
 		parseStatus = End;
 	}
+	return 0;
 }
 
 std::string Request::getRawRequest()

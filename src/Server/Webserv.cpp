@@ -114,6 +114,8 @@ void Webserv::runWebserv()
 			{
 				connectClient(event_list[i].ident);
 			}
+			else if (event_list[i].flags & EV_EOF)
+				disconnectClient(event_list[i].ident);
 			else if (event_list[i].filter == EVFILT_READ)
 			{
 				Connection &conn = Connections.find(event_list[i].ident)->second;
@@ -130,8 +132,8 @@ void Webserv::runWebserv()
 				else if (conn.getResponse().getResponseState() == Response::Sending)
 					conn.sendResponse();
 				if (conn.getResponse().getResponseState() == Response::End)
-					// disconnectClient(event_list[i].ident);
-					conn.reset();
+					disconnectClient(event_list[i].ident);
+				// conn.reset();
 			}
 		}
 		checkTimeout();

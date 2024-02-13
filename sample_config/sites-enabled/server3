@@ -20,7 +20,7 @@ server {
 	}
 	
 	location $ .py {
-		cgi_path cgi-bin/index.php;
+		cgi_path cgi-bin/mycgi.py;
 	}
 
 	location $ .bla {
