@@ -185,17 +185,23 @@ void Request::checkHeaderField()
 
 int Request::parseByBoundary(const int &fd)
 {
-	ssize_t bytesRead = 0;
+	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
 
-	// ++ \r\n까지읽기
-	if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	if (bodyLength + bytesRead > contentLength)
+	{
+		buffer += std::string(charBuf, contentLength - bodyLength);
+		bodyLength += (contentLength - bodyLength);
+	}
+	else
 	{
 		oss.write(charBuf, bytesRead);
 		bodyLength += bytesRead;
 	}
+
 	if (bodyLength == contentLength)
 	{
 		body = oss.str();
+		// std::cout << "body : " << body;
 		parseStatus = End;
 	}
 	return 0;
@@ -231,13 +237,13 @@ int Request::parseByTransferEncoding(const int &fd)
 			}
 		}
 		// read chunksize
-		if (isEnd && buffer.length() == 2)
+		if (isEnd && buffer.length() == 2) // length말고 첫 두글자
 		{
 			body = oss.str();
 			// std::cout << "END" << std::endl;
-			std::ofstream ofs("my.pdf");
-			ofs << body;
-			ofs.close();
+			// std::ofstream ofs("my.pdf");
+			// ofs << body;
+			// ofs.close();
 			parseStatus = End;
 			break;
 		}
@@ -260,16 +266,23 @@ int Request::parseByTransferEncoding(const int &fd)
 
 int Request::parseByContentLength(const int &fd)
 {
-	ssize_t bytesRead = 0;
+	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
 
-	if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	if (bodyLength + bytesRead > contentLength)
+	{
+		buffer += std::string(charBuf, contentLength - bodyLength);
+		bodyLength += (contentLength - bodyLength);
+	}
+	else
 	{
 		oss.write(charBuf, bytesRead);
 		bodyLength += bytesRead;
 	}
+
 	if (bodyLength == contentLength)
 	{
 		body = oss.str();
+		// std::cout << "body : " << body;
 		parseStatus = End;
 	}
 	return 0;
