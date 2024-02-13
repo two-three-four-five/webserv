@@ -7,7 +7,7 @@
 
 using namespace Hafserv;
 
-Connection::Connection(int socket, unsigned short port) : socket(socket), port(port), targetServer(NULL)
+Connection::Connection(int socket, unsigned short port) : socket(socket), port(port), targetServer(NULL), statusCode(0)
 {
 	startTime = time(NULL);
 }
@@ -40,21 +40,15 @@ Connection::~Connection() {}
 
 bool Connection::readRequest(int fd)
 {
-	request.readRequest(fd);
-	if (request.getParseStatus() >= Body && targetServer == NULL)
-	{
-		targetServer = Webserv::getInstance().findTargetServer(port, request);
-		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
-	}
+	statusCode = request.readRequest(fd);
+	// std::cout << "sc" << request.getParseStatus() << std::endl;
 	if (request.getParseStatus() == End)
 	{
 		// request.printRequest();
+		std::cout << "parseEnd" << std::endl;
+		targetServer = Webserv::getInstance().findTargetServer(port, request);
+		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
 		buildResponseFromRequest();
-		// std::string responseString = response.getResponse();
-		// std::cout << "<-------response------->" << std::endl << responseString;
-		// std::cout << "<-----response end----->" << std::endl;
-		// write(fd, responseString.c_str(), responseString.length());
-		// return false;
 	}
 
 	return true;
@@ -151,43 +145,50 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 
 void Connection::buildResponseFromRequest()
 {
-	std::cout << std::endl << "TARGET\n" << targetResource << std::endl;
-	std::string method = request.getMethod();
-
-	response.setStatusLine("HTTP/1.1 200 OK");
-	response.addToHeaders("Server", "Hafserv/1.0.0");
-
-	if (method == "POST" && targetLocationConfig.getCgiPath().length() > 0)
+	if (statusCode)
 	{
-		buildCGIResponse(targetLocationConfig.getCgiPath());
+		buildErrorResponse(statusCode);
 	}
-	else if (method == "GET")
+	else
 	{
-		File targetFile(targetResource);
-		if (targetFile.getCode() == File::DIRECTORY)
-			build301Response("http://" + request.getHeaders().find("host")->second +
-							 request.getRequestTarget().getTargetURI() + "/");
-		else if (targetFile.getCode() == File::REGULAR_FILE || targetLocationConfig.getProxyPass().length() != 0)
-			buildGetResponse();
-		else if (targetFile.getCode() != File::REGULAR_FILE)
-			buildErrorResponse(404);
-	}
-	else if (method == "HEAD")
-		buildErrorResponse(405);
-	else if (method == "POST")
-	{
-		if (request.getRequestTarget().getTargetURI() == "/")
+		std::cout << std::endl << "TARGET\n" << targetResource << std::endl;
+		std::string method = request.getMethod();
+
+		response.setStatusLine("HTTP/1.1 200 OK");
+		response.addToHeaders("Server", "Hafserv/1.0.0");
+
+		if (method == "POST" && targetLocationConfig.getCgiPath().length() > 0)
+		{
+			buildCGIResponse(targetLocationConfig.getCgiPath());
+		}
+		else if (method == "GET")
+		{
+			File targetFile(targetResource);
+			if (targetFile.getCode() == File::DIRECTORY)
+				build301Response("http://" + request.getHeaders().find("host")->second +
+								 request.getRequestTarget().getTargetURI() + "/");
+			else if (targetFile.getCode() == File::REGULAR_FILE || targetLocationConfig.getProxyPass().length() != 0)
+				buildGetResponse();
+			else if (targetFile.getCode() != File::REGULAR_FILE)
+				buildErrorResponse(404);
+		}
+		else if (method == "HEAD")
 			buildErrorResponse(405);
-		else
-			buildCGIResponse(targetResource);
-	}
-	else if (method == "DELETE")
-	{
-		File targetFile(targetResource);
-		if (targetFile.getCode() != File::REGULAR_FILE)
-			buildErrorResponse(404);
-		else
-			buildDeleteResponse();
+		else if (method == "POST")
+		{
+			if (request.getRequestTarget().getTargetURI() == "/")
+				buildErrorResponse(405);
+			else
+				buildCGIResponse(targetResource);
+		}
+		else if (method == "DELETE")
+		{
+			File targetFile(targetResource);
+			if (targetFile.getCode() != File::REGULAR_FILE)
+				buildErrorResponse(404);
+			else
+				buildDeleteResponse();
+		}
 	}
 	response.setResponseBuffer();
 }
@@ -332,7 +333,6 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 					int ret = write(evList[i].ident, wrBuffer + written, bytesToWrite);
 					if (ret > 0)
 					{
-						std::cout << "written: " << written << std::endl;
 						written += ret;
 					}
 					else if (ret == 0)
@@ -423,6 +423,7 @@ void Connection::sendResponse() { response.send(socket); }
 void Connection::reset()
 {
 	startTime = time(NULL);
+	statusCode = 0;
 	targetServer = NULL;
 	targetResource = "";
 	targetLocationConfig = LocationConfig();
