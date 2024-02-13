@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/13 13:08:06 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/13 22:37:07 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,8 +83,10 @@ private:
 	ParseBodyFunction parseBody;
 
 	std::string buffer;
+	std::stringstream bufferStream;
 	std::ostringstream oss;
 	char charBuf[BUFFER_SIZE + 1];
+	bool isEnd;
 };
 
 } // namespace Hafserv

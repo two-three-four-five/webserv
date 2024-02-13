@@ -292,7 +292,7 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 
 		struct stat fileStat;
 		File target(scriptPath);
-		if (target.isRegularFile() && target.valid() && target.isExecutable())
+		if (target.isRegularFile() && target.isExecutable())
 		{
 			execve(argv[0], argv, envp);
 		}
