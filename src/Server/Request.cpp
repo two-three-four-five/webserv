@@ -5,7 +5,7 @@
 
 using namespace Hafserv;
 
-Request::Request() : parseStatus(Created), contentLength(0), bodyLength(0) {}
+Request::Request() : parseStatus(Created), contentLength(0), bodyLength(0), isEnd(false) {}
 
 Request::Request(const Request &other)
 	: parseStatus(other.parseStatus), method(other.method), requestTarget(other.requestTarget), headers(other.headers),
@@ -205,38 +205,56 @@ int Request::parseByTransferEncoding(const int &fd)
 {
 	static int chunkSize = 0;
 	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
-	if (bytesRead > 0)
+	buffer += std::string(charBuf, bytesRead);
+
+	while (true)
 	{
-		// time_t t1 = time(NULL);
-		buffer += std::string(charBuf, bytesRead);
-		// time_t t2 = time(NULL);
-		// std::cout << "stringconcat: " << t2 - t1 << std::endl;
-	}
-	if (buffer.find("0\r\n\r\n") != std::string::npos)
-	{
-		while (buffer.length())
+		// std::cout << "buflen: " << buffer.length() << std::endl;
+		// for (int i = 0; i < buffer.length(); i++)
+		// 	std::cout << (int)buffer[i] << " ";
+		if (chunkSize) // no buffer
 		{
-			// time_t t1 = time(NULL);
-			chunkSize = std::stol(readHex(buffer), NULL, 16);
-			buffer.erase(0, buffer.find("\r\n") + 2);
-			// time_t t2 = time(NULL);
-			// buffer = buffer.substr(buffer.find("\r\n") + 2);
-			oss << buffer.substr(0, chunkSize);
-			// time_t t3 = time(NULL);
-			// std::cout << "bb" << (int)buffer[chunkSize] << " " << (int)buffer[chunkSize + 1] << std::endl;
-			buffer.erase(0, chunkSize + 2);
-			// time_t t4 = time(NULL);
-			// buffer = buffer.substr(chunkSize + 2);
-			// std::cout << "t2-t1" << t2 - t1 << std::endl;
-			// std::cout << "t3-t2" << t3 - t2 << std::endl;
-			// std::cout << "t4-t3" << t4 - t3 << std::endl;
+			if (chunkSize < buffer.length())
+			{
+				oss << buffer.substr(0, chunkSize);
+				// std::cout << "c<b" << chunkSize << std::endl;
+				buffer = buffer.substr(chunkSize);
+				chunkSize = 0;
+			}
+			else
+			{
+				oss << buffer;
+				// std::cout << "c>b" << buffer.length();
+				chunkSize -= buffer.length();
+				buffer.clear();
+				break;
+			}
 		}
-		// std::ofstream ofs("my.pdf");
-		// ofs << oss.str();
-		// ofs.close();
-		body = oss.str();
-		parseStatus = End;
+		// read chunksize
+		if (isEnd && buffer.length() == 2)
+		{
+			body = oss.str();
+			// std::cout << "END" << std::endl;
+			std::ofstream ofs("my.pdf");
+			ofs << body;
+			ofs.close();
+			parseStatus = End;
+			break;
+		}
+		if (!isEnd && buffer.length() >= 2 && buffer.substr(0, 2) == "\r\n")
+			buffer.erase(0, 2);
+		int idx;
+		if ((idx = buffer.find("\r\n")) != std::string::npos)
+		{
+			chunkSize = std::stol(readHex(buffer), NULL, 16);
+			buffer.erase(0, idx + 2);
+			if (chunkSize == 0)
+				isEnd = true;
+		}
+		else
+			break;
 	}
+
 	return 0;
 }
 
