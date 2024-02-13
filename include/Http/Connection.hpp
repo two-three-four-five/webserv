@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/09 19:58:14 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/13 00:46:57 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 namespace Hafserv
 {
 
-#define BUFFER_SIZE 50000
+#define BUFFER_SIZE 10000
 
 class Webserv;
 
@@ -42,10 +42,15 @@ public:
 	void buildErrorResponse(int statusCode);
 	void build301Response(const std::string &redirectTarget);
 
-	void callCGI(const std::string &scriptPath);
+	void buildCGIResponse(const std::string &scriptPath);
 	char **makeEnvp();
 
+	void sendResponse();
+
+	void reset();
+
 	const Request &getRequest() const;
+	const Response &getResponse() const;
 	const Server *getTargetServer() const;
 	const time_t &getStartTime() const;
 	const LocationConfig &getTargetLocationConfig() const;

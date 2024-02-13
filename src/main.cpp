@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
 		ConfigFile configFile = ConfigFile(argv[1]);
 		configFile.include();
 		WebservConfig config = WebservConfig(configFile);
-		std::cout << config << std::endl;
 		Webserv &webserv = Webserv::getInstance();
 
 		for (std::vector<ServerConfig>::const_iterator it = config.getHttpConfig().getServers().begin();
@@ -32,7 +31,7 @@ int main(int argc, char *argv[])
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << "thrown: " << e.what() << '\n';
 	}
 	return 0;
 }

@@ -8,14 +8,22 @@
 namespace Hafserv
 {
 
-Response::Response() {}
+Response::Response() : responseState(Created), writtenBytes(0), responseBytes(0) {}
 
-Response::Response(const Response &other) : statusLine(other.statusLine), headers(other.headers), body(other.body) {}
+Response::Response(const Response &other)
+	: responseState(other.responseState), writtenBytes(0), responseBytes(0), statusLine(other.statusLine),
+	  headers(other.headers), body(other.body)
+{
+}
 
-Response &Response::operator=(Response &rhs)
+Response &Response::operator=(const Response &rhs)
 {
 	if (this != &rhs)
 	{
+		responseState = rhs.responseState;
+		responseBuffer = rhs.responseBuffer;
+		writtenBytes = rhs.writtenBytes;
+		responseBytes = rhs.responseBytes;
 		statusLine = rhs.statusLine;
 		headers = rhs.headers;
 		body = rhs.body;
@@ -50,6 +58,8 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 
 void Response::setStatusLine(std::string statusLine) { this->statusLine = statusLine; }
 
+void Response::setBody(const std::string &bodyString) { body = bodyString; }
+
 std::string Response::getResponse()
 {
 	std::string response;
@@ -62,6 +72,46 @@ std::string Response::getResponse()
 	return response;
 }
 
+const Response::ResponseState Response::getResponseState() const { return responseState; }
+
+void Response::setResponseState(ResponseState rs) { responseState = rs; }
+
+void Response::setResponseBuffer()
+{
+	std::ostringstream oss;
+
+	oss << statusLine << CRLF;
+	for (HeaderMultiMap::iterator it = headers.begin(); it != headers.end(); it++)
+		oss << it->first << ": " << it->second << CRLF;
+	oss << CRLF;
+	oss << body;
+	responseBuffer = oss.str();
+	responseBytes = responseBuffer.length();
+	writtenBytes = 0;
+	responseState = Ready;
+}
+
 void Response::addToHeaders(std::string key, std::string value) { headers.insert(std::make_pair(key, value)); }
+
+const int Response::getWrittenBytes() const { return writtenBytes; }
+
+const int Response::getResponseBytes() const { return responseBytes; }
+
+void Response::send(int fd)
+{
+	const char *wrBuffer = responseBuffer.c_str();
+	size_t bytesToWrite = std::min(responseBytes - writtenBytes, (unsigned long)BUFFER_SIZE);
+	int ret = write(fd, wrBuffer + writtenBytes, bytesToWrite);
+	if (ret != -1)
+	{
+		// std::cout << "sent: " << std::endl << std::string(wrBuffer + writtenBytes, ret);
+		writtenBytes += ret;
+	}
+	if (writtenBytes == responseBytes)
+	{
+		std::cout << "sendend" << std::endl;
+		responseState = End;
+	}
+}
 
 } // namespace Hafserv

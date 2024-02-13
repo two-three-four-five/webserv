@@ -27,6 +27,7 @@ Webserv::Webserv()
 	statusCodeMap[400] = "Bad Request";
 	statusCodeMap[403] = "Forbidden";
 	statusCodeMap[404] = "Not Found";
+	statusCodeMap[405] = "Not Allowed";
 	statusCodeMap[500] = "Internal Server Error";
 	statusCodeMap[501] = "Not Implemented";
 	statusCodeMap[505] = "HTTP Version Not Supported";
@@ -113,11 +114,26 @@ void Webserv::runWebserv()
 			{
 				connectClient(event_list[i].ident);
 			}
+			else if (event_list[i].flags & EV_EOF)
+				disconnectClient(event_list[i].ident);
 			else if (event_list[i].filter == EVFILT_READ)
 			{
 				Connection &conn = Connections.find(event_list[i].ident)->second;
+				if (conn.getRequest().getParseStatus() == End)
+					continue;
 				if (!conn.readRequest(event_list[i].ident))
 					disconnectClient(event_list[i].ident);
+			}
+			else if (event_list[i].filter == EVFILT_WRITE)
+			{
+				Connection &conn = Connections.find(event_list[i].ident)->second;
+				if (conn.getResponse().getResponseState() == Response::Ready)
+					conn.sendResponse();
+				else if (conn.getResponse().getResponseState() == Response::Sending)
+					conn.sendResponse();
+				if (conn.getResponse().getResponseState() == Response::End)
+					disconnectClient(event_list[i].ident);
+				// conn.reset();
 			}
 		}
 		checkTimeout();
@@ -141,10 +157,6 @@ void Webserv::connectClient(int serv_sock)
 	EV_SET(&event, clnt_sock, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
 
-	std::pair<int, Request> p;
-	p.first = clnt_sock;
-	Requests.insert(p);
-
 	int port = servSockToPort.find(serv_sock)->second;
 	sockToPort[clnt_sock] = port;
 
@@ -162,7 +174,6 @@ void Webserv::disconnectClient(int socketfd)
 	kevent(kq, &event, 1, NULL, 0, NULL);
 	close(socketfd);
 
-	Requests.erase(socketfd);
 	Connections.erase(socketfd);
 
 	std::map<int, unsigned short>::iterator socketToPortIt = sockToPort.find(socketfd);
