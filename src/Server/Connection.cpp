@@ -42,7 +42,6 @@ Connection::~Connection() {}
 bool Connection::readRequest(int fd)
 {
 	statusCode = request.readRequest(fd);
-	// std::cout << "sc" << request.getParseStatus() << std::endl;
 	if (request.getParseStatus() == End)
 	{
 		request.printRequest();
@@ -124,7 +123,6 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 			tempTargetResource = selectedIt->getHttpConfigCore().getRoot() + requestTarget;
 		if (tempTargetResource.back() == '/')
 		{
-			std::cout << selectedIt->getHttpConfigCore().getAutoIndex() << "?" << std::endl;
 			if (selectedIt->getHttpConfigCore().getAutoIndex())
 			{
 				return tempTargetResource;
@@ -139,6 +137,7 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 					defaultTargetResource = tempTargetResource + indexes[0];
 				for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
 				{
+					std::cout << "d " << tempTargetResource + *it << std::endl;
 					if (RegularFile(tempTargetResource + *it).valid())
 					{
 						return tempTargetResource + *it;
@@ -153,6 +152,7 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 
 void Connection::buildResponseFromRequest()
 {
+	std::cout << "statusCode : " << statusCode << std::endl;
 	if (statusCode)
 	{
 		buildErrorResponse(statusCode);
@@ -165,8 +165,10 @@ void Connection::buildResponseFromRequest()
 		response.setStatusLine("HTTP/1.1 200 OK");
 		response.addToHeaders("Server", "Hafserv/1.0.0");
 
+		std::cout << method << " " << targetLocationConfig.getPattern() << std::endl;
 		if (method == "POST" && targetLocationConfig.getCgiPath().length() > 0)
 		{
+			std::cout << "HERE" << targetLocationConfig.getCgiPath() << std::endl;
 			buildCGIResponse(targetLocationConfig.getCgiPath());
 		}
 		else if (method == "GET")
@@ -303,6 +305,7 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		}
 		else
 		{
+			std::cerr << scriptPath << std::endl;
 			std::cerr << "No authorization" << std::endl;
 			exit(1);
 		}

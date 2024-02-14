@@ -5,7 +5,7 @@
 
 using namespace Hafserv;
 
-Request::Request() : parseStatus(Created), contentLength(0), bodyLength(0), isEnd(false) {}
+Request::Request() : parseStatus(Created), contentLength(-1), bodyLength(0), isEnd(false) {}
 
 Request::Request(const Request &other)
 	: parseStatus(other.parseStatus), method(other.method), requestTarget(other.requestTarget), headers(other.headers),
@@ -35,30 +35,22 @@ Request::~Request() {}
 
 int Request::readRequest(const int fd)
 {
-
 	int idx;
 
-	// std::cout << "Buf len[Init] : " << buffer.length() << std::endl;
-	if (parseStatus < Body)
+	if (parseStatus != Body)
 	{
 		int str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
 
 		buffer += std::string(charBuf, str_len);
-		// std::cout << "Buf len[Added] : " << buffer.length() << std::endl;
-		while ((idx = buffer.find('\n')) != std::string::npos && parseStatus < Body)
+		while ((idx = buffer.find('\n')) != std::string::npos && parseStatus != Body)
 		{
 			std::string line = buffer.substr(0, idx + 1);
-			// std::cout << "line : " << line;
-			// std::cout << "line len : " << line.length() << std::endl;
-			// std::cout << "idx : " << idx << std::endl;
 			int status;
 
-			// buffer.erase(buffer.begin(), buffer.begin() + idx + 1);
 			buffer = buffer.substr(idx + 1);
 			if ((status = parse(line)))
 				return status;
 		}
-		// std::cout << "Buf len[Erased] : " << buffer.length() << std::endl;
 	}
 	else
 	{
@@ -71,7 +63,7 @@ int Request::parse(std::string &request)
 {
 	if (parseStatus == Created)
 		return parseStartLine(request);
-	else if (parseStatus == Header)
+	else
 		return parseHeaders(request);
 	return 0;
 }
@@ -118,13 +110,22 @@ int Request::parseHeaders(const std::string &fieldLine)
 {
 	if (fieldLine == "\r\n")
 	{
-		// std::cout << "Header field end" << std::endl;
+		int rtn = 0;
+
 		if (method == "POST")
-			parseStatus = Body;
+		{
+			if (parseStatus == Header)
+				parseStatus = Body;
+			else if (parseStatus == Trailer)
+				parseStatus = End;
+		}
 		else
 			parseStatus = End;
-		checkHeaderField();
-		return 0;
+		if ((rtn = checkHeaderField()) == 0)
+		{
+			setBodyParseFunction();
+		}
+		return rtn;
 	}
 	std::istringstream iss(fieldLine);
 	std::string key, value;
@@ -135,31 +136,34 @@ int Request::parseHeaders(const std::string &fieldLine)
 		parseStatus = End;
 		return 400;
 	} // 400 Bad Request
-	while (std::getline(iss >> std::ws, value, ','))
+	std::getline(iss >> std::ws, value);
+	value = value.substr(0, value.find('\r'));
+	key = util::string::toLower(key);
+	std::map<std::string, std::string>::iterator it = headers.find(key);
+	if (it != headers.end())
 	{
-		if (value.empty())
-			; // error ( NOT ERROR MAYBE )
-		if (value[value.length() - 1] == '\n')
-			value = value.substr(0, value.length() - 2);
-		key = util::string::toLower(key);
-		headers.insert(std::make_pair(key, value));
+		it->second += ", ";
+		it->second += value;
+	}
+	else
+	{
+		headers.insert(make_pair(key, value));
 	}
 	return 0;
 }
 
-void Request::checkHeaderField()
+int Request::setBodyParseFunction()
 {
 	// contentLength
-	std::multimap<std::string, std::string>::iterator contentLengthIt = headers.find("content-length");
+	std::map<std::string, std::string>::iterator contentLengthIt = headers.find("content-length");
 	if (contentLengthIt != headers.end())
 	{
 		contentLength = stoi(contentLengthIt->second);
-		// parseBody = parseByContentLength;
 		parseBody = &Request::parseByContentLength;
 	}
 
 	// Boundary
-	std::multimap<std::string, std::string>::iterator contentTypeIt = headers.find("content-type");
+	std::map<std::string, std::string>::iterator contentTypeIt = headers.find("content-type");
 	if (contentTypeIt != headers.end())
 	{
 		std::vector<std::string> contentType = parseContentType(contentTypeIt->second);
@@ -171,28 +175,55 @@ void Request::checkHeaderField()
 		}
 	}
 	// Transfer-Encoding
-	std::multimap<std::string, std::string>::iterator tranferEncodingIt = headers.find("transfer-encoding");
+	std::map<std::string, std::string>::iterator tranferEncodingIt = headers.find("transfer-encoding");
 	if (tranferEncodingIt != headers.end())
 	{
 		std::vector<std::string> transferEncoding = parseTransferEncoding(tranferEncodingIt->second);
 		std::vector<std::string>::iterator it = std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
 		if (it + 1 == transferEncoding.end())
 			parseBody = &Request::parseByTransferEncoding;
-		else if (it != transferEncoding.end() || contentLength == -1)
-			; // chunked가 있는데 마지막에 있는게 아니거나 | tranferEncoding이 있는데 contentLength도 있으면 에러
 	}
+}
+
+int Request::checkHeaderField()
+{
+	// std::multimap<std::string, std::string>::iterator tranferEncodingIt = headers.find("transfer-encoding");
+	// if (tranferEncodingIt != headers.end())
+	// {
+	// 	std::vector<std::string> transferEncoding = parseTransferEncoding(tranferEncodingIt->second);
+	// 	std::vector<std::string>::iterator chunkedIt =
+	// 		std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
+	// 	if (chunkedIt == transferEncoding.end() || headers.find("content-length") != headers.end())
+	// 	{
+	// 		parseStatus = End;
+	// 		return 400;
+	// 	}
+	// }
+	// if (headers.count("host") != 1)
+	// {
+	// 	std::cout << "gogo";
+	// 	parseStatus = End;
+	// 	return 400;
+	// }
+
+	return 0;
 }
 
 int Request::parseByBoundary(const int &fd)
 {
-	ssize_t bytesRead = 0;
+	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
 
-	// ++ \r\n까지읽기
-	if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	if (bodyLength + bytesRead > contentLength)
+	{
+		buffer += std::string(charBuf, contentLength - bodyLength);
+		bodyLength += (contentLength - bodyLength);
+	}
+	else
 	{
 		oss.write(charBuf, bytesRead);
 		bodyLength += bytesRead;
 	}
+
 	if (bodyLength == contentLength)
 	{
 		body = oss.str();
@@ -209,47 +240,53 @@ int Request::parseByTransferEncoding(const int &fd)
 
 	while (true)
 	{
-		// std::cout << "buflen: " << buffer.length() << std::endl;
-		// for (int i = 0; i < buffer.length(); i++)
-		// 	std::cout << (int)buffer[i] << " ";
 		if (chunkSize) // no buffer
 		{
 			if (chunkSize < buffer.length())
 			{
 				oss << buffer.substr(0, chunkSize);
-				// std::cout << "c<b" << chunkSize << std::endl;
 				buffer = buffer.substr(chunkSize);
 				chunkSize = 0;
 			}
 			else
 			{
 				oss << buffer;
-				// std::cout << "c>b" << buffer.length();
 				chunkSize -= buffer.length();
 				buffer.clear();
 				break;
 			}
 		}
 		// read chunksize
-		if (isEnd && buffer.length() == 2)
+		if (isEnd) // length말고 첫 두글자
 		{
-			body = oss.str();
-			// std::cout << "END" << std::endl;
-			std::ofstream ofs("my.pdf");
-			ofs << body;
-			ofs.close();
-			parseStatus = End;
-			break;
+			if (headers.find("trailer") == headers.end())
+			{
+				if (buffer.substr(0, 2) == "\r\n")
+				{
+					body = oss.str();
+					parseStatus = End;
+					break;
+				}
+			}
+			else
+			{
+				body = oss.str();
+				parseStatus = Trailer;
+				break;
+			}
 		}
 		if (!isEnd && buffer.length() >= 2 && buffer.substr(0, 2) == "\r\n")
 			buffer.erase(0, 2);
 		int idx;
 		if ((idx = buffer.find("\r\n")) != std::string::npos)
 		{
-			chunkSize = std::stol(readHex(buffer), NULL, 16);
+			chunkSize = util::string::hexStrToDecInt(readHex(buffer));
 			buffer.erase(0, idx + 2);
 			if (chunkSize == 0)
+			{
 				isEnd = true;
+				removeChunkField("");
+			}
 		}
 		else
 			break;
@@ -260,19 +297,43 @@ int Request::parseByTransferEncoding(const int &fd)
 
 int Request::parseByContentLength(const int &fd)
 {
-	ssize_t bytesRead = 0;
+	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
 
-	if ((bytesRead = recv(fd, charBuf, BUFFER_SIZE, 0)) > 0)
+	if (bodyLength + bytesRead > contentLength)
+	{
+		buffer += std::string(charBuf, contentLength - bodyLength);
+		bodyLength += (contentLength - bodyLength);
+	}
+	else
 	{
 		oss.write(charBuf, bytesRead);
 		bodyLength += bytesRead;
 	}
+
 	if (bodyLength == contentLength)
 	{
 		body = oss.str();
 		parseStatus = End;
 	}
 	return 0;
+}
+
+void Request::removeChunkField(const std::string &fieldName)
+{
+	std::string te = headers.find("transfer-encoding")->second;
+	std::vector<std::string> teVec = parseTransferEncoding(te);
+	std::ostringstream oss;
+
+	for (std::vector<std::string>::iterator it = teVec.begin(); it < teVec.end(); it++)
+	{
+		if (*it == "chunked")
+			continue;
+		if (it + 2 == teVec.end())
+			oss << *it;
+		else
+			oss << *it << ",";
+	}
+	headers.find("transfer-encoding")->second = oss.str();
 }
 
 std::string Request::getRawRequest()
@@ -308,9 +369,3 @@ const std::string &Hafserv::Request::getMethod() const { return method; }
 const std::string &Hafserv::Request::getBody() const { return body; }
 
 const size_t Hafserv::Request::getContentLength() const { return contentLength; }
-
-const void Hafserv::Request::setBody(std::string body)
-{
-	this->body = body;
-	parseStatus = End;
-}

@@ -1,4 +1,5 @@
 #include "util/Parse.hpp"
+#include "util/string.hpp"
 
 std::vector<std::string> parseTransferEncoding(std::string &str)
 {
@@ -143,12 +144,10 @@ std::string readHex(std::string &str)
 	std::string::iterator it;
 	for (it = str.begin(); it != str.end(); it++)
 	{
-		if (std::isxdigit(*it))
-			it++;
-		else
+		if (!std::isxdigit(*it))
 			break;
 	}
-	return str.substr(0, it - str.begin());
+	return Hafserv::util::string::toLower(str.substr(0, it - str.begin()));
 }
 
 void printVector(std::vector<std::string> &vec)
