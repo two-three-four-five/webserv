@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:47:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 20:03:03 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/14 14:19:29 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,4 +60,19 @@ std::string util::string::toLower(const std::string &str)
 	for (int i = 0; i < str.length(); i++)
 		ret[i] = std::tolower(str[i]);
 	return ret;
+}
+
+int util::string::hexStrToDecInt(const std::string &hex)
+{
+	int decimalValue = 0;
+
+	for (std::string::const_iterator it = hex.begin(); it != hex.end(); it++)
+	{
+		decimalValue *= 16;
+		if (std::isdigit(*it))
+			decimalValue += (*it - '0');
+		else
+			decimalValue += (*it - 'a' + 10);
+	}
+	return (decimalValue);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:43:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/08 00:43:08 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/14 14:19:36 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ std::vector<std::string> split(const std::string &str, char delimiter);
 bool hasSpace(const std::string &str);
 
 std::string toLower(const std::string &str);
+
+int hexStrToDecInt(const std::string &hex);
 
 } // namespace string
 } // namespace util

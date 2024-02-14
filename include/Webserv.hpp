@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:58 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/13 12:41:49 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/14 17:43:53 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,14 +41,17 @@ public:
 	void openPort(unsigned short port);
 
 	void runWebserv();
+
 	void connectClient(int serv_sock);
 	void disconnectClient(int socketfd);
+	void addCGIEvent(int connectionFd, int readPipe, int writePipe);
+	void deleteCGIEvent(int readPipe, int writePipe);
 
+	Connection &findConnectionByFd(int fd);
 	Server *findTargetServer(unsigned short port, const Request &request);
 
 	void checkTimeout();
 
-	bool inServSocks(int serv_sock);
 	void closeServSocks();
 
 	const std::map<int, std::string> &getStatusCodeMap() const;
@@ -57,6 +60,10 @@ private:
 	Webserv();
 	~Webserv();
 
+	bool inServSocks(int fd);
+	bool inClientSocks(int fd);
+	bool inCGISocks(int fd);
+
 	int kq;
 
 	std::map<int, std::string> statusCodeMap;
@@ -64,6 +71,9 @@ private:
 	std::map<unsigned short, int> portToServSock;
 	std::map<int, unsigned short> servSockToPort;
 	std::map<int, unsigned short> sockToPort;
+
+	std::map<int, int> cgiFdToConnectionFd;
+
 	std::vector<Server *> servers;
 
 	ConnectionMap Connections;
