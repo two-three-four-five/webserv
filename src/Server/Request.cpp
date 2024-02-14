@@ -40,7 +40,7 @@ int Request::readRequest(const int fd)
 	if (parseStatus != Body)
 	{
 		int str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
-
+		std::cout << "BR: " << str_len << std::endl;
 		buffer += std::string(charBuf, str_len);
 		while ((idx = buffer.find('\n')) != std::string::npos && parseStatus != Body)
 		{
@@ -115,7 +115,10 @@ int Request::parseHeaders(const std::string &fieldLine)
 		if (method == "POST")
 		{
 			if (parseStatus == Header)
+			{
+				isEnd = false;
 				parseStatus = Body;
+			}
 			else if (parseStatus == Trailer)
 				parseStatus = End;
 		}
@@ -212,7 +215,6 @@ int Request::checkHeaderField()
 int Request::parseByBoundary(const int &fd)
 {
 	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
-
 	if (bodyLength + bytesRead > contentLength)
 	{
 		buffer += std::string(charBuf, contentLength - bodyLength);
@@ -261,7 +263,7 @@ int Request::parseByTransferEncoding(const int &fd)
 		{
 			if (headers.find("trailer") == headers.end())
 			{
-				if (buffer.substr(0, 2) == "\r\n")
+				if (buffer.length() == 2 && buffer.substr(0, 2) == "\r\n")
 				{
 					body = oss.str();
 					parseStatus = End;
@@ -276,7 +278,9 @@ int Request::parseByTransferEncoding(const int &fd)
 			}
 		}
 		if (!isEnd && buffer.length() >= 2 && buffer.substr(0, 2) == "\r\n")
+		{
 			buffer.erase(0, 2);
+		}
 		int idx;
 		if ((idx = buffer.find("\r\n")) != std::string::npos)
 		{

@@ -165,7 +165,6 @@ void Connection::buildResponseFromRequest()
 		response.setStatusLine("HTTP/1.1 200 OK");
 		response.addToHeaders("Server", "Hafserv/1.0.0");
 
-		std::cout << method << " " << targetLocationConfig.getPattern() << std::endl;
 		if (method == "POST" && targetLocationConfig.getCgiPath().length() > 0)
 		{
 			std::cout << "HERE" << targetLocationConfig.getCgiPath() << std::endl;
@@ -340,6 +339,7 @@ void Connection::writeToCGI(int fd)
 	int ret = write(fd, wrBuffer + written, bytesToWrite);
 	if (ret > 0)
 	{
+		// std::cout << "written: " << written << ", " << ret << std::endl;
 		written += ret;
 	}
 }
@@ -361,7 +361,25 @@ void Connection::readFromCGI(int fd)
 	{
 		std::cout << "pipeEND" << std::endl;
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
-		response.setBody(CGIOutput.str());
+		// response.setBody(CGIOutput.str());
+
+		std::string returned = CGIOutput.str();
+		std::string header;
+		while (true)
+		{
+			header = returned.substr(0, returned.find('\r'));
+			returned = returned.substr(returned.find('\n') + 1);
+
+			if (!header.size())
+				break;
+			std::string key = header.substr(0, header.find(':'));
+			std::string value = header.substr(header.find(':') + 2);
+			if (key == "Status")
+				response.setStatusLine("HTTP/1.1 " + value);
+			else
+				response.addToHeaders(key, value);
+		}
+		response.setBody(returned);
 		response.setResponseBuffer();
 	}
 }
@@ -375,6 +393,24 @@ char **Connection::makeEnvp()
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);
+
+	HeaderMultiMap::const_iterator it = request.getHeaders().begin();
+	for (; it != request.getHeaders().end(); it++)
+	{
+		std::string key = (*it).first;
+		std::string value = (*it).second;
+		for (size_t i = 0; i < key.size(); i++)
+		{
+			key[i] = toupper(key[i]);
+			if (key[i] == '-')
+				key[i] = '_';
+		}
+		// std::cout << "envkey=" << key << std::endl;
+		// std::cout << "envvalue=" << value << std::endl;
+		if (key.find("X_") == 0)
+			key = "HTTP_" + key;
+		envVec.push_back(key + "=" + value);
+	}
 
 	if (request.getHeaders().find("content-type") != request.getHeaders().end())
 	{
