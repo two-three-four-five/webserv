@@ -35,7 +35,6 @@ Request::~Request() {}
 
 int Request::readRequest(const int fd)
 {
-
 	int idx;
 
 	if (parseStatus != Body)
@@ -109,7 +108,6 @@ int Request::parseStartLine(const std::string &request)
 
 int Request::parseHeaders(const std::string &fieldLine)
 {
-	std::cout << "parseHeaders : " << fieldLine << std::endl;
 	if (fieldLine == "\r\n")
 	{
 		if (method == "POST")
@@ -121,8 +119,7 @@ int Request::parseHeaders(const std::string &fieldLine)
 		}
 		else
 			parseStatus = End;
-		checkHeaderField();
-		return 0;
+		return checkHeaderField();
 	}
 	std::istringstream iss(fieldLine);
 	std::string key, value;
@@ -133,26 +130,19 @@ int Request::parseHeaders(const std::string &fieldLine)
 		parseStatus = End;
 		return 400;
 	} // 400 Bad Request
-	while (std::getline(iss >> std::ws, value, ','))
-	{
-		if (value.empty())
-			; // error ( NOT ERROR MAYBE )
-		if (value[value.length() - 1] == '\n')
-			value = value.substr(0, value.length() - 2);
-		key = util::string::toLower(key);
-		headers.insert(std::make_pair(key, value));
-	}
+	std::getline(iss >> std::ws, value);
+	key = util::string::toLower(key);
+	headers.insert(std::make_pair(key, value));
 	return 0;
 }
 
-void Request::checkHeaderField()
+int Request::checkHeaderField()
 {
 	// contentLength
 	std::multimap<std::string, std::string>::iterator contentLengthIt = headers.find("content-length");
 	if (contentLengthIt != headers.end())
 	{
 		contentLength = stoi(contentLengthIt->second);
-		// parseBody = parseByContentLength;
 		parseBody = &Request::parseByContentLength;
 	}
 
@@ -176,9 +166,13 @@ void Request::checkHeaderField()
 		std::vector<std::string>::iterator it = std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
 		if (it + 1 == transferEncoding.end())
 			parseBody = &Request::parseByTransferEncoding;
-		else if (it != transferEncoding.end() || contentLength == -1)
-			; // chunked가 있는데 마지막에 있는게 아니거나 | tranferEncoding이 있는데 contentLength도 있으면 에러
+		if (it == transferEncoding.end() || contentLengthIt != headers.end())
+		{
+			parseStatus = End;
+			return 400;
+		}
 	}
+	return 0;
 }
 
 int Request::parseByBoundary(const int &fd)
@@ -255,7 +249,10 @@ int Request::parseByTransferEncoding(const int &fd)
 			chunkSize = util::string::hexStrToDecInt(readHex(buffer));
 			buffer.erase(0, idx + 2);
 			if (chunkSize == 0)
+			{
 				isEnd = true;
+				removeChunkField("");
+			}
 		}
 		else
 			break;
@@ -285,6 +282,24 @@ int Request::parseByContentLength(const int &fd)
 		parseStatus = End;
 	}
 	return 0;
+}
+
+void Request::removeChunkField(const std::string &fieldName)
+{
+	std::string te = headers.find("transfer-encoding")->second;
+	std::vector<std::string> teVec = parseTransferEncoding(te);
+	std::ostringstream oss;
+
+	for (std::vector<std::string>::iterator it = teVec.begin(); it < teVec.end(); it++)
+	{
+		if (*it == "chunked")
+			continue;
+		if (it + 2 == teVec.end())
+			oss << *it;
+		else
+			oss << *it << ",";
+	}
+	headers.find("transfer-encoding")->second = oss.str();
 }
 
 std::string Request::getRawRequest()
@@ -320,9 +335,3 @@ const std::string &Hafserv::Request::getMethod() const { return method; }
 const std::string &Hafserv::Request::getBody() const { return body; }
 
 const size_t Hafserv::Request::getContentLength() const { return contentLength; }
-
-const void Hafserv::Request::setBody(std::string body)
-{
-	this->body = body;
-	parseStatus = End;
-}
