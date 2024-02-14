@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/14 20:52:07 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/14 22:33:10 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ public:
 	void addType(const std::string &type, const std::string &extension);
 	void addAllowMethod(const std::string &method);
 
+private:
 	int clientBodyBufferSize;
 	bool autoIndex;
 	std::string root;
@@ -76,8 +77,6 @@ public:
 	std::string defaultType;
 	std::multimap<std::string, std::string> types;
 	std::vector<std::string> allowMethods;
-
-private:
 };
 
 } // namespace Hafserv
