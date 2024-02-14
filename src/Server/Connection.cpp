@@ -401,27 +401,16 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 			if (header.back() == '\r')
 				header = header.substr(0, header.size() - 1);
 
-			std::cout << "header:" << header.length() << "=" << header << std::endl;
-			std::cout << "adding:[" << header.substr(0, header.find(':')) << "]" << std::endl;
-			std::cout << "adding:[" << header.substr(header.find(' ') + 1) << "]" << std::endl;
-
 			if (!header.size())
+			{
+				returned = returned.substr(returned.find('\n') + 1);
 				break;
+			}
 
 			response.addToHeaders(header.substr(0, header.find(':')), header.substr(header.find(' ') + 1));
 			returned = returned.substr(returned.find('\n') + 1);
 		}
-		std::cout << "!!!!!!!!" << returned.length() << "!!!!!!!!!!!" << std::endl;
-		std::cout << returned.substr(0, 100) << std::endl;
-
-		returned = returned.substr(returned.find('\n') + 1);
-
-		// response.addToHeaders("Content-Type", "text/html; charset=utf-8");
 		response.addToHeaders("Content-Length", util::string::itos(returned.length()));
-
-		std::cout << "!!!!!!!!" << returned.length() << "!!!!!!!!!!!" << std::endl;
-		std::cout << returned.substr(0, 100) << std::endl;
-
 		response.setBody(returned);
 	}
 }
