@@ -5,13 +5,19 @@
 
 using namespace Hafserv;
 
-Request::Request() : parseStatus(Created), contentLength(-1), bodyLength(0), isEnd(false) {}
+Request::Request() : parseStatus(Created), contentLength(-1), bodyLength(0), isEnd(false), buffer(), body()
+{
+	oss.str("");
+	bodyStream.str("");
+}
 
 Request::Request(const Request &other)
 	: parseStatus(other.parseStatus), method(other.method), requestTarget(other.requestTarget), headers(other.headers),
 	  boundary(other.boundary), contentLength(other.contentLength), bodyLength(other.bodyLength), body(other.body),
-	  bodyVec(other.bodyVec), parseBody(other.parseBody)
+	  bodyVec(other.bodyVec), parseBody(other.parseBody), buffer(other.buffer)
 {
+	oss.str("");
+	bodyStream.str("");
 }
 
 Request &Request::operator=(const Request &rhs)
@@ -28,6 +34,9 @@ Request &Request::operator=(const Request &rhs)
 		body = rhs.body;
 		bodyVec = rhs.bodyVec;
 		parseBody = rhs.parseBody;
+		buffer = rhs.buffer;
+		oss.str("");
+		bodyStream.str("");
 	}
 	return *this;
 }
@@ -36,12 +45,11 @@ Request::~Request() {}
 int Request::readRequest(const int fd)
 {
 	int idx;
+	int str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
+	buffer += std::string(charBuf, str_len);
 
 	if (parseStatus != Body)
 	{
-		int str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
-		std::cout << "BR: " << str_len << std::endl;
-		buffer += std::string(charBuf, str_len);
 		while ((idx = buffer.find('\n')) != std::string::npos && parseStatus != Body)
 		{
 			std::string line = buffer.substr(0, idx + 1);
@@ -51,6 +59,8 @@ int Request::readRequest(const int fd)
 			if ((status = parse(line)))
 				return status;
 		}
+		if (parseStatus == Body)
+			return (this->*parseBody)(fd);
 	}
 	else
 	{
@@ -214,16 +224,19 @@ int Request::checkHeaderField()
 
 int Request::parseByBoundary(const int &fd)
 {
-	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
-	if (bodyLength + bytesRead > contentLength)
+	// ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
+	if (bodyLength + buffer.length() > contentLength)
 	{
-		buffer += std::string(charBuf, contentLength - bodyLength);
+		// buffer += std::string(charBuf, contentLength - bodyLength);
+		oss.write(buffer.c_str(), contentLength - bodyLength);
+		buffer.clear();
 		bodyLength += (contentLength - bodyLength);
 	}
 	else
 	{
-		oss.write(charBuf, bytesRead);
-		bodyLength += bytesRead;
+		oss << buffer;
+		bodyLength += buffer.length();
+		buffer.clear();
 	}
 
 	if (bodyLength == contentLength)
@@ -237,8 +250,8 @@ int Request::parseByBoundary(const int &fd)
 int Request::parseByTransferEncoding(const int &fd)
 {
 	static int chunkSize = 0;
-	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
-	buffer += std::string(charBuf, bytesRead);
+	// ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
+	// buffer += std::string(charBuf, bytesRead);
 
 	while (true)
 	{
@@ -340,25 +353,13 @@ void Request::removeChunkField(const std::string &fieldName)
 	headers.find("transfer-encoding")->second = oss.str();
 }
 
-std::string Request::getRawRequest()
-{
-	std::stringstream ss;
-
-	ss << method << " " << requestTarget << " HTTP/1.1\r\n";
-	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++)
-		ss << it->first << ": " << it->second << "\r\n";
-	if (method == "POST")
-		ss << "\r\n" << body << "\r\n";
-	return ss.str();
-}
-
 void Request::printRequest() const
 {
 	std::cout << "<-------request------->" << std::endl;
 	std::cout << method << " " << requestTarget << " HTTP/1.1\r\n";
 	for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); it++)
 		std::cout << it->first << ": " << it->second << "\r\n";
-	// std::cout << body;
+	std::cout << "bodylen: " << body.length() << std::endl;
 	std::cout << "<-----request end----->" << std::endl;
 }
 

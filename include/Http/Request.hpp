@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/14 19:55:00 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/14 21:22:19 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ public:
 	int parseByTransferEncoding(const int &fd);
 	int setBodyParseFunction();
 	void removeChunkField(const std::string &fieldName);
-	std::string getRawRequest();
 	void printRequest() const;
 
 	const int getParseStatus() const;

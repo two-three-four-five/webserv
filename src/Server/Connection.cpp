@@ -251,6 +251,7 @@ void Connection::buildErrorResponse(int statusCode)
 		targetResource = "error/" + util::string::itos(statusCode) + ".html";
 	else
 		targetResource = configureTargetResource(targetIt->second);
+	response.makeBody(targetLocationConfig, targetResource);
 }
 
 void Connection::build301Response(const std::string &redirectTarget)
@@ -265,6 +266,7 @@ void Connection::build301Response(const std::string &redirectTarget)
 		targetResource = "error/301.html";
 	else
 		targetResource = configureTargetResource(targetIt->second);
+	response.makeBody(targetLocationConfig, targetResource);
 }
 
 void Connection::buildCGIResponse(const std::string &scriptPath)
@@ -446,6 +448,7 @@ void Connection::reset()
 	targetLocationConfig = LocationConfig();
 	request = Request();
 	response = Response();
+	CGIOutput.str("");
 }
 
 const Request &Connection::getRequest() const { return request; }
