@@ -110,7 +110,7 @@ int Request::parseHeaders(const std::string &fieldLine)
 {
 	if (fieldLine == "\r\n")
 	{
-		int rtn = 0;
+		int rtn;
 
 		if (method == "POST")
 		{
@@ -124,9 +124,10 @@ int Request::parseHeaders(const std::string &fieldLine)
 		}
 		else
 			parseStatus = End;
-		if ((rtn = checkHeaderField()) == 0)
+
+		if (!(rtn = checkHeaderField()))
 		{
-			setBodyParseFunction();
+			rtn = setBodyParseFunction();
 		}
 		return rtn;
 	}
@@ -178,36 +179,45 @@ int Request::setBodyParseFunction()
 		}
 	}
 	// Transfer-Encoding
-	std::map<std::string, std::string>::iterator tranferEncodingIt = headers.find("transfer-encoding");
-	if (tranferEncodingIt != headers.end())
+	std::map<std::string, std::string>::iterator transferEncodingIt = headers.find("transfer-encoding");
+	if (transferEncodingIt != headers.end())
 	{
-		std::vector<std::string> transferEncoding = parseTransferEncoding(tranferEncodingIt->second);
+		std::vector<std::string> transferEncoding = parseTransferEncoding(transferEncodingIt->second);
 		std::vector<std::string>::iterator it = std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
 		if (it + 1 == transferEncoding.end())
 			parseBody = &Request::parseByTransferEncoding;
 	}
+
+	// all no
+	if (contentLengthIt == contentTypeIt && contentTypeIt == transferEncodingIt)
+	{
+		parseStatus = End;
+		return 400;
+	}
+	return 0;
 }
 
 int Request::checkHeaderField()
 {
-	// std::multimap<std::string, std::string>::iterator tranferEncodingIt = headers.find("transfer-encoding");
-	// if (tranferEncodingIt != headers.end())
-	// {
-	// 	std::vector<std::string> transferEncoding = parseTransferEncoding(tranferEncodingIt->second);
-	// 	std::vector<std::string>::iterator chunkedIt =
-	// 		std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
-	// 	if (chunkedIt == transferEncoding.end() || headers.find("content-length") != headers.end())
-	// 	{
-	// 		parseStatus = End;
-	// 		return 400;
-	// 	}
-	// }
-	// if (headers.count("host") != 1)
-	// {
-	// 	std::cout << "gogo";
-	// 	parseStatus = End;
-	// 	return 400;
-	// }
+	std::map<std::string, std::string>::iterator tranferEncodingIt = headers.find("transfer-encoding");
+	if (tranferEncodingIt != headers.end())
+	{
+		std::vector<std::string> transferEncoding = parseTransferEncoding(tranferEncodingIt->second);
+		std::vector<std::string>::iterator chunkedIt =
+			std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
+		if (chunkedIt == transferEncoding.end() || chunkedIt + 1 != transferEncoding.end() ||
+			headers.find("content-length") != headers.end())
+		{
+			parseStatus = End;
+			return 400;
+		}
+	}
+	std::map<std::string, std::string>::iterator hostIt = headers.find("host");
+	if (hostIt == headers.end() || hostIt->second.find(",") != std::string::npos)
+	{
+		parseStatus = End;
+		return 400;
+	}
 
 	return 0;
 }
