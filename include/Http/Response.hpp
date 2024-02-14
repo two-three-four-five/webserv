@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:45 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/12 20:43:37 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/14 14:34:02 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ public:
 	enum ResponseState
 	{
 		Created,
+		BuildingCGI,
 		Ready,
 		Sending,
 		End

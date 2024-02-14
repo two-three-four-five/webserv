@@ -184,15 +184,20 @@ void Connection::buildResponseFromRequest()
 				buildGetResponse();
 			else if (!targetFile.isRegularFile())
 				buildErrorResponse(404);
+			response.setResponseBuffer();
 		}
 		else if (method == "HEAD")
+		{
 			buildErrorResponse(405);
+			response.setResponseBuffer();
+		}
 		else if (method == "POST")
 		{
 			if (request.getRequestTarget().getTargetURI() == "/")
 				buildErrorResponse(405);
 			else
 				buildCGIResponse(targetResource);
+			response.setResponseBuffer();
 		}
 		else if (method == "DELETE")
 		{
@@ -201,9 +206,9 @@ void Connection::buildResponseFromRequest()
 				buildErrorResponse(404);
 			else
 				buildDeleteResponse();
+			response.setResponseBuffer();
 		}
 	}
-	response.setResponseBuffer();
 }
 
 void Connection::buildDeleteResponse()
@@ -282,8 +287,8 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	fcntl(inward_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(inward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 
-	int pid = fork();
-	if (pid == 0)
+	cgiPID = fork();
+	if (cgiPID == 0)
 	{
 		close(outward_fd[0]);
 		close(inward_fd[1]);
@@ -308,99 +313,53 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	{
 		close(outward_fd[1]);
 		close(inward_fd[0]);
-		char buffer[BUFFER_SIZE + 1];
-		ssize_t bytes_read;
-		std::ostringstream output;
 
-		int kq = kqueue();
-		if (kq == -1)
-		{
-			std::cerr << "kqueue() error" << std::endl;
-			exit(1);
-		}
-		int status;
+		wrBytes = request.getBody().length();
+		written = 0;
+		response.setResponseState(Response::BuildingCGI);
+		readen = 0;
 
-		struct kevent event;
-		EV_SET(&event, outward_fd[0], EVFILT_READ, EV_ADD, 0, 0, NULL);
-		kevent(kq, &event, 1, NULL, 0, NULL);
-		EV_SET(&event, inward_fd[1], EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-		kevent(kq, &event, 1, NULL, 0, NULL);
-		struct kevent evList[2];
-		struct timespec timeout;
-		bzero(&timeout, sizeof(struct timespec));
-		bool isWriteEnd = false;
-		const char *wrBuffer = request.getBody().c_str();
-		size_t wrBytes = request.getBody().length();
-		size_t written = 0;
-		size_t readen = 0;
-		int events;
-		while (!waitpid(pid, &status, WNOHANG))
-		{
-			events = kevent(kq, NULL, 0, evList, 2, &timeout);
-			if (events == -1)
-			{
-				std::cerr << "kevent() error" << std::endl;
-				continue;
-			}
-			for (int i = 0; i < events; i++)
-			{
-				if (evList[i].filter == EVFILT_WRITE)
-				{
-					int bytesToWrite = wrBytes - written;
-					if (bytesToWrite > BUFFER_SIZE)
-						bytesToWrite = BUFFER_SIZE;
-					int ret = write(evList[i].ident, wrBuffer + written, bytesToWrite);
-					if (ret > 0)
-					{
-						written += ret;
-					}
-					else if (ret == 0)
-					{
-						EV_SET(&event, evList[i].ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-						kevent(kq, &event, 1, NULL, 0, NULL);
-					}
-				}
-				else if (evList[i].filter == EVFILT_READ)
-				{
-					bytes_read = read(outward_fd[0], buffer, BUFFER_SIZE);
-					if (bytes_read == 0)
-					{
-						EV_SET(&event, evList[i].ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-						kevent(kq, &event, 1, NULL, 0, NULL);
-					}
-					if (bytes_read > 0)
-					{
-						output.write(buffer, bytes_read);
-						readen += bytes_read;
-						// std::cout << "read: " << readen << ", " << bytes_read << std::endl;
-					}
-					if (bytes_read < 0)
-					{
-						perror("HWY");
-					}
-				}
-			}
-		}
+		readPipe = outward_fd[0];
+		writePipe = inward_fd[1];
+		Webserv::getInstance().addCGIEvent(socket, outward_fd[0], inward_fd[1]);
+	}
+}
 
-		// TODO: waitpid child process
-		// int status;
-		// waitpid(pid, &status, 0);
+void Connection::writeToCGI(int fd)
+{
+	const char *wrBuffer = request.getBody().c_str();
+	wrBytes = request.getBody().length();
+	int bytesToWrite = wrBytes - written;
+	if (bytesToWrite > BUFFER_SIZE)
+		bytesToWrite = BUFFER_SIZE;
+	if (!bytesToWrite)
+		return;
+	int ret = write(fd, wrBuffer + written, bytesToWrite);
+	if (ret > 0)
+	{
+		written += ret;
+	}
+}
 
-		close(inward_fd[1]);
-		close(outward_fd[0]);
+void Connection::readFromCGI(int fd)
+{
+	ssize_t bytes_read;
+	char buffer[BUFFER_SIZE + 1];
 
-		std::string returned = output.str();
-
-		std::cout << returned.length() << std::endl;
-		returned = returned.substr(returned.find('\n') + 1);
-		returned = returned.substr(returned.find('\n') + 1);
-		returned = returned.substr(returned.find('\n') + 1);
-
-		response.setStatusLine("HTTP/1.1 200 OK");
-		response.addToHeaders("Content-Type", "text/html; charset=utf-8");
-		response.addToHeaders("Content-Length", util::string::itos(returned.length()));
-
-		response.setBody(returned);
+	bytes_read = read(fd, buffer, BUFFER_SIZE);
+	if (bytes_read > 0)
+	{
+		CGIOutput.write(buffer, bytes_read);
+		readen += bytes_read;
+		// std::cout << "read: " << readen << ", " << bytes_read << std::endl;
+	}
+	int status;
+	if (waitpid(cgiPID, &status, WNOHANG) > 0)
+	{
+		std::cout << "pipeEND" << std::endl;
+		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
+		response.setBody(CGIOutput.str());
+		response.setResponseBuffer();
 	}
 }
 

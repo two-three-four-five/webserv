@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+         #
+#    By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/16 16:53:40 by gyoon             #+#    #+#              #
-#    Updated: 2024/02/13 19:37:31 by gyoon            ###   ########.fr        #
+#    Updated: 2024/02/14 17:46:49 by jinhchoi         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ NAME		= webserv
 # **************************************************************************** #
 
 CC			= c++
-CXXFLAGS	=-fsanitize=address -g# -Wall -Wextra -Werror -std=c++98
+# CXXFLAGS	=-fsanitize=address -g# -Wall -Wextra -Werror -std=c++98
 RM			= rm -rf
 
 .PHONY : all bonus clean fclean re

@@ -110,32 +110,57 @@ void Webserv::runWebserv()
 
 		for (int i = 0; i < events; i++)
 		{
-			if (inServSocks(event_list[i].ident))
+			int eventFd = event_list[i].ident;
+			try
 			{
-				connectClient(event_list[i].ident);
+
+				if (inServSocks(eventFd))
+				{
+					connectClient(eventFd);
+				}
+				else if (inClientSocks(eventFd))
+				{
+					if (event_list[i].flags & EV_EOF)
+						disconnectClient(eventFd);
+					else if (event_list[i].filter == EVFILT_READ)
+					{
+						Connection &conn = findConnectionByFd(eventFd);
+						if (Connections.find(eventFd) == Connections.end())
+							std::cout << "D>DFS>?DFJSDLKFJ D" << std::endl;
+						if (conn.getRequest().getParseStatus() == End)
+							continue;
+						if (!conn.readRequest(eventFd))
+							disconnectClient(eventFd);
+					}
+					else if (event_list[i].filter == EVFILT_WRITE)
+					{
+						Connection &conn = findConnectionByFd(eventFd);
+						if (conn.getResponse().getResponseState() == Response::Ready)
+							conn.sendResponse();
+						else if (conn.getResponse().getResponseState() == Response::Sending)
+							conn.sendResponse();
+						if (conn.getResponse().getResponseState() == Response::End)
+							disconnectClient(eventFd);
+						// conn.reset();
+					}
+				}
+				else if (inCGISocks(eventFd))
+				{
+					if (event_list[i].filter == EVFILT_WRITE)
+					{
+						Connection &conn = findConnectionByFd(cgiFdToConnectionFd.find(eventFd)->second);
+						conn.writeToCGI(eventFd);
+					}
+					else if (event_list[i].filter == EVFILT_READ)
+					{
+						Connection &conn = findConnectionByFd(cgiFdToConnectionFd.find(eventFd)->second);
+						conn.readFromCGI(eventFd);
+					}
+				}
 			}
-			else if (event_list[i].flags & EV_EOF)
-				disconnectClient(event_list[i].ident);
-			else if (event_list[i].filter == EVFILT_READ)
+			catch (std::exception &e)
 			{
-				Connection &conn = Connections.find(event_list[i].ident)->second;
-				if (Connections.find(event_list[i].ident) == Connections.end())
-					std::cout << "D>DFS>?DFJSDLKFJ D" << std::endl;
-				if (conn.getRequest().getParseStatus() == End)
-					continue;
-				if (!conn.readRequest(event_list[i].ident))
-					disconnectClient(event_list[i].ident);
-			}
-			else if (event_list[i].filter == EVFILT_WRITE)
-			{
-				Connection &conn = Connections.find(event_list[i].ident)->second;
-				if (conn.getResponse().getResponseState() == Response::Ready)
-					conn.sendResponse();
-				else if (conn.getResponse().getResponseState() == Response::Sending)
-					conn.sendResponse();
-				if (conn.getResponse().getResponseState() == Response::End)
-					disconnectClient(event_list[i].ident);
-				// conn.reset();
+				std::cout << "exception in webserv: " << e.what() << std::endl;
 			}
 		}
 		checkTimeout();
@@ -183,6 +208,40 @@ void Webserv::disconnectClient(int socketfd)
 		sockToPort.erase(socketToPortIt);
 
 	std::cout << "closed client: " << socketfd << std::endl;
+}
+
+void Webserv::addCGIEvent(int connectionFd, int readPipe, int writePipe)
+{
+	struct kevent event;
+	EV_SET(&event, readPipe, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	kevent(kq, &event, 1, NULL, 0, NULL);
+	EV_SET(&event, writePipe, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+	kevent(kq, &event, 1, NULL, 0, NULL);
+	cgiFdToConnectionFd[readPipe] = connectionFd;
+	cgiFdToConnectionFd[writePipe] = connectionFd;
+
+	std::cout << "cgievent added" << std::endl;
+}
+
+void Webserv::deleteCGIEvent(int readPipe, int writePipe)
+{
+	struct kevent event;
+	EV_SET(&event, readPipe, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+	kevent(kq, &event, 1, NULL, 0, NULL);
+	EV_SET(&event, writePipe, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+	kevent(kq, &event, 1, NULL, 0, NULL);
+	cgiFdToConnectionFd.erase(readPipe);
+	cgiFdToConnectionFd.erase(writePipe);
+	close(readPipe);
+	close(writePipe);
+}
+
+Connection &Webserv::findConnectionByFd(int fd)
+{
+	ConnectionMap::iterator it = Connections.find(fd);
+	if (it == Connections.end())
+		throw std::exception();
+	return it->second;
 }
 
 Server *Webserv::findTargetServer(unsigned short port, const Request &request)
@@ -246,7 +305,11 @@ void Webserv::checkTimeout()
 	}
 }
 
-bool Webserv::inServSocks(int serv_sock) { return servSockToPort.find(serv_sock) != servSockToPort.end(); }
+bool Webserv::inServSocks(int fd) { return servSockToPort.find(fd) != servSockToPort.end(); }
+
+bool Webserv::inClientSocks(int fd) { return sockToPort.find(fd) != sockToPort.end(); }
+
+bool Webserv::inCGISocks(int fd) { return cgiFdToConnectionFd.find(fd) != cgiFdToConnectionFd.end(); }
 
 void Webserv::closeServSocks()
 {

@@ -113,7 +113,7 @@ void Response::send(int fd)
 	}
 	if (writtenBytes == responseBytes)
 	{
-		std::cout << "sendend" << std::endl;
+		std::cout << "sendEnd" << std::endl;
 		responseState = End;
 	}
 }

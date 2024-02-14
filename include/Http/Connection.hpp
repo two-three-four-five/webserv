@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/13 20:06:55 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/14 17:43:11 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ public:
 	void build301Response(const std::string &redirectTarget);
 
 	void buildCGIResponse(const std::string &scriptPath);
+	void writeToCGI(int fd);
+	void readFromCGI(int fd);
 	char **makeEnvp();
 
 	void sendResponse();
@@ -67,6 +69,14 @@ private:
 	Server *targetServer;
 	LocationConfig targetLocationConfig;
 	std::string targetResource;
+
+	pid_t cgiPID;
+	int readPipe;
+	int writePipe;
+	size_t wrBytes;
+	size_t written;
+	std::ostringstream CGIOutput;
+	size_t readen;
 };
 
 } // namespace Hafserv
