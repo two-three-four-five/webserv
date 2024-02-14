@@ -391,26 +391,21 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 
 		std::string returned = output.str();
 
-		std::cout << returned.length() << std::endl;
-		returned = returned.substr(returned.find('\n') + 1);
-		response.setStatusLine("HTTP/1.1 200 OK");
-
+		std::string header;
 		while (true)
 		{
-			std::string header = returned.substr(0, returned.find("\n"));
-			if (header.back() == '\r')
-				header = header.substr(0, header.size() - 1);
+			header = returned.substr(0, returned.find('\r'));
+			returned = returned.substr(returned.find('\n') + 1);
 
 			if (!header.size())
-			{
-				returned = returned.substr(returned.find('\n') + 1);
 				break;
-			}
-
-			response.addToHeaders(header.substr(0, header.find(':')), header.substr(header.find(' ') + 1));
-			returned = returned.substr(returned.find('\n') + 1);
+			std::string key = header.substr(0, header.find(':'));
+			std::string value = header.substr(header.find(':') + 2);
+			if (key == "Status")
+				response.setStatusLine("HTTP/1.1 " + value);
+			else
+				response.addToHeaders(key, value);
 		}
-		response.addToHeaders("Content-Length", util::string::itos(returned.length()));
 		response.setBody(returned);
 	}
 }
