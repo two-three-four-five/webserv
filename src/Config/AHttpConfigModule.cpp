@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 14:56:11 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/13 19:52:32 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/14 20:57:17 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,16 @@ void AHttpConfigModule::setHttpConfigCore(const ConfigFile::directives_t &direct
 
 		params = util::string::split(value, ' ');
 		numToken = params.size();
-		if (key == "autoindex")
+		if (key == "client_body_buffer_size")
+		{
+			if (numToken != 1)
+				throw InvalidNumberArgumentError(key);
+			else if (!util::string::stoi(value).first)
+				throw InvalidArgumentError(key);
+
+			core.setClientBodyBufferSize(util::string::stoi(value).second);
+		}
+		else if (key == "autoindex")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);

@@ -113,7 +113,6 @@ void Webserv::runWebserv()
 			int eventFd = event_list[i].ident;
 			try
 			{
-
 				if (inServSocks(eventFd))
 				{
 					connectClient(eventFd);
@@ -140,8 +139,8 @@ void Webserv::runWebserv()
 						else if (conn.getResponse().getResponseState() == Response::Sending)
 							conn.sendResponse();
 						if (conn.getResponse().getResponseState() == Response::End)
-							disconnectClient(eventFd);
-						// conn.reset();
+							// disconnectClient(eventFd);
+							conn.reset();
 					}
 				}
 				else if (inCGISocks(eventFd))

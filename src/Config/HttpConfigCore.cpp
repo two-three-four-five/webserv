@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/13 19:51:17 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/14 20:55:24 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,16 @@ using namespace Hafserv;
 HttpConfigCore::Timeout::Timeout() : clientHeader(60), clientBody(60), keepAlive(75), send(60) {}
 
 HttpConfigCore::HttpConfigCore()
-	: autoIndex(false), root("html"), indexes(), timeouts(), errorPages(), defaultType("text/plain"), types(),
-	  allowMethods()
+	: clientBodyBufferSize(16384), autoIndex(false), root("html"), indexes(), timeouts(), errorPages(),
+	  defaultType("text/plain"), types(), allowMethods()
 {
 	indexes.push_back("index.html");
 }
 
 HttpConfigCore::HttpConfigCore(const HttpConfigCore &other)
-	: autoIndex(other.autoIndex), root(other.root), indexes(other.indexes), timeouts(other.timeouts),
-	  errorPages(other.errorPages), defaultType(other.defaultType), types(other.types), allowMethods(other.allowMethods)
+	: clientBodyBufferSize(other.clientBodyBufferSize), autoIndex(other.autoIndex), root(other.root),
+	  indexes(other.indexes), timeouts(other.timeouts), errorPages(other.errorPages), defaultType(other.defaultType),
+	  types(other.types), allowMethods(other.allowMethods)
 {
 }
 
@@ -33,6 +34,7 @@ HttpConfigCore &HttpConfigCore::operator=(const HttpConfigCore &other)
 {
 	if (this != &other)
 	{
+		clientBodyBufferSize = other.clientBodyBufferSize;
 		autoIndex = other.autoIndex;
 		root = other.root;
 		indexes = other.indexes;
@@ -47,6 +49,7 @@ HttpConfigCore &HttpConfigCore::operator=(const HttpConfigCore &other)
 
 HttpConfigCore::~HttpConfigCore() {}
 
+const int HttpConfigCore::getClientBodyBufferSize() const { return clientBodyBufferSize; }
 const bool HttpConfigCore::getAutoIndex() const { return autoIndex; }
 const std::string &HttpConfigCore::getRoot() const { return root; }
 const std::vector<std::string> &HttpConfigCore::getIndexes() const { return indexes; }
@@ -56,6 +59,10 @@ const std::string &HttpConfigCore::getDefaultType() const { return defaultType; 
 const std::multimap<std::string, std::string> &HttpConfigCore::getTypes() const { return types; }
 const std::vector<std::string> &HttpConfigCore::getAllowMethods() const { return allowMethods; }
 
+void HttpConfigCore::setClientBodyBufferSize(const int clientBodyBufferSize)
+{
+	this->clientBodyBufferSize = clientBodyBufferSize;
+}
 void HttpConfigCore::setAutoIndex(const bool autoIndex) { this->autoIndex = autoIndex; }
 void HttpConfigCore::setRoot(const std::string &root) { this->root = root; }
 void HttpConfigCore::setIndexes(const std::vector<std::string> &indexes) { this->indexes = indexes; }

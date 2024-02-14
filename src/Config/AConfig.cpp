@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/11 17:46:49 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/13 19:59:12 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/14 20:48:25 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,7 @@ void AConfig::initAllSimpleDirectives()
 	allSimpleDirectives.insert("cgi_path");
 
 	/*		HttpSimpleDirectives		*/
+	allSimpleDirectives.insert("client_body_buffer_size");
 	allSimpleDirectives.insert("default_type");
 	allSimpleDirectives.insert("root");
 	allSimpleDirectives.insert("index");
@@ -120,6 +121,7 @@ void AConfig::initEventsSimpleDirectives()
 void AConfig::initHttpSimpleDirectives()
 {
 	/*		CoreSimpleDirectives		*/
+	httpSimpleDirectives.insert("client_body_buffer_size");
 	httpSimpleDirectives.insert("default_type");
 	httpSimpleDirectives.insert("root");
 	httpSimpleDirectives.insert("index");
@@ -137,6 +139,7 @@ void AConfig::initHttpSimpleDirectives()
 void AConfig::initServerSimpleDirectives()
 {
 	/*		CoreSimpleDirectives		*/
+	serverSimpleDirectives.insert("client_body_buffer_size");
 	serverSimpleDirectives.insert("default_type");
 	serverSimpleDirectives.insert("root");
 	serverSimpleDirectives.insert("index");
@@ -156,6 +159,7 @@ void AConfig::initServerSimpleDirectives()
 void AConfig::initLocationSimpleDirectives()
 {
 	/*		CoreSimpleDirectives		*/
+	locationSimpleDirectives.insert("client_body_buffer_size");
 	locationSimpleDirectives.insert("default_type");
 	locationSimpleDirectives.insert("root");
 	locationSimpleDirectives.insert("index");
@@ -175,6 +179,7 @@ void AConfig::initLocationSimpleDirectives()
 void AConfig::initCoreSimpleDirectives()
 {
 	/*		CoreSimpleDirectives		*/
+	coreSimpleDirectives.insert("client_body_buffer_size");
 	coreSimpleDirectives.insert("default_type");
 	coreSimpleDirectives.insert("root");
 	coreSimpleDirectives.insert("index");
