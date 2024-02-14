@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/13 22:37:07 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/14 19:55:00 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 namespace Hafserv
 {
 
-typedef std::multimap<std::string, std::string> HeaderMultiMap;
+typedef std::map<std::string, std::string> HeaderMultiMap;
 
 enum RequestParseStatus
 {
@@ -52,9 +52,11 @@ public:
 	int parseStartLine(const std::string &request);
 	int parseHeaders(const std::string &fieldLine);
 	int parseByContentLength(const int &fd);
-	void checkHeaderField();
+	int checkHeaderField();
 	int parseByBoundary(const int &fd);
 	int parseByTransferEncoding(const int &fd);
+	int setBodyParseFunction();
+	void removeChunkField(const std::string &fieldName);
 	std::string getRawRequest();
 	void printRequest() const;
 
@@ -64,7 +66,6 @@ public:
 	const std::string &getMethod() const;
 	const std::string &getBody() const;
 	const size_t getContentLength() const;
-	const void setBody(std::string body);
 
 	typedef int (Request::*ParseBodyFunction)(const int &);
 

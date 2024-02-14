@@ -119,6 +119,11 @@ void Webserv::runWebserv()
 			else if (event_list[i].filter == EVFILT_READ)
 			{
 				Connection &conn = Connections.find(event_list[i].ident)->second;
+				if (Connections.find(event_list[i].ident) == Connections.end())
+				{
+					std::cout << "nono" << std::endl;
+					exit(1);
+				}
 				if (conn.getRequest().getParseStatus() == End)
 					continue;
 				if (!conn.readRequest(event_list[i].ident))

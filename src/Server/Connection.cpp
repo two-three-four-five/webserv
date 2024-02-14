@@ -152,6 +152,7 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 
 void Connection::buildResponseFromRequest()
 {
+	std::cout << "statusCode : " << statusCode << std::endl;
 	if (statusCode)
 	{
 		buildErrorResponse(statusCode);
