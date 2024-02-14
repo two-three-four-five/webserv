@@ -393,12 +393,34 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 
 		std::cout << returned.length() << std::endl;
 		returned = returned.substr(returned.find('\n') + 1);
-		returned = returned.substr(returned.find('\n') + 1);
+		response.setStatusLine("HTTP/1.1 200 OK");
+
+		while (true)
+		{
+			std::string header = returned.substr(0, returned.find("\n"));
+			if (header.back() == '\r')
+				header = header.substr(0, header.size() - 1);
+
+			std::cout << "header:" << header.length() << "=" << header << std::endl;
+			std::cout << "adding:[" << header.substr(0, header.find(':')) << "]" << std::endl;
+			std::cout << "adding:[" << header.substr(header.find(' ') + 1) << "]" << std::endl;
+
+			if (!header.size())
+				break;
+
+			response.addToHeaders(header.substr(0, header.find(':')), header.substr(header.find(' ') + 1));
+			returned = returned.substr(returned.find('\n') + 1);
+		}
+		std::cout << "!!!!!!!!" << returned.length() << "!!!!!!!!!!!" << std::endl;
+		std::cout << returned.substr(0, 100) << std::endl;
+
 		returned = returned.substr(returned.find('\n') + 1);
 
-		response.setStatusLine("HTTP/1.1 200 OK");
-		response.addToHeaders("Content-Type", "text/html; charset=utf-8");
+		// response.addToHeaders("Content-Type", "text/html; charset=utf-8");
 		response.addToHeaders("Content-Length", util::string::itos(returned.length()));
+
+		std::cout << "!!!!!!!!" << returned.length() << "!!!!!!!!!!!" << std::endl;
+		std::cout << returned.substr(0, 100) << std::endl;
 
 		response.setBody(returned);
 	}
@@ -413,6 +435,24 @@ char **Connection::makeEnvp()
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);
+
+	HeaderMultiMap::const_iterator it = request.getHeaders().begin();
+	for (; it != request.getHeaders().end(); it++)
+	{
+		std::string key = (*it).first;
+		std::string value = (*it).second;
+		for (size_t i = 0; i < key.size(); i++)
+		{
+			key[i] = toupper(key[i]);
+			if (key[i] == '-')
+				key[i] = '_';
+		}
+		// std::cout << "envkey=" << key << std::endl;
+		// std::cout << "envvalue=" << value << std::endl;
+		if (key.find("X_") == 0)
+			key = "HTTP_" + key;
+		envVec.push_back(key + "=" + value);
+	}
 
 	if (request.getHeaders().find("content-type") != request.getHeaders().end())
 	{
