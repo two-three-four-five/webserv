@@ -120,26 +120,20 @@ int Request::parseHeaders(const std::string &fieldLine)
 {
 	if (fieldLine == "\r\n")
 	{
-		int rtn;
-
 		if (method == "POST")
 		{
 			if (parseStatus == Header)
 			{
 				isEnd = false;
 				parseStatus = Body;
+				setBodyParseFunction();
 			}
 			else if (parseStatus == Trailer)
 				parseStatus = End;
 		}
 		else
 			parseStatus = End;
-
-		if (!(rtn = checkHeaderField()))
-		{
-			rtn = setBodyParseFunction();
-		}
-		return rtn;
+		return (checkHeaderField());
 	}
 	std::istringstream iss(fieldLine);
 	std::string key, value;
@@ -152,6 +146,11 @@ int Request::parseHeaders(const std::string &fieldLine)
 	} // 400 Bad Request
 	std::getline(iss >> std::ws, value);
 	value = value.substr(0, value.find('\r'));
+	if (value.length() > HEADER_LIMIT)
+	{
+		parseStatus = End;
+		return 400;
+	}
 	key = util::string::toLower(key);
 	std::map<std::string, std::string>::iterator it = headers.find(key);
 	if (it != headers.end())
@@ -166,7 +165,7 @@ int Request::parseHeaders(const std::string &fieldLine)
 	return 0;
 }
 
-int Request::setBodyParseFunction()
+void Request::setBodyParseFunction()
 {
 	// contentLength
 	std::map<std::string, std::string>::iterator contentLengthIt = headers.find("content-length");
@@ -188,6 +187,7 @@ int Request::setBodyParseFunction()
 			parseBody = &Request::parseByBoundary;
 		}
 	}
+
 	// Transfer-Encoding
 	std::map<std::string, std::string>::iterator transferEncodingIt = headers.find("transfer-encoding");
 	if (transferEncodingIt != headers.end())
@@ -197,22 +197,14 @@ int Request::setBodyParseFunction()
 		if (it + 1 == transferEncoding.end())
 			parseBody = &Request::parseByTransferEncoding;
 	}
-
-	// all no
-	if (contentLengthIt == contentTypeIt && contentTypeIt == transferEncodingIt)
-	{
-		parseStatus = End;
-		return 400;
-	}
-	return 0;
 }
 
 int Request::checkHeaderField()
 {
-	std::map<std::string, std::string>::iterator tranferEncodingIt = headers.find("transfer-encoding");
-	if (tranferEncodingIt != headers.end())
+	std::map<std::string, std::string>::iterator transferEncodingIt = headers.find("transfer-encoding");
+	if (transferEncodingIt != headers.end())
 	{
-		std::vector<std::string> transferEncoding = parseTransferEncoding(tranferEncodingIt->second);
+		std::vector<std::string> transferEncoding = parseTransferEncoding(transferEncodingIt->second);
 		std::vector<std::string>::iterator chunkedIt =
 			std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
 		if (chunkedIt == transferEncoding.end() || chunkedIt + 1 != transferEncoding.end() ||
@@ -222,6 +214,13 @@ int Request::checkHeaderField()
 			return 400;
 		}
 	}
+
+	if (method == "POST" && transferEncodingIt == headers.end() && headers.find("content-length") == headers.end())
+	{
+		parseStatus = End;
+		return 411;
+	}
+
 	std::map<std::string, std::string>::iterator hostIt = headers.find("host");
 	if (hostIt == headers.end() || hostIt->second.find(",") != std::string::npos)
 	{

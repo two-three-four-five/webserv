@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/14 22:30:34 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/15 14:12:04 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <vector>
 
 #define BUFFER_SIZE 10000
+#define HEADER_LIMIT 200
 
 namespace Hafserv
 {
@@ -55,7 +56,7 @@ public:
 	int checkHeaderField();
 	int parseByBoundary(const int &fd);
 	int parseByTransferEncoding(const int &fd);
-	int setBodyParseFunction();
+	void setBodyParseFunction();
 	void removeChunkField(const std::string &fieldName);
 	void printRequest() const;
 
