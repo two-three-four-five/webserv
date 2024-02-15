@@ -307,6 +307,7 @@ int Request::parseByTransferEncoding(const int &fd)
 		if ((idx = buffer.find("\r\n")) != std::string::npos)
 		{
 			chunkSize = util::string::hexStrToDecInt(readHex(buffer));
+			bodyLength += chunkSize;
 			buffer.erase(0, idx + 2);
 			if (chunkSize == 0)
 			{
@@ -369,10 +370,14 @@ void Request::printRequest() const
 	for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); it++)
 		std::cout << it->first << ": " << it->second << "\r\n";
 	std::cout << "bodylen: " << body.length() << std::endl;
+	if (body.length() < 10000)
+		std::cout << "body : " << body;
 	std::cout << "<-----request end----->" << std::endl;
 }
 
-const int Hafserv::Request::getParseStatus() const { return parseStatus; }
+const int Request::getBodyLength() const { return bodyLength; }
+
+const int Request::getParseStatus() const { return parseStatus; }
 
 const RequestTarget &Request::getRequestTarget() const { return requestTarget; }
 

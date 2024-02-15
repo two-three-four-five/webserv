@@ -46,6 +46,13 @@ bool Connection::readRequest(int fd)
 	{
 		request.printRequest();
 		std::cout << "parseEnd" << std::endl;
+		std::cout << "max : " << targetLocationConfig.getClientMaxBodySize()
+				  << " body len : " << getRequest().getBodyLength() << std::endl;
+		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
+		{
+			statusCode = 413;
+			std::cout << "413" << std::endl;
+		}
 		targetServer = Webserv::getInstance().findTargetServer(port, request);
 		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
 		buildResponseFromRequest();
@@ -156,6 +163,7 @@ void Connection::buildResponseFromRequest()
 	if (statusCode)
 	{
 		buildErrorResponse(statusCode);
+		response.setResponseBuffer();
 	}
 	else
 	{
@@ -277,9 +285,14 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	*/
 	char *argv[] = {(char *)scriptPath.c_str(), NULL};
 	char **envp = makeEnvp();
-
 	int outward_fd[2];
 	int inward_fd[2];
+	File target(scriptPath);
+
+	if (!(target.isRegularFile() && target.isExecutable()))
+	{
+		statusCode = 411;
+	}
 
 	pipe(outward_fd);
 	pipe(inward_fd);
@@ -298,7 +311,6 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		dup2(inward_fd[0], STDIN_FILENO);
 
 		struct stat fileStat;
-		File target(scriptPath);
 		if (target.isRegularFile() && target.isExecutable())
 		{
 			execve(argv[0], argv, envp);
@@ -449,6 +461,8 @@ void Connection::reset()
 	response = Response();
 	CGIOutput.str("");
 }
+
+const int &Connection::getStatusCode() const { return statusCode; }
 
 const Request &Connection::getRequest() const { return request; }
 

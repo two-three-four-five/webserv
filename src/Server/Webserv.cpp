@@ -139,8 +139,12 @@ void Webserv::runWebserv()
 						else if (conn.getResponse().getResponseState() == Response::Sending)
 							conn.sendResponse();
 						if (conn.getResponse().getResponseState() == Response::End)
-							// disconnectClient(eventFd);
-							conn.reset();
+						{
+							if (conn.getStatusCode())
+								disconnectClient(eventFd);
+							else
+								conn.reset();
+						}
 					}
 				}
 				else if (inCGISocks(eventFd))
@@ -160,6 +164,7 @@ void Webserv::runWebserv()
 			catch (std::exception &e)
 			{
 				std::cout << "exception in webserv: " << e.what() << std::endl;
+				continue;
 			}
 		}
 		checkTimeout();

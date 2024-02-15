@@ -108,12 +108,12 @@ void Response::send(int fd)
 	int ret = write(fd, wrBuffer + writtenBytes, bytesToWrite);
 	if (ret != -1)
 	{
-		std::cout << "sent: " << std::endl << std::string(wrBuffer + writtenBytes, ret);
+		// std::cout << "sent: " << std::endl << std::string(wrBuffer + writtenBytes, ret);
 		writtenBytes += ret;
 	}
 	if (writtenBytes == responseBytes)
 	{
-		std::cout << "sendEnd" << std::endl;
+		// std::cout << "sendEnd" << std::endl;
 		responseState = End;
 	}
 }

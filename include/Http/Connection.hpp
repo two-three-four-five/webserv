@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/14 17:43:11 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/15 15:38:52 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,9 +49,9 @@ public:
 	char **makeEnvp();
 
 	void sendResponse();
-
 	void reset();
 
+	const int &getStatusCode() const;
 	const Request &getRequest() const;
 	const Response &getResponse() const;
 	const Server *getTargetServer() const;

@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/15 14:12:04 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/15 16:54:06 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ public:
 	void removeChunkField(const std::string &fieldName);
 	void printRequest() const;
 
+	const int getBodyLength() const;
 	const int getParseStatus() const;
 	const RequestTarget &getRequestTarget() const;
 	const HeaderMultiMap &getHeaders() const;
