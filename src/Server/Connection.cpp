@@ -165,18 +165,17 @@ void Connection::buildResponseFromRequest()
 		response.setStatusLine("HTTP/1.1 200 OK");
 		response.addToHeaders("Server", "Hafserv/1.0.0");
 
-		if (method == "POST" && targetLocationConfig.getCgiPath().length() > 0)
+		if (!targetLocationConfig.isAllowedMethod(method))
 		{
-			std::cout << "HERE" << targetLocationConfig.getCgiPath() << std::endl;
-			buildCGIResponse(targetLocationConfig.getCgiPath());
+			buildErrorResponse(405);
+			response.setResponseBuffer();
+			return;
 		}
-		else if (method == "GET")
+		if (method == "GET")
 		{
 			File targetFile(targetResource);
 			if (targetFile.isDirectory() && targetLocationConfig.getAutoIndex() && targetResource.back() == '/')
-			{
 				buildDirectoryResponse();
-			}
 			else if (targetFile.isDirectory())
 				build301Response("http://" + request.getHeaders().find("host")->second +
 								 request.getRequestTarget().getTargetURI() + "/");
@@ -186,14 +185,15 @@ void Connection::buildResponseFromRequest()
 				buildErrorResponse(404);
 			response.setResponseBuffer();
 		}
-		else if (method == "HEAD")
-		{
-			buildErrorResponse(405);
-			response.setResponseBuffer();
-		}
 		else if (method == "POST")
 		{
-			if (request.getRequestTarget().getTargetURI() == "/")
+			if (targetLocationConfig.getCgiPath().size())
+			{
+				std::cout << "----------------------------" << std::endl;
+				buildCGIResponse(targetLocationConfig.getCgiPath());
+				return;
+			}
+			else if (request.getRequestTarget().getTargetURI() == "/")
 				buildErrorResponse(405);
 			else
 				buildCGIResponse(targetResource);

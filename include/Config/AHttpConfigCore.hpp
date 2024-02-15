@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:15:48 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:33:07 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ public:
 	void addErrorPage(int errorCode, const std::string &uri);
 	void addType(const std::string &type, const std::string &extension);
 	void addAllowMethod(const std::string &method);
+
+	const bool isAllowedMethod(const std::string &method) const;
 
 	void setHttpConfigCore(const ConfigFile::directives_t &directives);
 	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks);
