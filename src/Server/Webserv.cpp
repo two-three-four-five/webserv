@@ -279,9 +279,9 @@ void Webserv::checkTimeout()
 		{
 			int headerTimeout = 60;
 			if (server != NULL)
-				headerTimeout = server->getServerConfig().getHttpConfigCore().getTimeout().clientHeader;
-			if (targetConfig.getHttpConfigCore().getTimeout().clientHeader > 0)
-				headerTimeout = targetConfig.getHttpConfigCore().getTimeout().clientHeader;
+				headerTimeout = server->getServerConfig().getTimeout().clientHeader;
+			if (targetConfig.getTimeout().clientHeader > 0)
+				headerTimeout = targetConfig.getTimeout().clientHeader;
 			if (now - it->second.getStartTime() > headerTimeout)
 			{
 				timeoutSockets.push_back(it->first);
@@ -290,8 +290,8 @@ void Webserv::checkTimeout()
 		else if (it->second.getRequest().getParseStatus() == Body)
 		{
 			int bodyTimeout = 60;
-			if (targetConfig.getHttpConfigCore().getTimeout().clientHeader > 0)
-				bodyTimeout = targetConfig.getHttpConfigCore().getTimeout().clientBody;
+			if (targetConfig.getTimeout().clientHeader > 0)
+				bodyTimeout = targetConfig.getTimeout().clientBody;
 			if (now - it->second.getStartTime() > bodyTimeout)
 			{
 				timeoutSockets.push_back(it->first);

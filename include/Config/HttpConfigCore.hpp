@@ -6,16 +6,19 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/14 22:33:10 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:07:41 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPCONFIGCORE_HPP
 #define HTTPCONFIGCORE_HPP
 
+#include <Config/ConfigException.hpp>
+#include <File/ConfigFile.hpp>
 #include <iostream>
 #include <map>
 #include <string>
+#include <util/string.hpp>
 #include <vector>
 
 namespace Hafserv
@@ -66,6 +69,9 @@ public:
 	void addErrorPage(int errorCode, const std::string &uri);
 	void addType(const std::string &type, const std::string &extension);
 	void addAllowMethod(const std::string &method);
+
+	void setHttpConfigCore(const ConfigFile::directives_t &directives);
+	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks);
 
 private:
 	int clientBodyBufferSize;

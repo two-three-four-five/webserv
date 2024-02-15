@@ -35,7 +35,7 @@ Response::~Response() {}
 
 void Response::makeBody(const LocationConfig &targetLocationConfig, const std::string &targetLocation)
 {
-	const std::multimap<std::string, std::string> &typeMap = targetLocationConfig.getHttpConfigCore().getTypes();
+	const std::multimap<std::string, std::string> &typeMap = targetLocationConfig.getTypes();
 	std::multimap<std::string, std::string>::const_iterator typeIt =
 		typeMap.find(targetLocation.substr(targetLocation.rfind('.') + 1));
 	if (typeIt != typeMap.end())
