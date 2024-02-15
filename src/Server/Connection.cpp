@@ -50,7 +50,10 @@ bool Connection::readRequest(int fd)
 		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
 		{
 			statusCode = 413;
-			std::cout << "413" << std::endl;
+		}
+		if (statusCode)
+		{
+			response.addToHeaders("Connection", "close");
 		}
 		buildResponseFromRequest();
 	}
@@ -345,7 +348,10 @@ void Connection::writeToCGI(int fd)
 	if (bytesToWrite > BUFFER_SIZE)
 		bytesToWrite = BUFFER_SIZE;
 	if (!bytesToWrite)
+	{
+		close(fd);
 		return;
+	}
 	int ret = write(fd, wrBuffer + written, bytesToWrite);
 	if (ret > 0)
 	{
@@ -392,6 +398,7 @@ void Connection::readFromCGI(int fd)
 		response.setBody(returned);
 		response.setResponseBuffer();
 	}
+	close(fd);
 }
 
 char **Connection::makeEnvp()
