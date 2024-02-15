@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 22:39:09 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:07:50 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #define SERVERCONFIG_HPP
 
 #include "Config/AConfig.hpp"
-#include "Config/AHttpConfigModule.hpp"
+#include "Config/HttpConfigCore.hpp"
 #include "Config/LocationConfig.hpp"
 #include "File/ConfigFile.hpp"
 #include <iostream>
@@ -24,7 +24,7 @@
 
 namespace Hafserv
 {
-class ServerConfig : public AConfig, public AHttpConfigModule
+class ServerConfig : public AConfig, public HttpConfigCore
 {
 public:
 	ServerConfig();

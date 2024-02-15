@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:13:31 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:05:14 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,19 @@
 
 using namespace Hafserv;
 
-HttpConfig::HttpConfig() : AConfig(), AHttpConfigModule(), directives(), servers() {}
+HttpConfig::HttpConfig() : AConfig(), HttpConfigCore(), directives(), servers() {}
 
 HttpConfig::HttpConfig(const HttpConfig &other)
-	: AConfig(other), AHttpConfigModule(other.core), directives(other.directives), servers(other.servers)
+	: AConfig(other), HttpConfigCore(other), directives(other.directives), servers(other.servers)
 {
 }
 
 HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
-	: AConfig(), AHttpConfigModule(), directives(block.getDirectives()), servers()
+	: AConfig(), HttpConfigCore(), directives(block.getDirectives()), servers()
 {
-	this->setHttpConfigCore(block.getDirectives());
-	this->setHttpConfigCore(block.getSubBlocks());
+
+	setHttpConfigCore(block.getDirectives());
+	setHttpConfigCore(block.getSubBlocks());
 
 	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
@@ -54,7 +55,7 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 			throw DisallowDirectiveError(subBlockName);
 
 		if (subBlockName == "server")
-			servers.push_back(ServerConfig(block.getSubBlocks().at(i), core));
+			servers.push_back(ServerConfig(block.getSubBlocks().at(i), *this));
 	}
 }
 
@@ -63,7 +64,7 @@ HttpConfig &HttpConfig::operator=(const HttpConfig &other)
 	if (this != &other)
 	{
 		AConfig::operator=(other);
-		core = other.core;
+		HttpConfigCore::operator=(other);
 		directives = other.directives;
 		servers = other.servers;
 	}
@@ -80,7 +81,8 @@ std::ostream &operator<<(std::ostream &os, const HttpConfig &conf)
 {
 	os << "[HttpConfig]" << std::endl;
 
-	os << conf.getHttpConfigCore();
+	const HttpConfigCore &temp = conf;
+	os << temp << std::endl;
 
 	ConfigFile::directives_t::const_iterator it = conf.getDirectives().begin();
 	for (; it != conf.getDirectives().end(); it++)

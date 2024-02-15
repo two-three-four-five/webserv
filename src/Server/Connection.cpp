@@ -120,16 +120,16 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 				tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length());
 		}
 		else
-			tempTargetResource = selectedIt->getHttpConfigCore().getRoot() + requestTarget;
+			tempTargetResource = selectedIt->getRoot() + requestTarget;
 		if (tempTargetResource.back() == '/')
 		{
-			if (selectedIt->getHttpConfigCore().getAutoIndex())
+			if (selectedIt->getAutoIndex())
 			{
 				return tempTargetResource;
 			}
 			else
 			{
-				std::vector<std::string> indexes = selectedIt->getHttpConfigCore().getIndexes();
+				std::vector<std::string> indexes = selectedIt->getIndexes();
 				std::string defaultTargetResource;
 				if (indexes.size() == 0)
 					defaultTargetResource = tempTargetResource + "index.html";
@@ -173,8 +173,7 @@ void Connection::buildResponseFromRequest()
 		else if (method == "GET")
 		{
 			File targetFile(targetResource);
-			if (targetFile.isDirectory() && targetLocationConfig.getHttpConfigCore().getAutoIndex() &&
-				targetResource.back() == '/')
+			if (targetFile.isDirectory() && targetLocationConfig.getAutoIndex() && targetResource.back() == '/')
 			{
 				buildDirectoryResponse();
 			}
@@ -244,7 +243,7 @@ void Connection::buildErrorResponse(int statusCode)
 	std::string startLine = "HTTP/1.1 " + util::string::itos(statusCode) + " " +
 							Webserv::getInstance().getStatusCodeMap().find(statusCode)->second;
 	response.setStatusLine(startLine);
-	std::map<int, std::string> errorPages = targetLocationConfig.getHttpConfigCore().getErrorPages();
+	std::map<int, std::string> errorPages = targetLocationConfig.getErrorPages();
 	std::map<int, std::string>::iterator targetIt = errorPages.find(statusCode);
 	std::string targetResource;
 	if (targetIt == errorPages.end())
@@ -259,7 +258,7 @@ void Connection::build301Response(const std::string &redirectTarget)
 	std::string startLine = "HTTP/1.1 301 Moved Permanently";
 	response.setStatusLine(startLine);
 	response.addToHeaders("Location", redirectTarget);
-	std::map<int, std::string> errorPages = targetLocationConfig.getHttpConfigCore().getErrorPages();
+	std::map<int, std::string> errorPages = targetLocationConfig.getErrorPages();
 	std::map<int, std::string>::iterator targetIt = errorPages.find(301);
 	std::string targetResource;
 	if (targetIt == errorPages.end())

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/13 19:41:29 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 14:48:53 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,19 +14,18 @@
 
 using namespace Hafserv;
 
-LocationConfig::LocationConfig()
-	: AConfig(), AHttpConfigModule(), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+LocationConfig::LocationConfig() : AConfig(), HttpConfigCore(), modifier(), pattern(), alias(), proxyPass(), cgiPath()
 {
 }
 
 LocationConfig::LocationConfig(const LocationConfig &other)
-	: AConfig(other), AHttpConfigModule(other.core), modifier(other.modifier), pattern(other.pattern),
-	  alias(other.alias), proxyPass(other.proxyPass), cgiPath(other.cgiPath)
+	: AConfig(other), HttpConfigCore(other), modifier(other.modifier), pattern(other.pattern), alias(other.alias),
+	  proxyPass(other.proxyPass), cgiPath(other.cgiPath)
 {
 }
 
 LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &core)
-	: AConfig(), AHttpConfigModule(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+	: AConfig(), HttpConfigCore(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
 {
 	/* SAMPLE LOCATION BLOCK
 	 * location modifier(=, $, ^) pattern {
@@ -43,8 +42,8 @@ LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &co
 		throw ParseError("unexpected location parameter: " + modifier);
 	pattern = block.getParameters().at(1);
 
-	this->setHttpConfigCore(block.getDirectives());
-	this->setHttpConfigCore(block.getSubBlocks());
+	setHttpConfigCore(block.getDirectives());
+	setHttpConfigCore(block.getSubBlocks());
 
 	bool hasAlias = false, hasRoot = false, hasProxyPass = false, hasCgiPath = false;
 	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
@@ -121,7 +120,7 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &other)
 	if (this != &other)
 	{
 		AConfig::operator=(other);
-		core = other.core;
+		HttpConfigCore::operator=(other);
 		modifier = other.modifier;
 		pattern = other.pattern;
 		alias = other.alias;
@@ -164,7 +163,7 @@ bool LocationConfig::isMatching(const std::string &url)
 std::ostream &operator<<(std::ostream &os, const LocationConfig &conf)
 {
 	os << "[LocationConfig]" << std::endl;
-	os << conf.getHttpConfigCore();
+	os << HttpConfigCore(conf);
 	os << "\tmodifier: " << conf.getModifier() << std::endl;
 	os << "\tpattern: " << conf.getPattern() << std::endl;
 	if (conf.getAlias().length())

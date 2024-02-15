@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 22:44:26 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 14:48:21 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,18 @@
 
 using namespace Hafserv;
 
-ServerConfig::ServerConfig() : AConfig(), AHttpConfigModule(), names(), ports(), locations(3) {}
+ServerConfig::ServerConfig() : AConfig(), HttpConfigCore(), names(), ports(), locations(3) {}
 
 ServerConfig::ServerConfig(const ServerConfig &other)
-	: AConfig(other), AHttpConfigModule(other.core), names(other.names), ports(other.ports), locations(other.locations)
+	: AConfig(other), HttpConfigCore(other), names(other.names), ports(other.ports), locations(other.locations)
 {
 }
 
 ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
-	: AConfig(), AHttpConfigModule(core), names(), ports(), locations(3)
+	: AConfig(), HttpConfigCore(core), names(), ports(), locations(3)
 {
-	this->setHttpConfigCore(block.getDirectives());
-	this->setHttpConfigCore(block.getSubBlocks());
+	setHttpConfigCore(block.getDirectives());
+	setHttpConfigCore(block.getSubBlocks());
 
 	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
@@ -81,7 +81,7 @@ ServerConfig &ServerConfig::operator=(const ServerConfig &other)
 	if (this != &other)
 	{
 		AConfig::operator=(other);
-		core = other.core;
+		HttpConfigCore::operator=(other);
 		names = other.names;
 		ports = other.ports;
 		locations = other.locations;
@@ -101,7 +101,7 @@ std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 {
 	os << "[ServerConfig]" << std::endl;
 
-	os << conf.getHttpConfigCore();
+	os << HttpConfigCore(conf);
 
 	os << "\tnames: ";
 	for (size_t i = 0; i < conf.getNames().size(); i++)
