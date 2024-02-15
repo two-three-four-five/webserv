@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:33:07 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 16:51:35 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ public:
 	AHttpConfigCore &operator=(const AHttpConfigCore &other);
 	~AHttpConfigCore();
 
-	const int getClientBodyBufferSize() const;
+	const int getClientMaxBodySize() const;
 	const bool getAutoIndex() const;
 	const std::string &getRoot() const;
 	const std::vector<std::string> &getIndexes() const;
@@ -51,7 +51,7 @@ public:
 	const std::multimap<std::string, std::string> &getTypes() const;
 	const std::vector<std::string> &getAllowMethods() const;
 
-	void setClientBodyBufferSize(const int clientBodyBufferSize);
+	void setClientMaxBodySize(const int clientMaxBodySize);
 	void setAutoIndex(const bool autoIndex);
 	void setRoot(const std::string &root);
 	void setIndexes(const std::vector<std::string> &indexes);
@@ -76,7 +76,7 @@ public:
 	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks);
 
 private:
-	int clientBodyBufferSize;
+	long long clientMaxBodySize;
 	bool autoIndex;
 	std::string root;
 	std::vector<std::string> indexes;

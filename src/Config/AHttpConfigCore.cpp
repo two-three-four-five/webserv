@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 16:23:00 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 16:51:04 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ using namespace Hafserv;
 AHttpConfigCore::Timeout::Timeout() : clientHeader(60), clientBody(60), keepAlive(75), send(60) {}
 
 AHttpConfigCore::AHttpConfigCore()
-	: clientBodyBufferSize(16384), autoIndex(false), root("html"), indexes(), timeouts(), errorPages(),
+	: clientMaxBodySize(2147483647), autoIndex(false), root("html"), indexes(), timeouts(), errorPages(),
 	  defaultType("text/plain"), types(), allowMethods()
 {
 	allowMethods.push_back("GET");
@@ -25,9 +25,9 @@ AHttpConfigCore::AHttpConfigCore()
 }
 
 AHttpConfigCore::AHttpConfigCore(const AHttpConfigCore &other)
-	: clientBodyBufferSize(other.clientBodyBufferSize), autoIndex(other.autoIndex), root(other.root),
-	  indexes(other.indexes), timeouts(other.timeouts), errorPages(other.errorPages), defaultType(other.defaultType),
-	  types(other.types), allowMethods(other.allowMethods)
+	: clientMaxBodySize(other.clientMaxBodySize), autoIndex(other.autoIndex), root(other.root), indexes(other.indexes),
+	  timeouts(other.timeouts), errorPages(other.errorPages), defaultType(other.defaultType), types(other.types),
+	  allowMethods(other.allowMethods)
 {
 }
 
@@ -35,7 +35,7 @@ AHttpConfigCore &AHttpConfigCore::operator=(const AHttpConfigCore &other)
 {
 	if (this != &other)
 	{
-		clientBodyBufferSize = other.clientBodyBufferSize;
+		clientMaxBodySize = other.clientMaxBodySize;
 		autoIndex = other.autoIndex;
 		root = other.root;
 		indexes = other.indexes;
@@ -50,7 +50,7 @@ AHttpConfigCore &AHttpConfigCore::operator=(const AHttpConfigCore &other)
 
 AHttpConfigCore::~AHttpConfigCore() {}
 
-const int AHttpConfigCore::getClientBodyBufferSize() const { return clientBodyBufferSize; }
+const int AHttpConfigCore::getClientMaxBodySize() const { return clientMaxBodySize; }
 const bool AHttpConfigCore::getAutoIndex() const { return autoIndex; }
 const std::string &AHttpConfigCore::getRoot() const { return root; }
 const std::vector<std::string> &AHttpConfigCore::getIndexes() const { return indexes; }
@@ -60,10 +60,7 @@ const std::string &AHttpConfigCore::getDefaultType() const { return defaultType;
 const std::multimap<std::string, std::string> &AHttpConfigCore::getTypes() const { return types; }
 const std::vector<std::string> &AHttpConfigCore::getAllowMethods() const { return allowMethods; }
 
-void AHttpConfigCore::setClientBodyBufferSize(const int clientBodyBufferSize)
-{
-	this->clientBodyBufferSize = clientBodyBufferSize;
-}
+void AHttpConfigCore::setClientMaxBodySize(const int clientMaxBodySize) { this->clientMaxBodySize = clientMaxBodySize; }
 void AHttpConfigCore::setAutoIndex(const bool autoIndex) { this->autoIndex = autoIndex; }
 void AHttpConfigCore::setRoot(const std::string &root) { this->root = root; }
 void AHttpConfigCore::setIndexes(const std::vector<std::string> &indexes) { this->indexes = indexes; }
@@ -120,14 +117,14 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 
 		params = util::string::split(value, ' ');
 		numToken = params.size();
-		if (key == "client_body_buffer_size")
+		if (key == "client_max_body_size")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
 			else if (!util::string::stoi(value).first)
 				throw InvalidArgumentError(key);
 
-			clientBodyBufferSize = util::string::stoi(value).second;
+			clientMaxBodySize = util::string::stoi(value).second;
 		}
 		else if (key == "autoindex")
 		{
@@ -245,7 +242,7 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks
 std::ostream &operator<<(std::ostream &os, const AHttpConfigCore &conf)
 {
 	os << "\t[AHttpConfigCore]" << std::endl;
-	os << "\t\tclient_body_buffer_size: " << conf.getClientBodyBufferSize() << std::endl;
+	os << "\t\tclient_max_body_size: " << conf.getClientMaxBodySize() << std::endl;
 	os << "\t\tdefault_types: " << conf.getDefaultType() << std::endl;
 	os << "\t\tautoindex: " << (conf.getAutoIndex() ? "on" : "off") << std::endl;
 	os << "\t\troot: " << conf.getRoot() << std::endl;
