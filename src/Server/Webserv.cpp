@@ -67,7 +67,7 @@ void Webserv::openPort(unsigned short port)
 			std::cerr << "bind() error" << std::endl;
 			exit(1);
 		}
-		if (listen(socketFd, 5) == -1)
+		if (listen(socketFd, 200) == -1)
 		{
 			std::cerr << "listen() error" << std::endl;
 			exit(1);
@@ -141,9 +141,15 @@ void Webserv::runWebserv()
 						if (conn.getResponse().getResponseState() == Response::End)
 						{
 							if (conn.getStatusCode())
+							{
+								std::cout << "disconnect" << std::endl;
 								disconnectClient(eventFd);
+							}
 							else
+							{
+								std::cout << "reset" << std::endl;
 								conn.reset();
+							}
 						}
 					}
 				}
