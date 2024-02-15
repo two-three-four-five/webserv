@@ -45,16 +45,13 @@ bool Connection::readRequest(int fd)
 	if (request.getParseStatus() == End)
 	{
 		request.printRequest();
-		std::cout << "parseEnd" << std::endl;
-		std::cout << "max : " << targetLocationConfig.getClientMaxBodySize()
-				  << " body len : " << getRequest().getBodyLength() << std::endl;
+		targetServer = Webserv::getInstance().findTargetServer(port, request);
+		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
 		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
 		{
 			statusCode = 413;
 			std::cout << "413" << std::endl;
 		}
-		targetServer = Webserv::getInstance().findTargetServer(port, request);
-		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
 		buildResponseFromRequest();
 	}
 

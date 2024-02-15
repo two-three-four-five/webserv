@@ -67,7 +67,7 @@ void Webserv::openPort(unsigned short port)
 			std::cerr << "bind() error" << std::endl;
 			exit(1);
 		}
-		if (listen(socketFd, 200) == -1)
+		if (listen(socketFd, 1000) == -1)
 		{
 			std::cerr << "listen() error" << std::endl;
 			exit(1);
