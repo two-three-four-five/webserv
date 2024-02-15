@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:16:22 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:39:53 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ AHttpConfigCore::AHttpConfigCore()
 	: clientBodyBufferSize(16384), autoIndex(false), root("html"), indexes(), timeouts(), errorPages(),
 	  defaultType("text/plain"), types(), allowMethods()
 {
+	allowMethods.push_back("GET");
 	indexes.push_back("index.html");
 }
 
@@ -99,6 +100,11 @@ void AHttpConfigCore::addAllowMethod(const std::string &method)
 {
 	if (std::find(allowMethods.begin(), allowMethods.end(), method) == allowMethods.end())
 		allowMethods.push_back(method);
+}
+
+const bool AHttpConfigCore::isAllowedMethod(const std::string &method) const
+{
+	return std::find(allowMethods.begin(), allowMethods.end(), method) != allowMethods.end();
 }
 
 void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directives)
