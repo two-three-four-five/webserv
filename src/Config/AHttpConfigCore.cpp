@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:39:53 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 16:23:00 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,6 +245,7 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks
 std::ostream &operator<<(std::ostream &os, const AHttpConfigCore &conf)
 {
 	os << "\t[AHttpConfigCore]" << std::endl;
+	os << "\t\tclient_body_buffer_size: " << conf.getClientBodyBufferSize() << std::endl;
 	os << "\t\tdefault_types: " << conf.getDefaultType() << std::endl;
 	os << "\t\tautoindex: " << (conf.getAutoIndex() ? "on" : "off") << std::endl;
 	os << "\t\troot: " << conf.getRoot() << std::endl;
