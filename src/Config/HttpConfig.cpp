@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:05:14 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:15:12 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,15 @@
 
 using namespace Hafserv;
 
-HttpConfig::HttpConfig() : AConfig(), HttpConfigCore(), directives(), servers() {}
+HttpConfig::HttpConfig() : AConfig(), AHttpConfigCore(), directives(), servers() {}
 
 HttpConfig::HttpConfig(const HttpConfig &other)
-	: AConfig(other), HttpConfigCore(other), directives(other.directives), servers(other.servers)
+	: AConfig(other), AHttpConfigCore(other), directives(other.directives), servers(other.servers)
 {
 }
 
 HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
-	: AConfig(), HttpConfigCore(), directives(block.getDirectives()), servers()
+	: AConfig(), AHttpConfigCore(), directives(block.getDirectives()), servers()
 {
 
 	setHttpConfigCore(block.getDirectives());
@@ -64,7 +64,7 @@ HttpConfig &HttpConfig::operator=(const HttpConfig &other)
 	if (this != &other)
 	{
 		AConfig::operator=(other);
-		HttpConfigCore::operator=(other);
+		AHttpConfigCore::operator=(other);
 		directives = other.directives;
 		servers = other.servers;
 	}
@@ -81,7 +81,7 @@ std::ostream &operator<<(std::ostream &os, const HttpConfig &conf)
 {
 	os << "[HttpConfig]" << std::endl;
 
-	const HttpConfigCore &temp = conf;
+	const AHttpConfigCore &temp = conf;
 	os << temp << std::endl;
 
 	ConfigFile::directives_t::const_iterator it = conf.getDirectives().begin();

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 14:48:21 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:15:12 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,15 @@
 
 using namespace Hafserv;
 
-ServerConfig::ServerConfig() : AConfig(), HttpConfigCore(), names(), ports(), locations(3) {}
+ServerConfig::ServerConfig() : AConfig(), AHttpConfigCore(), names(), ports(), locations(3) {}
 
 ServerConfig::ServerConfig(const ServerConfig &other)
-	: AConfig(other), HttpConfigCore(other), names(other.names), ports(other.ports), locations(other.locations)
+	: AConfig(other), AHttpConfigCore(other), names(other.names), ports(other.ports), locations(other.locations)
 {
 }
 
-ServerConfig::ServerConfig(const ConfigFile &block, const HttpConfigCore &core)
-	: AConfig(), HttpConfigCore(core), names(), ports(), locations(3)
+ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
+	: AConfig(), AHttpConfigCore(core), names(), ports(), locations(3)
 {
 	setHttpConfigCore(block.getDirectives());
 	setHttpConfigCore(block.getSubBlocks());
@@ -81,7 +81,7 @@ ServerConfig &ServerConfig::operator=(const ServerConfig &other)
 	if (this != &other)
 	{
 		AConfig::operator=(other);
-		HttpConfigCore::operator=(other);
+		AHttpConfigCore::operator=(other);
 		names = other.names;
 		ports = other.ports;
 		locations = other.locations;
@@ -101,7 +101,7 @@ std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 {
 	os << "[ServerConfig]" << std::endl;
 
-	os << HttpConfigCore(conf);
+	os << AHttpConfigCore(conf);
 
 	os << "\tnames: ";
 	for (size_t i = 0; i < conf.getNames().size(); i++)

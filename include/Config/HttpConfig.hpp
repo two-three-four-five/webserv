@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:07:33 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:16:22 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 #include "Config/AConfig.hpp"
 #include "Config/ConfigException.hpp"
-#include "Config/HttpConfigCore.hpp"
+#include "Config/AHttpConfigCore.hpp"
 #include "Config/ServerConfig.hpp"
 #include "File/ConfigFile.hpp"
 #include <string>
@@ -23,7 +23,7 @@
 
 namespace Hafserv
 {
-class HttpConfig : public AConfig, public HttpConfigCore
+class HttpConfig : public AConfig, public AHttpConfigCore
 {
 public:
 	HttpConfig();

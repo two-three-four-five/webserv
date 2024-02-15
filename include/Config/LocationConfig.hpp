@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 14:52:23 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:16:22 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,19 +15,19 @@
 
 #include "Config/AConfig.hpp"
 #include "Config/ConfigException.hpp"
-#include "Config/HttpConfigCore.hpp"
+#include "Config/AHttpConfigCore.hpp"
 #include "File/ConfigFile.hpp"
 #include <iostream>
 #include <string>
 
 namespace Hafserv
 {
-class LocationConfig : public AConfig, public HttpConfigCore
+class LocationConfig : public AConfig, public AHttpConfigCore
 {
 public:
 	LocationConfig();
 	LocationConfig(const LocationConfig &other);
-	LocationConfig(const ConfigFile &block, const HttpConfigCore &core);
+	LocationConfig(const ConfigFile &block, const AHttpConfigCore &core);
 	LocationConfig &operator=(const LocationConfig &other);
 	~LocationConfig();
 

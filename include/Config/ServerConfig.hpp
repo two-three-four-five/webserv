@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:07:50 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:16:22 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #define SERVERCONFIG_HPP
 
 #include "Config/AConfig.hpp"
-#include "Config/HttpConfigCore.hpp"
+#include "Config/AHttpConfigCore.hpp"
 #include "Config/LocationConfig.hpp"
 #include "File/ConfigFile.hpp"
 #include <iostream>
@@ -24,12 +24,12 @@
 
 namespace Hafserv
 {
-class ServerConfig : public AConfig, public HttpConfigCore
+class ServerConfig : public AConfig, public AHttpConfigCore
 {
 public:
 	ServerConfig();
 	ServerConfig(const ServerConfig &other);
-	ServerConfig(const ConfigFile &block, const HttpConfigCore &core);
+	ServerConfig(const ConfigFile &block, const AHttpConfigCore &core);
 	ServerConfig &operator=(const ServerConfig &other);
 	~ServerConfig();
 

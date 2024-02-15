@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpConfigCore.hpp                                 :+:      :+:    :+:   */
+/*   AHttpConfigCore.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:07:41 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:15:48 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 
 namespace Hafserv
 {
-class HttpConfigCore
+class AHttpConfigCore
 {
 public:
 	struct Timeout
@@ -36,10 +36,10 @@ public:
 		Timeout();
 	};
 
-	HttpConfigCore();
-	HttpConfigCore(const HttpConfigCore &other);
-	HttpConfigCore &operator=(const HttpConfigCore &other);
-	~HttpConfigCore();
+	AHttpConfigCore();
+	AHttpConfigCore(const AHttpConfigCore &other);
+	AHttpConfigCore &operator=(const AHttpConfigCore &other);
+	~AHttpConfigCore();
 
 	const int getClientBodyBufferSize() const;
 	const bool getAutoIndex() const;
@@ -87,7 +87,7 @@ private:
 
 } // namespace Hafserv
 
-std::ostream &operator<<(std::ostream &os, const Hafserv::HttpConfigCore &conf);
-std::ostream &operator<<(std::ostream &os, const Hafserv::HttpConfigCore::Timeout &timeouts);
+std::ostream &operator<<(std::ostream &os, const Hafserv::AHttpConfigCore &conf);
+std::ostream &operator<<(std::ostream &os, const Hafserv::AHttpConfigCore::Timeout &timeouts);
 
 #endif

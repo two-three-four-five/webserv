@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 14:48:53 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:15:12 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,18 @@
 
 using namespace Hafserv;
 
-LocationConfig::LocationConfig() : AConfig(), HttpConfigCore(), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+LocationConfig::LocationConfig() : AConfig(), AHttpConfigCore(), modifier(), pattern(), alias(), proxyPass(), cgiPath()
 {
 }
 
 LocationConfig::LocationConfig(const LocationConfig &other)
-	: AConfig(other), HttpConfigCore(other), modifier(other.modifier), pattern(other.pattern), alias(other.alias),
+	: AConfig(other), AHttpConfigCore(other), modifier(other.modifier), pattern(other.pattern), alias(other.alias),
 	  proxyPass(other.proxyPass), cgiPath(other.cgiPath)
 {
 }
 
-LocationConfig::LocationConfig(const ConfigFile &block, const HttpConfigCore &core)
-	: AConfig(), HttpConfigCore(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+LocationConfig::LocationConfig(const ConfigFile &block, const AHttpConfigCore &core)
+	: AConfig(), AHttpConfigCore(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
 {
 	/* SAMPLE LOCATION BLOCK
 	 * location modifier(=, $, ^) pattern {
@@ -120,7 +120,7 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &other)
 	if (this != &other)
 	{
 		AConfig::operator=(other);
-		HttpConfigCore::operator=(other);
+		AHttpConfigCore::operator=(other);
 		modifier = other.modifier;
 		pattern = other.pattern;
 		alias = other.alias;
@@ -163,7 +163,7 @@ bool LocationConfig::isMatching(const std::string &url)
 std::ostream &operator<<(std::ostream &os, const LocationConfig &conf)
 {
 	os << "[LocationConfig]" << std::endl;
-	os << HttpConfigCore(conf);
+	os << AHttpConfigCore(conf);
 	os << "\tmodifier: " << conf.getModifier() << std::endl;
 	os << "\tpattern: " << conf.getPattern() << std::endl;
 	if (conf.getAlias().length())

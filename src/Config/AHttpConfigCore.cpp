@@ -1,36 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpConfigCore.cpp                                 :+:      :+:    :+:   */
+/*   AHttpConfigCore.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 14:45:54 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/15 15:16:22 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Config/HttpConfigCore.hpp"
+#include "Config/AHttpConfigCore.hpp"
 
 using namespace Hafserv;
 
-HttpConfigCore::Timeout::Timeout() : clientHeader(60), clientBody(60), keepAlive(75), send(60) {}
+AHttpConfigCore::Timeout::Timeout() : clientHeader(60), clientBody(60), keepAlive(75), send(60) {}
 
-HttpConfigCore::HttpConfigCore()
+AHttpConfigCore::AHttpConfigCore()
 	: clientBodyBufferSize(16384), autoIndex(false), root("html"), indexes(), timeouts(), errorPages(),
 	  defaultType("text/plain"), types(), allowMethods()
 {
 	indexes.push_back("index.html");
 }
 
-HttpConfigCore::HttpConfigCore(const HttpConfigCore &other)
+AHttpConfigCore::AHttpConfigCore(const AHttpConfigCore &other)
 	: clientBodyBufferSize(other.clientBodyBufferSize), autoIndex(other.autoIndex), root(other.root),
 	  indexes(other.indexes), timeouts(other.timeouts), errorPages(other.errorPages), defaultType(other.defaultType),
 	  types(other.types), allowMethods(other.allowMethods)
 {
 }
 
-HttpConfigCore &HttpConfigCore::operator=(const HttpConfigCore &other)
+AHttpConfigCore &AHttpConfigCore::operator=(const AHttpConfigCore &other)
 {
 	if (this != &other)
 	{
@@ -47,58 +47,61 @@ HttpConfigCore &HttpConfigCore::operator=(const HttpConfigCore &other)
 	return *this;
 }
 
-HttpConfigCore::~HttpConfigCore() {}
+AHttpConfigCore::~AHttpConfigCore() {}
 
-const int HttpConfigCore::getClientBodyBufferSize() const { return clientBodyBufferSize; }
-const bool HttpConfigCore::getAutoIndex() const { return autoIndex; }
-const std::string &HttpConfigCore::getRoot() const { return root; }
-const std::vector<std::string> &HttpConfigCore::getIndexes() const { return indexes; }
-const HttpConfigCore::Timeout &HttpConfigCore::getTimeout() const { return timeouts; }
-const std::map<int, std::string> &HttpConfigCore::getErrorPages() const { return errorPages; }
-const std::string &HttpConfigCore::getDefaultType() const { return defaultType; }
-const std::multimap<std::string, std::string> &HttpConfigCore::getTypes() const { return types; }
-const std::vector<std::string> &HttpConfigCore::getAllowMethods() const { return allowMethods; }
+const int AHttpConfigCore::getClientBodyBufferSize() const { return clientBodyBufferSize; }
+const bool AHttpConfigCore::getAutoIndex() const { return autoIndex; }
+const std::string &AHttpConfigCore::getRoot() const { return root; }
+const std::vector<std::string> &AHttpConfigCore::getIndexes() const { return indexes; }
+const AHttpConfigCore::Timeout &AHttpConfigCore::getTimeout() const { return timeouts; }
+const std::map<int, std::string> &AHttpConfigCore::getErrorPages() const { return errorPages; }
+const std::string &AHttpConfigCore::getDefaultType() const { return defaultType; }
+const std::multimap<std::string, std::string> &AHttpConfigCore::getTypes() const { return types; }
+const std::vector<std::string> &AHttpConfigCore::getAllowMethods() const { return allowMethods; }
 
-void HttpConfigCore::setClientBodyBufferSize(const int clientBodyBufferSize)
+void AHttpConfigCore::setClientBodyBufferSize(const int clientBodyBufferSize)
 {
 	this->clientBodyBufferSize = clientBodyBufferSize;
 }
-void HttpConfigCore::setAutoIndex(const bool autoIndex) { this->autoIndex = autoIndex; }
-void HttpConfigCore::setRoot(const std::string &root) { this->root = root; }
-void HttpConfigCore::setIndexes(const std::vector<std::string> &indexes) { this->indexes = indexes; }
-void HttpConfigCore::setTimeouts(const Timeout &timeouts) { this->timeouts = timeouts; }
-void HttpConfigCore::setClientHeaderTimeout(int timeout) { this->timeouts.clientHeader = timeout; }
-void HttpConfigCore::setClientBodyTimeout(int timeout) { this->timeouts.clientBody = timeout; }
-void HttpConfigCore::setKeepAliveTimeout(int timeout) { this->timeouts.keepAlive = timeout; }
-void HttpConfigCore::setSendTimeout(int timeout) { this->timeouts.send = timeout; }
-void HttpConfigCore::setErrorPages(const std::map<int, std::string> &errorPages) { this->errorPages = errorPages; }
-void HttpConfigCore::setDefaultType(const std::string &defaultType) { this->defaultType = defaultType; }
-void HttpConfigCore::setTypes(const std::multimap<std::string, std::string> &types) { this->types = types; }
-void HttpConfigCore::setAllowMethods(const std::vector<std::string> allowMethods) { this->allowMethods = allowMethods; }
+void AHttpConfigCore::setAutoIndex(const bool autoIndex) { this->autoIndex = autoIndex; }
+void AHttpConfigCore::setRoot(const std::string &root) { this->root = root; }
+void AHttpConfigCore::setIndexes(const std::vector<std::string> &indexes) { this->indexes = indexes; }
+void AHttpConfigCore::setTimeouts(const Timeout &timeouts) { this->timeouts = timeouts; }
+void AHttpConfigCore::setClientHeaderTimeout(int timeout) { this->timeouts.clientHeader = timeout; }
+void AHttpConfigCore::setClientBodyTimeout(int timeout) { this->timeouts.clientBody = timeout; }
+void AHttpConfigCore::setKeepAliveTimeout(int timeout) { this->timeouts.keepAlive = timeout; }
+void AHttpConfigCore::setSendTimeout(int timeout) { this->timeouts.send = timeout; }
+void AHttpConfigCore::setErrorPages(const std::map<int, std::string> &errorPages) { this->errorPages = errorPages; }
+void AHttpConfigCore::setDefaultType(const std::string &defaultType) { this->defaultType = defaultType; }
+void AHttpConfigCore::setTypes(const std::multimap<std::string, std::string> &types) { this->types = types; }
+void AHttpConfigCore::setAllowMethods(const std::vector<std::string> allowMethods)
+{
+	this->allowMethods = allowMethods;
+}
 
-void HttpConfigCore::addErrorPage(int errorCode, const std::string &uri)
+void AHttpConfigCore::addErrorPage(int errorCode, const std::string &uri)
 {
 	errorPages.insert(std::make_pair(errorCode, uri));
 }
 
-void HttpConfigCore::addIndex(const std::string &index)
+void AHttpConfigCore::addIndex(const std::string &index)
 {
 	if (std::find(indexes.begin(), indexes.end(), index) != indexes.end())
 		indexes.push_back(index);
 }
 
-void HttpConfigCore::addType(const std::string &type, const std::string &extension)
+void AHttpConfigCore::addType(const std::string &type, const std::string &extension)
 {
 	types.insert(std::make_pair(type, extension));
 }
 
-void HttpConfigCore::addAllowMethod(const std::string &method)
+void AHttpConfigCore::addAllowMethod(const std::string &method)
 {
 	if (std::find(allowMethods.begin(), allowMethods.end(), method) == allowMethods.end())
 		allowMethods.push_back(method);
 }
 
-void HttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directives)
+void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directives)
 {
 	std::vector<std::string> params;
 	size_t numToken;
@@ -212,7 +215,7 @@ void HttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directive
 	}
 }
 
-void HttpConfigCore::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks)
+void AHttpConfigCore::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks)
 {
 	std::string subBlockName, type, extension;
 	for (size_t i = 0; i < subBlocks.size(); i++)
@@ -233,9 +236,9 @@ void HttpConfigCore::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks)
 	}
 }
 
-std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
+std::ostream &operator<<(std::ostream &os, const AHttpConfigCore &conf)
 {
-	os << "\t[HttpConfigCore]" << std::endl;
+	os << "\t[AHttpConfigCore]" << std::endl;
 	os << "\t\tdefault_types: " << conf.getDefaultType() << std::endl;
 	os << "\t\tautoindex: " << (conf.getAutoIndex() ? "on" : "off") << std::endl;
 	os << "\t\troot: " << conf.getRoot() << std::endl;
@@ -286,7 +289,7 @@ std::ostream &operator<<(std::ostream &os, const HttpConfigCore &conf)
 	return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const HttpConfigCore::Timeout &timeouts)
+std::ostream &operator<<(std::ostream &os, const AHttpConfigCore::Timeout &timeouts)
 {
 	os << "\t\ttimeouts: clientHeader=" << timeouts.clientHeader;
 	os << ", clientBody=" << timeouts.clientBody;
