@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:56 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/09 19:58:56 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/16 19:46:55 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #define SERVER_HPP
 
 #include "Config/ServerConfig.hpp"
+#include <set>
 #include <string>
-#include <vector>
 
 namespace Hafserv
 {
@@ -25,8 +25,8 @@ public:
 	Server(ServerConfig serverConfig);
 	~Server();
 
-	const std::vector<unsigned short> &getPorts() const;
-	const std::vector<std::string> &getNames() const;
+	const std::set<unsigned short> &getPorts() const;
+	const std::set<std::string> &getNames() const;
 	const ServerConfig &getServerConfig() const;
 	/*
 		string -> Request

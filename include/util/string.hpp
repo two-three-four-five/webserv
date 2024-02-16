@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
+/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:43:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/14 14:19:36 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/16 20:55:20 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,9 @@ namespace util
 {
 namespace string
 {
-std::pair<bool, int> stoi(const std::string &str);
+std::pair<int, bool> stoi(const std::string &str);
+
+std::pair<unsigned short, bool> stous(const std::string &str);
 
 std::string itos(const int n);
 

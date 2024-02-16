@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:13:10 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 21:21:36 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,11 @@
 
 using namespace Hafserv;
 
-WebservConfig::WebservConfig() : AConfig(), directives(), event(), http() {}
+WebservConfig::WebservConfig() : AConfig(), event(), http() {}
 
-WebservConfig::WebservConfig(const WebservConfig &other)
-	: AConfig(other), directives(other.directives), event(other.event), http(other.http)
-{
-}
+WebservConfig::WebservConfig(const WebservConfig &other) : AConfig(other), event(other.event), http(other.http) {}
 
-WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : AConfig(), directives(), event(), http()
+WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : AConfig(), event(), http()
 {
 	ConfigFile main = configFile.getSubBlocks().at(0);
 
@@ -74,7 +71,6 @@ WebservConfig &WebservConfig::operator=(const WebservConfig &other)
 	if (this != &other)
 	{
 		AConfig::operator=(other);
-		directives = other.directives;
 		event = other.event;
 		http = other.http;
 	}
@@ -83,21 +79,13 @@ WebservConfig &WebservConfig::operator=(const WebservConfig &other)
 
 WebservConfig::~WebservConfig() {}
 
-const ConfigFile::directives_t &WebservConfig::getDirectives() const { return directives; }
-
 const HttpConfig &WebservConfig::getHttpConfig() const { return http; }
 
 const EventConfig &WebservConfig::getEventConfig() const { return event; }
 
 std::ostream &operator<<(std::ostream &os, const WebservConfig &conf)
 {
-	os << "[WebservConfig]" << std::endl;
-
-	ConfigFile::directives_t::const_iterator it = conf.getDirectives().begin();
-	for (; it != conf.getDirectives().end(); it++)
-		os << "\t[" << (*it).first << "] : [" << (*it).second << "]" << std::endl;
-
-	os << std::endl;
+	os << "[WebservConfig]" << std::endl << std::endl;
 	os << conf.getEventConfig();
 	os << std::endl;
 	os << conf.getHttpConfig();

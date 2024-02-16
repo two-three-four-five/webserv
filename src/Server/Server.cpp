@@ -8,9 +8,9 @@ Server::Server(ServerConfig serverConfig) : serverConfig(serverConfig) {}
 
 Server::~Server() {}
 
-const std::vector<unsigned short> &Server::getPorts() const { return serverConfig.getPorts(); }
+const std::set<unsigned short> &Server::getPorts() const { return serverConfig.getPorts(); }
 
-const std::vector<std::string> &Server::getNames() const { return serverConfig.getNames(); }
+const std::set<std::string> &Server::getNames() const { return serverConfig.getNames(); }
 
 const ServerConfig &Server::getServerConfig() const { return serverConfig; }
 

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/22 22:19:48 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:19:52 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 17:11:24 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,13 @@ public:
 	DuplicateDirectiveError(const std::string &d1, const std::string &d2)
 		: std::logic_error("\"" + d1 + "\" is duplicated, \"" + d2 + "\" directive was specified earlier"){};
 	virtual ~DuplicateDirectiveError() throw(){};
+};
+
+class DuplicateListenError : public std::logic_error
+{
+public:
+	DuplicateListenError(const std::string &port) : std::logic_error("a duplicate listen 0.0.0.0:" + port){};
+	virtual ~DuplicateListenError() throw(){};
 };
 
 class DisallowDirectiveError : public std::logic_error
