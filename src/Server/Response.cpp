@@ -115,7 +115,6 @@ void Response::send(int fd)
 	{
 		// std::cout << "sendEnd" << std::endl;
 		responseState = End;
-		close(fd);
 	}
 }
 
