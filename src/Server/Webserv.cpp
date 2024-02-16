@@ -113,6 +113,7 @@ void Webserv::runWebserv()
 		for (int i = 0; i < events; i++)
 		{
 			int eventFd = event_list[i].ident;
+			// std::cout << "eventFd : " << eventFd << std::endl;
 			try
 			{
 				if (inServSocks(eventFd))
@@ -122,16 +123,23 @@ void Webserv::runWebserv()
 				else if (inClientSocks(eventFd))
 				{
 					if (event_list[i].flags & EV_EOF)
+					{
+						std::cout << "Eof!!" << std::endl;
 						disconnectClient(eventFd);
+					}
 					else if (event_list[i].filter == EVFILT_READ)
 					{
+						// std::cout << "readable" << std::endl;
 						Connection &conn = findConnectionByFd(eventFd);
 						if (Connections.find(eventFd) == Connections.end())
 							std::cout << "D>DFS>?DFJSDLKFJ D" << std::endl;
 						if (conn.getRequest().getParseStatus() == End)
 							continue;
 						if (!conn.readRequest(eventFd))
+						{
+							std::cout << "no Read" << std::endl;
 							disconnectClient(eventFd);
+						}
 					}
 					else if (event_list[i].filter == EVFILT_WRITE)
 					{
@@ -142,6 +150,7 @@ void Webserv::runWebserv()
 							conn.sendResponse();
 						if (conn.getResponse().getResponseState() == Response::End)
 						{
+							std::cout << "statusCode : " << conn.getStatusCode() << std::endl;
 							if (conn.getStatusCode())
 							{
 								std::cout << "disconnect" << std::endl;
@@ -175,7 +184,7 @@ void Webserv::runWebserv()
 				continue;
 			}
 		}
-		checkTimeout();
+		// checkTimeout();
 	}
 	closeServSocks();
 	close(kq);
@@ -313,6 +322,7 @@ void Webserv::checkTimeout()
 	}
 	for (std::vector<int>::iterator it = timeoutSockets.begin(); it != timeoutSockets.end(); it++)
 	{
+		std::cout << "Timeout!!" << std::endl;
 		disconnectClient(*it);
 	}
 }

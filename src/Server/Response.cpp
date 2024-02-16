@@ -89,6 +89,7 @@ void Response::setResponseBuffer()
 	for (HeaderMultiMap::iterator it = headers.begin(); it != headers.end(); it++)
 		oss << it->first << ": " << it->second << CRLF;
 	oss << CRLF;
+	std::cout << "response : \n" << oss.str() << std::endl;
 	oss << body;
 	responseBuffer = oss.str();
 	responseBytes = responseBuffer.length();

@@ -5,7 +5,8 @@
 
 using namespace Hafserv;
 
-Request::Request() : parseStatus(Created), contentLength(-1), bodyLength(0), isEnd(false), buffer(), body()
+Request::Request()
+	: parseStatus(Created), contentLength(-1), bodyLength(0), isEnd(false), buffer(), body(), chunkSize(0)
 {
 	oss.str("");
 	bodyStream.str("");
@@ -14,7 +15,7 @@ Request::Request() : parseStatus(Created), contentLength(-1), bodyLength(0), isE
 Request::Request(const Request &other)
 	: parseStatus(other.parseStatus), method(other.method), requestTarget(other.requestTarget), headers(other.headers),
 	  boundary(other.boundary), contentLength(other.contentLength), bodyLength(other.bodyLength), body(other.body),
-	  bodyVec(other.bodyVec), parseBody(other.parseBody), buffer(other.buffer)
+	  bodyVec(other.bodyVec), parseBody(other.parseBody), buffer(other.buffer), chunkSize(other.chunkSize)
 {
 	oss.str("");
 	bodyStream.str("");
@@ -37,6 +38,7 @@ Request &Request::operator=(const Request &rhs)
 		buffer = rhs.buffer;
 		oss.str("");
 		bodyStream.str("");
+		chunkSize = rhs.chunkSize;
 	}
 	return *this;
 }
@@ -258,9 +260,10 @@ int Request::parseByBoundary(const int &fd)
 
 int Request::parseByTransferEncoding(const int &fd)
 {
-	static int chunkSize = 0;
+	// static int chunkSize = 0;
 	// ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
 	// buffer += std::string(charBuf, bytesRead);
+	// std:;cout << chunkSize
 
 	while (true)
 	{

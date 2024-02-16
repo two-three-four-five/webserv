@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/15 16:54:06 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/16 17:34:59 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ private:
 	std::vector<std::string> bodyVec;
 	std::ostringstream bodyStream;
 	ParseBodyFunction parseBody;
+	ssize_t chunkSize;
 
 	std::string buffer;
 	std::stringstream bufferStream;
