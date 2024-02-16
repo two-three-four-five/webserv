@@ -144,7 +144,7 @@ void Webserv::runWebserv()
 							conn.sendResponse();
 						if (conn.getResponse().getResponseState() == Response::End)
 						{
-							if (conn.getStatusCode())
+							if (conn.getStatusCode() || conn.getRequest().getConnectionClose())
 							{
 								disconnectClient(eventFd);
 							}

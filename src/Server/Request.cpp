@@ -6,7 +6,8 @@
 using namespace Hafserv;
 
 Request::Request()
-	: parseStatus(Created), contentLength(-1), bodyLength(0), isEnd(false), buffer(), body(), chunkSize(0)
+	: parseStatus(Created), contentLength(-1), bodyLength(0), isEnd(false), buffer(), body(), chunkSize(0),
+	  connectionClose(false)
 {
 	oss.str("");
 	bodyStream.str("");
@@ -15,7 +16,8 @@ Request::Request()
 Request::Request(const Request &other)
 	: parseStatus(other.parseStatus), method(other.method), requestTarget(other.requestTarget), headers(other.headers),
 	  boundary(other.boundary), contentLength(other.contentLength), bodyLength(other.bodyLength), body(other.body),
-	  bodyVec(other.bodyVec), parseBody(other.parseBody), buffer(other.buffer), chunkSize(other.chunkSize)
+	  parseBody(other.parseBody), buffer(other.buffer), chunkSize(other.chunkSize),
+	  connectionClose(other.connectionClose)
 {
 	oss.str("");
 	bodyStream.str("");
@@ -33,12 +35,12 @@ Request &Request::operator=(const Request &rhs)
 		contentLength = rhs.contentLength;
 		bodyLength = rhs.bodyLength;
 		body = rhs.body;
-		bodyVec = rhs.bodyVec;
 		parseBody = rhs.parseBody;
 		buffer = rhs.buffer;
 		oss.str("");
 		bodyStream.str("");
 		chunkSize = rhs.chunkSize;
+		connectionClose = rhs.connectionClose;
 	}
 	return *this;
 }
@@ -230,6 +232,11 @@ int Request::checkHeaderField()
 		return 400;
 	}
 
+	std::map<std::string, std::string>::iterator connectionIt = headers.find("connection");
+	if (connectionIt != headers.end() && connectionIt->second == "close")
+	{
+		connectionClose = true;
+	}
 	return 0;
 }
 
@@ -367,6 +374,8 @@ void Request::removeChunkField()
 }
 
 const int Request::getBodyLength() const { return bodyLength; }
+
+const int Request::getConnectionClose() const { return connectionClose; }
 
 const int Request::getParseStatus() const { return parseStatus; }
 

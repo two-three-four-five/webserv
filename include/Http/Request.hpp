@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/16 21:52:21 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/16 22:21:22 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ public:
 	void removeChunkField();
 
 	const int getBodyLength() const;
+	const int getConnectionClose() const;
 	const int getParseStatus() const;
 	const RequestTarget &getRequestTarget() const;
 	const HeaderMultiMap &getHeaders() const;
@@ -76,10 +77,10 @@ private:
 	RequestTarget requestTarget;
 	HeaderMultiMap headers;
 	std::string boundary;
+	bool connectionClose;
 	size_t contentLength;
 	size_t bodyLength;
 	std::string body;
-	std::vector<std::string> bodyVec;
 	std::ostringstream bodyStream;
 	ParseBodyFunction parseBody;
 	ssize_t chunkSize;
