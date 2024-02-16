@@ -56,9 +56,28 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 	addToHeaders("Content-Length", contentLengthOss.str());
 }
 
+void Response::makeErrorBody(int statusCode)
+{
+	addToHeaders("Content-Type", "text/html");
+	body = "<html>"
+		   "<head><title>" +
+		   Webserv::getInstance().getStatusMessage(statusCode) +
+		   "</title></head>"
+		   "<body>"
+		   "<center><h1>" +
+		   Webserv::getInstance().getStatusMessage(statusCode) +
+		   "</h1></center>"
+		   "<hr><center>Hafserv/1.0.0</center>"
+		   "</body>"
+		   "</html>";
+	std::ostringstream contentLengthOss;
+	contentLengthOss << body.length();
+	addToHeaders("Content-Length", contentLengthOss.str());
+}
+
 std::string Response::generateDate()
 {
-	std::time_t currentTime = std::time(nullptr);
+	std::time_t currentTime = std::time(NULL);
 	std::tm *timeInfo = std::localtime(&currentTime);
 	char buffer[80];
 

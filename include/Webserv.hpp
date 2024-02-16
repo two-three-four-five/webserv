@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:58 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/14 17:43:53 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/17 01:22:52 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ public:
 
 	Connection &findConnectionByFd(int fd);
 	Server *findTargetServer(unsigned short port, const Request &request);
+
+	std::string getStatusMessage(int statusCode);
 
 	void checkTimeout();
 

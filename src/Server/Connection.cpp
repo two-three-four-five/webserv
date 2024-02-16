@@ -250,8 +250,7 @@ void Connection::buildDirectoryResponse()
 
 void Connection::buildErrorResponse(int statusCode)
 {
-	std::string startLine = "HTTP/1.1 " + util::string::itos(statusCode) + " " +
-							Webserv::getInstance().getStatusCodeMap().find(statusCode)->second;
+	std::string startLine = "HTTP/1.1 " + Webserv::getInstance().getStatusMessage(statusCode);
 	response.setStatusLine(startLine);
 	// 제일 잘맞는 LocationConfig == targetLocationConfig
 	std::map<int, std::string> errorPages = targetLocationConfig.getErrorPages();
@@ -260,10 +259,12 @@ void Connection::buildErrorResponse(int statusCode)
 	// targetResource 실제 파일
 	std::string targetResource;
 	if (targetIt == errorPages.end())
-		targetResource = "error/" + util::string::itos(statusCode) + ".html";
+		response.makeErrorBody(statusCode);
 	else
+	{
 		targetResource = configureTargetResource(targetIt->second);
-	response.makeBody(targetLocationConfig, targetResource);
+		response.makeBody(targetLocationConfig, targetResource);
+	}
 	if (statusCode == 413)
 		response.removeHeaders("Content-Length");
 }

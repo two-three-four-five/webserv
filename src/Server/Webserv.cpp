@@ -277,6 +277,11 @@ Server *Webserv::findTargetServer(unsigned short port, const Request &request)
 	return defaultServer;
 }
 
+std::string Webserv::getStatusMessage(int statusCode)
+{
+	return util::string::itos(statusCode) + " " + statusCodeMap.find(statusCode)->second;
+}
+
 void Webserv::checkTimeout()
 {
 	time_t now = time(NULL);
