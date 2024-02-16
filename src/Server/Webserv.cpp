@@ -43,8 +43,7 @@ void Webserv::addServer(Server *server)
 {
 	servers.push_back(server);
 
-	for (std::vector<unsigned short>::const_iterator it = server->getPorts().begin(); it != server->getPorts().end();
-		 it++)
+	for (std::set<unsigned short>::const_iterator it = server->getPorts().begin(); it != server->getPorts().end(); it++)
 		openPort(*it);
 }
 
@@ -254,10 +253,10 @@ Server *Webserv::findTargetServer(unsigned short port, const Request &request)
 
 	for (std::vector<Server *>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
-		std::vector<std::string> serverNames = (*it)->getNames();
-		std::vector<unsigned short> ports = (*it)->getPorts();
-		std::vector<std::string>::iterator findNameIt = std::find(serverNames.begin(), serverNames.end(), hostName);
-		std::vector<unsigned short>::iterator findPortIt = std::find(ports.begin(), ports.end(), port);
+		std::set<std::string> serverNames = (*it)->getNames();
+		std::set<unsigned short> ports = (*it)->getPorts();
+		std::set<std::string>::const_iterator findNameIt = serverNames.find(hostName);
+		std::set<unsigned short>::iterator findPortIt = ports.find(port);
 
 		if (defaultServer == NULL && findPortIt != ports.end())
 			defaultServer = *it;

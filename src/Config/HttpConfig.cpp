@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:15:12 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 20:30:52 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,34 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError)
 			throw DisallowDirectiveError(subBlockName);
 
 		if (subBlockName == "server")
-			servers.push_back(ServerConfig(block.getSubBlocks().at(i), *this));
+		{
+			ServerConfig newServerConfig = ServerConfig(block.getSubBlocks().at(i), *this);
+
+			bool isDuplicated = false;
+			std::set<std::string>::const_iterator it_names;
+			std::set<unsigned short>::const_iterator it_ports;
+
+			it_names = newServerConfig.getNames().begin();
+			for (; it_names != newServerConfig.getNames().end(); ++it_names)
+			{
+				it_ports = newServerConfig.getPorts().begin();
+				for (; it_ports != newServerConfig.getPorts().end(); ++it_ports)
+				{
+					for (size_t j = 0; j < servers.size(); ++j)
+					{
+						if (servers[j].hasName(*it_names) && servers[j].hasPort(*it_ports))
+						{
+							std::cout << "warning: conflicting server name \"" + *it_names;
+							std::cout << "\" on 0.0.0.0:" + util::string::itos(*it_ports) + ", ignored" << std::endl;
+							isDuplicated = true;
+						}
+					}
+				}
+			}
+
+			if (!isDuplicated)
+				servers.push_back(newServerConfig);
+		}
 	}
 }
 
