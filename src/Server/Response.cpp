@@ -43,7 +43,7 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 	{
 		std::string contentType = typeIt->second;
 		if (typeIt->second == "text/html" || typeIt->second == "text/css" || typeIt->second == "text/xml")
-			contentType += ";charset=UTF-8";
+			contentType += "; charset=UTF-8";
 		addToHeaders("Content-Type", contentType);
 	}
 	else
@@ -59,17 +59,11 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 std::string Response::generateDate()
 {
 	std::time_t currentTime = std::time(nullptr);
-
-	// Convert the time to the tm struct using local time (Korean time)
 	std::tm *timeInfo = std::localtime(&currentTime);
-
-	// Buffer to store the formatted date
 	char buffer[80];
 
-	// Format the time in the required HTTP-date format
 	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timeInfo);
 
-	// Return the formatted date as a string
 	return std::string(buffer);
 }
 
@@ -79,18 +73,6 @@ void Response::setBody(const std::string &bodyString)
 {
 	body = bodyString;
 	addToHeaders("Content-Length", util::string::itos(body.length()));
-}
-
-std::string Response::getResponse()
-{
-	std::string response;
-
-	response = statusLine + "\r\n";
-	for (HeaderMultiMap::iterator it = headers.begin(); it != headers.end(); it++)
-		response += it->first + ": " + it->second + "\r\n";
-	response += "\r\n";
-	response += body;
-	return response;
 }
 
 const Response::ResponseState Response::getResponseState() const { return responseState; }
@@ -106,7 +88,6 @@ void Response::setResponseBuffer()
 	for (HeaderMultiMap::iterator it = headers.begin(); it != headers.end(); it++)
 		oss << it->first << ": " << it->second << CRLF;
 	oss << CRLF;
-	std::cout << "response : \n" << oss.str() << std::endl;
 	oss << body;
 	responseBuffer = oss.str();
 	responseBytes = responseBuffer.length();
@@ -128,15 +109,9 @@ void Response::send(int fd)
 	size_t bytesToWrite = std::min(responseBytes - writtenBytes, (unsigned long)BUFFER_SIZE);
 	int ret = write(fd, wrBuffer + writtenBytes, bytesToWrite);
 	if (ret != -1)
-	{
-		// std::cout << "sent: " << std::endl << std::string(wrBuffer + writtenBytes, ret);
 		writtenBytes += ret;
-	}
 	if (writtenBytes == responseBytes)
-	{
-		// std::cout << "sendEnd" << std::endl;
 		responseState = End;
-	}
 }
 
 } // namespace Hafserv

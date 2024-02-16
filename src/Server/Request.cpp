@@ -315,7 +315,7 @@ int Request::parseByTransferEncoding(const int &fd)
 			if (chunkSize == 0)
 			{
 				isEnd = true;
-				removeChunkField("");
+				removeChunkField();
 			}
 		}
 		else
@@ -348,7 +348,7 @@ int Request::parseByContentLength(const int &fd)
 	return 0;
 }
 
-void Request::removeChunkField(const std::string &fieldName)
+void Request::removeChunkField()
 {
 	std::string te = headers.find("transfer-encoding")->second;
 	std::vector<std::string> teVec = parseTransferEncoding(te);
@@ -366,18 +366,6 @@ void Request::removeChunkField(const std::string &fieldName)
 	headers.find("transfer-encoding")->second = oss.str();
 }
 
-void Request::printRequest() const
-{
-	std::cout << "<-------request------->" << std::endl;
-	std::cout << method << " " << requestTarget << " HTTP/1.1\r\n";
-	for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); it++)
-		std::cout << it->first << ": " << it->second << "\r\n";
-	std::cout << "bodylen: " << body.length() << std::endl;
-	if (body.length() < 10000)
-		std::cout << "body : " << body;
-	std::cout << "<-----request end----->" << std::endl;
-}
-
 const int Request::getBodyLength() const { return bodyLength; }
 
 const int Request::getParseStatus() const { return parseStatus; }
@@ -391,3 +379,15 @@ const std::string &Hafserv::Request::getMethod() const { return method; }
 const std::string &Hafserv::Request::getBody() const { return body; }
 
 const size_t Hafserv::Request::getContentLength() const { return contentLength; }
+
+std::ostream &Hafserv::operator<<(std::ostream &os, const Hafserv::Request &request)
+{
+	os << request.getMethod() << " " << request.getRequestTarget() << " HTTP/1.1\r\n";
+	for (std::map<std::string, std::string>::const_iterator it = request.getHeaders().begin();
+		 it != request.getHeaders().end(); it++)
+		os << it->first << ": " << it->second << "\r\n";
+	os << "bodylen: " << request.getBody().length() << std::endl;
+	if (request.getBody().length() < 10000)
+		os << "body : " << request.getBody();
+	return os;
+}

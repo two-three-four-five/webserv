@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:45 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/16 21:47:48 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/16 22:02:08 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ public:
 	void setStatusLine(std::string statusLine);
 
 	void setResponseBuffer();
-	std::string getResponse();
 
 	const ResponseState getResponseState() const;
 	void setResponseState(ResponseState rs);

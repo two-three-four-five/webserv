@@ -43,14 +43,9 @@ Connection::~Connection() {}
 
 bool Connection::readRequest(int fd)
 {
-	// std::cout << "reading" << std::endl;
 	statusCode = request.readRequest(fd);
-	// std::cout << "parseStatus : " << request.getParseStatus() << " statusCode : " << statusCode
-	// 		  << " bodyLength : " << request.getBodyLength() << std::endl;
 	if (request.getParseStatus() == End)
 	{
-		// request.printRequest();
-		std::cout << "bodyLength : " << request.getBodyLength() << std::endl;
 		targetServer = Webserv::getInstance().findTargetServer(port, request);
 		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
 		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
@@ -146,7 +141,6 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 					defaultTargetResource = tempTargetResource + indexes[0];
 				for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
 				{
-					std::cout << "d " << tempTargetResource + *it << std::endl;
 					if (RegularFile(tempTargetResource + *it).valid())
 					{
 						return tempTargetResource + *it;
@@ -161,7 +155,6 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 
 void Connection::buildResponseFromRequest()
 {
-	// std::cout << "statusCode : " << statusCode << std::endl;
 	if (statusCode)
 	{
 		buildErrorResponse(statusCode);
@@ -366,10 +359,7 @@ void Connection::writeToCGI(int fd)
 		return;
 	int ret = write(fd, wrBuffer + written, bytesToWrite);
 	if (ret > 0)
-	{
-		// std::cout << "written: " << written << ", " << ret << std::endl;
 		written += ret;
-	}
 }
 
 void Connection::readFromCGI(int fd, bool eof)
@@ -389,7 +379,6 @@ void Connection::readFromCGI(int fd, bool eof)
 		end = true;
 	if (end && !bytes_read)
 	{
-		std::cout << "pipeEND" << std::endl;
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
 
 		std::string returned = CGIOutput.str();
@@ -434,8 +423,6 @@ char **Connection::makeEnvp()
 			if (key[i] == '-')
 				key[i] = '_';
 		}
-		// std::cout << "envkey=" << key << std::endl;
-		// std::cout << "envvalue=" << value << std::endl;
 		if (key.find("X_") == 0)
 			key = "HTTP_" + key;
 		envVec.push_back(key + "=" + value);

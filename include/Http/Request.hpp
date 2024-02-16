@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:18 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/16 19:55:07 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/16 21:52:21 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,7 @@ public:
 	int parseByBoundary(const int &fd);
 	int parseByTransferEncoding(const int &fd);
 	void setBodyParseFunction();
-	void removeChunkField(const std::string &fieldName);
-	void printRequest() const;
+	void removeChunkField();
 
 	const int getBodyLength() const;
 	const int getParseStatus() const;
@@ -91,6 +90,8 @@ private:
 	char charBuf[BUFFER_SIZE + 1];
 	bool isEnd;
 };
+
+std::ostream &operator<<(std::ostream &os, const Hafserv::Request &request);
 
 } // namespace Hafserv
 

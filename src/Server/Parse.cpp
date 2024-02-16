@@ -79,7 +79,6 @@ bool readQuote(std::vector<std::string> &vec, std::string &str, std::string::ite
 
 	while (isQdtext(*it) || (*it == '\\' && isQuotedPair(*(++it))))
 	{
-		std::cout << *it << std::endl;
 		quotedStr += *it;
 		it++;
 	}
