@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:15:12 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 17:18:36 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 using namespace Hafserv;
 
-ServerConfig::ServerConfig() : AConfig(), AHttpConfigCore(), names(), ports(), locations(3) {}
+ServerConfig::ServerConfig() : AConfig(), AHttpConfigCore(), names(), ports(), locations(3) { ports.insert(80); }
 
 ServerConfig::ServerConfig(const ServerConfig &other)
 	: AConfig(other), AHttpConfigCore(other), names(other.names), ports(other.ports), locations(other.locations)
@@ -24,14 +24,21 @@ ServerConfig::ServerConfig(const ServerConfig &other)
 ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 	: AConfig(), AHttpConfigCore(core), names(), ports(), locations(3)
 {
+	ports.insert(80);
+
 	setHttpConfigCore(block.getDirectives());
 	setHttpConfigCore(block.getSubBlocks());
 
+	std::vector<std::string> params;
+	size_t numToken;
 	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
 	{
 		const std::string &key = (*it).first;
 		const std::string &value = (*it).second;
+
+		params = util::string::split(value, ' ');
+		numToken = params.size();
 
 		if (allBlockDirectives.count(key))
 			throw NoBraceError(key);
@@ -42,13 +49,21 @@ ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 
 		if (key == "listen")
 		{
-			std::stringstream ss(value);
-			unsigned short us;
-			ss >> us;
-			ports.push_back(us);
+			if (numToken != 1)
+				throw InvalidNumberArgumentError(key);
+			else if (!util::string::stous(value).second)
+				throw InvalidArgumentError(key, value);
+
+			if (ports.size() == 1 && *ports.begin() == 80)
+				ports.clear();
+			if (!ports.insert(util::string::stous(value).first).second)
+				throw DuplicateListenError(params[0]);
 		}
 		else if (key == "server_name")
-			names.push_back(value);
+		{
+			for (size_t i = 0; i < params.size(); i++)
+				names.insert(params[i]);
+		}
 	}
 
 	for (size_t i = 0; i < block.getSubBlocks().size(); i++)
@@ -91,11 +106,15 @@ ServerConfig &ServerConfig::operator=(const ServerConfig &other)
 
 ServerConfig::~ServerConfig() {}
 
-const std::vector<std::string> &ServerConfig::getNames() const { return names; }
+const std::set<std::string> &ServerConfig::getNames() const { return names; }
 
-const std::vector<unsigned short> &ServerConfig::getPorts() const { return ports; }
+const std::set<unsigned short> &ServerConfig::getPorts() const { return ports; }
 
 const std::vector<std::vector<LocationConfig> > &ServerConfig::getLocations() const { return locations; }
+
+const bool ServerConfig::hasName(const std::string &name) const { return names.count(name) > 0; }
+
+const bool ServerConfig::hasPort(const unsigned short port) const { return ports.count(port) > 0; }
 
 std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 {
@@ -104,13 +123,13 @@ std::ostream &operator<<(std::ostream &os, const ServerConfig &conf)
 	os << AHttpConfigCore(conf);
 
 	os << "\tnames: ";
-	for (size_t i = 0; i < conf.getNames().size(); i++)
-		os << conf.getNames().at(i) << " ";
+	for (std::set<std::string>::const_iterator it = conf.getNames().begin(); it != conf.getNames().end(); ++it)
+		os << *it << " ";
 	os << std::endl;
 
 	os << "\tports: ";
-	for (size_t i = 0; i < conf.getPorts().size(); i++)
-		os << static_cast<int>(conf.getPorts().at(i)) << " ";
+	for (std::set<unsigned short>::const_iterator it = conf.getPorts().begin(); it != conf.getPorts().end(); ++it)
+		os << static_cast<int>(*it) << " ";
 	os << std::endl;
 
 	for (size_t i = 0; i < conf.getLocations().size(); i++)
