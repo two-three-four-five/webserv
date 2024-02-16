@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:15:12 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 21:29:31 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,13 +45,15 @@ LocationConfig::LocationConfig(const ConfigFile &block, const AHttpConfigCore &c
 	setHttpConfigCore(block.getDirectives());
 	setHttpConfigCore(block.getSubBlocks());
 
+	size_t numToken;
 	bool hasAlias = false, hasRoot = false, hasProxyPass = false, hasCgiPath = false;
+
 	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
 	{
 		const std::string &key = (*it).first;
 		const std::string &value = (*it).second;
-		size_t numToken = util::string::split(value, ' ').size();
+		numToken = util::string::split(value, ' ').size();
 
 		if (allBlockDirectives.count(key))
 			throw NoBraceError(key);

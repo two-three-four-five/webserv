@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 17:18:36 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 21:26:20 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@ ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 
 	std::vector<std::string> params;
 	size_t numToken;
+	std::pair<unsigned short, bool> valueToUShort;
+
 	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
 	{
@@ -39,6 +41,7 @@ ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 
 		params = util::string::split(value, ' ');
 		numToken = params.size();
+		valueToUShort = util::string::stous(value);
 
 		if (allBlockDirectives.count(key))
 			throw NoBraceError(key);
@@ -51,7 +54,7 @@ ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stous(value).second)
+			else if (!valueToUShort.second)
 				throw InvalidArgumentError(key, value);
 
 			if (ports.size() == 1 && *ports.begin() == 80)

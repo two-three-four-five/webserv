@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/12 13:03:07 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 21:24:40 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,26 @@
 
 using namespace Hafserv;
 
-EventConfig::EventConfig() : AConfig(), workerConnections() {}
+EventConfig::EventConfig() : AConfig(), workerConnections(512) {}
 
 EventConfig::EventConfig(const EventConfig &other) : AConfig(other), workerConnections(other.workerConnections) {}
 
-EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : AConfig(), workerConnections()
+EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : AConfig(), workerConnections(512)
 {
+	std::vector<std::string> params;
+	size_t numToken;
+	std::pair<int, bool> valueToInt;
+
 	ConfigFile::directives_t::const_iterator it = block.getDirectives().begin();
 	for (; it != block.getDirectives().end(); it++)
 	{
 		const std::string &key = (*it).first;
 		const std::string &value = (*it).second;
+
+		params = util::string::split(value, ' ');
+		numToken = params.size();
+		valueToInt = util::string::stoi(value);
+
 		if (allBlockDirectives.count(key))
 			throw NoBraceError(key);
 		else if (!allSimpleDirectives.count(key))
@@ -34,10 +43,12 @@ EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : AConfig(),
 
 		if (key == "worker_connections")
 		{
-			if (util::string::stoi(value).first)
-				workerConnections = util::string::stoi(value).second;
-			else
+			if (numToken != 1)
+				throw InvalidNumberArgumentError(key);
+			else if (!valueToInt.second)
 				throw ParseError("stoi failed: " + value);
+
+			workerConnections = valueToInt.first;
 		}
 	}
 

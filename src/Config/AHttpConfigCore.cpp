@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 16:46:54 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 22:05:52 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,9 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 {
 	std::vector<std::string> params;
 	size_t numToken;
+	std::pair<int, bool> valueToInt;
 	bool hasRoot = false;
+
 	ConfigFile::directives_t::const_iterator it = directives.begin();
 	for (; it != directives.end(); it++)
 	{
@@ -112,14 +114,16 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 
 		params = util::string::split(value, ' ');
 		numToken = params.size();
+		valueToInt = util::string::stoi(value);
+
 		if (key == "client_max_body_size")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			clientMaxBodySize = util::string::stoi(value).second;
+			clientMaxBodySize = valueToInt.first;
 		}
 		else if (key == "autoindex")
 		{
@@ -155,37 +159,37 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			timeouts.clientHeader = util::string::stoi(value).second;
+			timeouts.clientHeader = valueToInt.first;
 		}
 		else if (key == "client_body_timeout")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			timeouts.clientBody = util::string::stoi(value).second;
+			timeouts.clientBody = valueToInt.first;
 		}
 		else if (key == "keepalive_timeout")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			timeouts.keepAlive = util::string::stoi(value).second;
+			timeouts.keepAlive = valueToInt.first;
 		}
 		else if (key == "send_timeout")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			timeouts.send = util::string::stoi(value).second;
+			timeouts.send = valueToInt.first;
 		}
 		else if (key == "error_page")
 		{
@@ -194,9 +198,9 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 				throw InvalidArgumentError(key, value);
 			for (size_t i = 0; i < params.size() - 1; i++)
 			{
-				if (util::string::stoi(params[i]).first && 300 <= util::string::stoi(params[i]).second &&
-					util::string::stoi(params[i]).second < 600)
-					errorPages.insert(std::make_pair(util::string::stoi(params[i]).second, params.back()));
+				valueToInt = util::string::stoi(params[i]);
+				if (valueToInt.second && 300 <= valueToInt.first && valueToInt.first < 600)
+					errorPages.insert(std::make_pair(valueToInt.first, params.back()));
 				else
 					; // error
 			}

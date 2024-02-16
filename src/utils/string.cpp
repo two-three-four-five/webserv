@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:47:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 17:06:19 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 20:55:28 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,12 @@
 
 using namespace Hafserv;
 
-std::pair<bool, int> util::string::stoi(const std::string &str)
+std::pair<int, bool> util::string::stoi(const std::string &str)
 {
-	std::pair<bool, int> ret = std::make_pair(false, 0);
+	std::pair<int, bool> ret = std::make_pair(0, false);
 	std::stringstream ss(str);
-	ss >> ret.second;
-	ret.first = !ss.fail() && !ss.bad() && ss.eof();
+	ss >> ret.first;
+	ret.second = !ss.fail() && !ss.bad() && ss.eof();
 	return ret;
 }
 

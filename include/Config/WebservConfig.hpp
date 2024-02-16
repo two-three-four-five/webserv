@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 21:17:17 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 21:16:49 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,10 @@ public:
 	WebservConfig &operator=(const WebservConfig &other);
 	~WebservConfig();
 
-	const ConfigFile::directives_t &getDirectives() const;
 	const HttpConfig &getHttpConfig() const;
 	const EventConfig &getEventConfig() const;
 
 private:
-	ConfigFile::directives_t directives;
 	EventConfig event;
 	HttpConfig http;
 };
