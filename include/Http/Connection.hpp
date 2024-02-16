@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/15 15:38:52 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/16 20:59:36 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 namespace Hafserv
 {
 
-#define BUFFER_SIZE 10000
+#define BUFFER_SIZE 100000
 
 class Webserv;
 
@@ -45,7 +45,7 @@ public:
 
 	void buildCGIResponse(const std::string &scriptPath);
 	void writeToCGI(int fd);
-	void readFromCGI(int fd);
+	void readFromCGI(int fd, bool eof);
 	char **makeEnvp();
 
 	void sendResponse();
@@ -77,6 +77,7 @@ private:
 	size_t written;
 	std::ostringstream CGIOutput;
 	size_t readen;
+	bool end;
 };
 
 } // namespace Hafserv

@@ -8,7 +8,8 @@
 
 using namespace Hafserv;
 
-Connection::Connection(int socket, unsigned short port) : socket(socket), port(port), targetServer(NULL), statusCode(0)
+Connection::Connection(int socket, unsigned short port)
+	: socket(socket), port(port), targetServer(NULL), statusCode(0), end(false)
 {
 	startTime = time(NULL);
 }
@@ -16,7 +17,7 @@ Connection::Connection(int socket, unsigned short port) : socket(socket), port(p
 Connection::Connection(const Connection &other)
 	: request(other.request), response(other.response), socket(other.socket), port(other.port),
 	  statusCode(other.statusCode), startTime(other.startTime), targetServer(other.targetServer),
-	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource)
+	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource), end(other.end)
 {
 }
 
@@ -33,6 +34,7 @@ Connection &Connection::operator=(Connection &rhs)
 		targetServer = rhs.targetServer;
 		targetLocationConfig = rhs.targetLocationConfig;
 		targetResource = rhs.targetResource;
+		end = rhs.end;
 	}
 	return *this;
 }
@@ -48,6 +50,7 @@ bool Connection::readRequest(int fd)
 	if (request.getParseStatus() == End)
 	{
 		// request.printRequest();
+		std::cout << "bodyLength : " << request.getBodyLength() << std::endl;
 		targetServer = Webserv::getInstance().findTargetServer(port, request);
 		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
 		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
@@ -196,12 +199,9 @@ void Connection::buildResponseFromRequest()
 		{
 			if (targetLocationConfig.getCgiPath().size())
 			{
-				std::cout << "----------------------------" << std::endl;
 				buildCGIResponse(targetLocationConfig.getCgiPath());
 				return;
 			}
-			else if (request.getRequestTarget().getTargetURI() == "/")
-				buildErrorResponse(405);
 			else
 			{
 				File targetFile(targetResource);
@@ -248,7 +248,7 @@ void Connection::buildGetResponse()
 	}
 }
 
-void Hafserv::Connection::buildDirectoryResponse()
+void Connection::buildDirectoryResponse()
 {
 	Directory dir(targetResource);
 	response.setBody(dir.toHtml());
@@ -372,7 +372,7 @@ void Connection::writeToCGI(int fd)
 	}
 }
 
-void Connection::readFromCGI(int fd)
+void Connection::readFromCGI(int fd, bool eof)
 {
 	ssize_t bytes_read;
 	char buffer[BUFFER_SIZE + 1];
@@ -382,14 +382,15 @@ void Connection::readFromCGI(int fd)
 	{
 		CGIOutput.write(buffer, bytes_read);
 		readen += bytes_read;
-		// std::cout << "read: " << readen << ", " << bytes_read << std::endl;
 	}
 	int status;
+
 	if (waitpid(cgiPID, &status, WNOHANG) > 0)
+		end = true;
+	if (end && !bytes_read)
 	{
 		std::cout << "pipeEND" << std::endl;
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
-		// response.setBody(CGIOutput.str());
 
 		std::string returned = CGIOutput.str();
 		std::string header;

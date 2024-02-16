@@ -93,6 +93,7 @@ void Response::setResponseBuffer()
 	oss << body;
 	responseBuffer = oss.str();
 	responseBytes = responseBuffer.length();
+	std::cout << "responseBytes : " << responseBytes << std::endl;
 	writtenBytes = 0;
 	responseState = Ready;
 	// if (responseBytes < 100000)

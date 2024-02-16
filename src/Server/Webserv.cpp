@@ -174,7 +174,7 @@ void Webserv::runWebserv()
 					else if (event_list[i].filter == EVFILT_READ)
 					{
 						Connection &conn = findConnectionByFd(cgiFdToConnectionFd.find(eventFd)->second);
-						conn.readFromCGI(eventFd);
+						conn.readFromCGI(eventFd, event_list[i].flags & EV_EOF);
 					}
 				}
 			}
