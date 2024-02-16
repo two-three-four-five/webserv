@@ -48,13 +48,29 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 	}
 	else
 		addToHeaders("Content-Type", "application/octet-stream");
-
 	RegularFile targetFile(targetResource);
 	body = targetFile.getContents();
 
 	std::ostringstream contentLengthOss;
 	contentLengthOss << body.length();
 	addToHeaders("Content-Length", contentLengthOss.str());
+}
+
+std::string Response::generateDate()
+{
+	std::time_t currentTime = std::time(nullptr);
+
+	// Convert the time to the tm struct using local time (Korean time)
+	std::tm *timeInfo = std::localtime(&currentTime);
+
+	// Buffer to store the formatted date
+	char buffer[80];
+
+	// Format the time in the required HTTP-date format
+	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timeInfo);
+
+	// Return the formatted date as a string
+	return std::string(buffer);
 }
 
 void Response::setStatusLine(std::string statusLine) { this->statusLine = statusLine; }
@@ -86,6 +102,7 @@ void Response::setResponseBuffer()
 	std::ostringstream oss;
 
 	oss << statusLine << CRLF;
+	addToHeaders("Date", generateDate());
 	for (HeaderMultiMap::iterator it = headers.begin(); it != headers.end(); it++)
 		oss << it->first << ": " << it->second << CRLF;
 	oss << CRLF;
@@ -93,11 +110,8 @@ void Response::setResponseBuffer()
 	oss << body;
 	responseBuffer = oss.str();
 	responseBytes = responseBuffer.length();
-	std::cout << "responseBytes : " << responseBytes << std::endl;
 	writtenBytes = 0;
 	responseState = Ready;
-	// if (responseBytes < 100000)
-	// 	std::cout << "responseBuffer : \n" << responseBuffer;
 }
 
 void Response::addToHeaders(std::string key, std::string value) { headers.insert(std::make_pair(key, value)); }
