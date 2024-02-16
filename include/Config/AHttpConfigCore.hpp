@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 16:51:35 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 16:43:59 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <File/ConfigFile.hpp>
 #include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #include <util/string.hpp>
 #include <vector>
@@ -49,7 +50,7 @@ public:
 	const std::map<int, std::string> &getErrorPages() const;
 	const std::string &getDefaultType() const;
 	const std::multimap<std::string, std::string> &getTypes() const;
-	const std::vector<std::string> &getAllowMethods() const;
+	const std::set<std::string> &getAllowMethods() const;
 
 	void setClientMaxBodySize(const int clientMaxBodySize);
 	void setAutoIndex(const bool autoIndex);
@@ -63,12 +64,12 @@ public:
 	void setErrorPages(const std::map<int, std::string> &errorPages);
 	void setDefaultType(const std::string &defaultType);
 	void setTypes(const std::multimap<std::string, std::string> &types);
-	void setAllowMethods(const std::vector<std::string> allowMethods);
+	void setAllowMethods(const std::set<std::string> &allowMethods);
 
 	void addIndex(const std::string &index);
 	void addErrorPage(int errorCode, const std::string &uri);
 	void addType(const std::string &type, const std::string &extension);
-	void addAllowMethod(const std::string &method);
+	bool addAllowMethod(const std::string &method);
 
 	const bool isAllowedMethod(const std::string &method) const;
 
@@ -84,7 +85,8 @@ private:
 	std::map<int, std::string> errorPages; // value must be between 300 and 599
 	std::string defaultType;
 	std::multimap<std::string, std::string> types;
-	std::vector<std::string> allowMethods;
+
+	std::set<std::string> allowMethods;
 };
 
 } // namespace Hafserv

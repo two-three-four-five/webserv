@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 16:51:04 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 22:05:52 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ AHttpConfigCore::AHttpConfigCore()
 	: clientMaxBodySize(2147483647), autoIndex(false), root("html"), indexes(), timeouts(), errorPages(),
 	  defaultType("text/plain"), types(), allowMethods()
 {
-	allowMethods.push_back("GET");
 	indexes.push_back("index.html");
 }
 
@@ -58,7 +57,7 @@ const AHttpConfigCore::Timeout &AHttpConfigCore::getTimeout() const { return tim
 const std::map<int, std::string> &AHttpConfigCore::getErrorPages() const { return errorPages; }
 const std::string &AHttpConfigCore::getDefaultType() const { return defaultType; }
 const std::multimap<std::string, std::string> &AHttpConfigCore::getTypes() const { return types; }
-const std::vector<std::string> &AHttpConfigCore::getAllowMethods() const { return allowMethods; }
+const std::set<std::string> &AHttpConfigCore::getAllowMethods() const { return allowMethods; }
 
 void AHttpConfigCore::setClientMaxBodySize(const int clientMaxBodySize) { this->clientMaxBodySize = clientMaxBodySize; }
 void AHttpConfigCore::setAutoIndex(const bool autoIndex) { this->autoIndex = autoIndex; }
@@ -72,10 +71,7 @@ void AHttpConfigCore::setSendTimeout(int timeout) { this->timeouts.send = timeou
 void AHttpConfigCore::setErrorPages(const std::map<int, std::string> &errorPages) { this->errorPages = errorPages; }
 void AHttpConfigCore::setDefaultType(const std::string &defaultType) { this->defaultType = defaultType; }
 void AHttpConfigCore::setTypes(const std::multimap<std::string, std::string> &types) { this->types = types; }
-void AHttpConfigCore::setAllowMethods(const std::vector<std::string> allowMethods)
-{
-	this->allowMethods = allowMethods;
-}
+void AHttpConfigCore::setAllowMethods(const std::set<std::string> &allowMethods) { this->allowMethods = allowMethods; }
 
 void AHttpConfigCore::addErrorPage(int errorCode, const std::string &uri)
 {
@@ -93,22 +89,23 @@ void AHttpConfigCore::addType(const std::string &type, const std::string &extens
 	types.insert(std::make_pair(type, extension));
 }
 
-void AHttpConfigCore::addAllowMethod(const std::string &method)
-{
-	if (std::find(allowMethods.begin(), allowMethods.end(), method) == allowMethods.end())
-		allowMethods.push_back(method);
-}
+bool AHttpConfigCore::addAllowMethod(const std::string &method) { return allowMethods.insert(method).second; }
 
 const bool AHttpConfigCore::isAllowedMethod(const std::string &method) const
 {
-	return std::find(allowMethods.begin(), allowMethods.end(), method) != allowMethods.end();
+	if (allowMethods.empty() && method == "GET")
+		return true;
+	else
+		return allowMethods.count(method) > 0;
 }
 
 void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directives)
 {
 	std::vector<std::string> params;
 	size_t numToken;
+	std::pair<int, bool> valueToInt;
 	bool hasRoot = false;
+
 	ConfigFile::directives_t::const_iterator it = directives.begin();
 	for (; it != directives.end(); it++)
 	{
@@ -117,14 +114,16 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 
 		params = util::string::split(value, ' ');
 		numToken = params.size();
+		valueToInt = util::string::stoi(value);
+
 		if (key == "client_max_body_size")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			clientMaxBodySize = util::string::stoi(value).second;
+			clientMaxBodySize = valueToInt.first;
 		}
 		else if (key == "autoindex")
 		{
@@ -160,37 +159,37 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			timeouts.clientHeader = util::string::stoi(value).second;
+			timeouts.clientHeader = valueToInt.first;
 		}
 		else if (key == "client_body_timeout")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			timeouts.clientBody = util::string::stoi(value).second;
+			timeouts.clientBody = valueToInt.first;
 		}
 		else if (key == "keepalive_timeout")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			timeouts.keepAlive = util::string::stoi(value).second;
+			timeouts.keepAlive = valueToInt.first;
 		}
 		else if (key == "send_timeout")
 		{
 			if (numToken != 1)
 				throw InvalidNumberArgumentError(key);
-			else if (!util::string::stoi(value).first)
+			else if (!valueToInt.second)
 				throw InvalidArgumentError(key);
 
-			timeouts.send = util::string::stoi(value).second;
+			timeouts.send = valueToInt.first;
 		}
 		else if (key == "error_page")
 		{
@@ -199,9 +198,9 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 				throw InvalidArgumentError(key, value);
 			for (size_t i = 0; i < params.size() - 1; i++)
 			{
-				if (util::string::stoi(params[i]).first && 300 <= util::string::stoi(params[i]).second &&
-					util::string::stoi(params[i]).second < 600)
-					errorPages.insert(std::make_pair(util::string::stoi(params[i]).second, params.back()));
+				valueToInt = util::string::stoi(params[i]);
+				if (valueToInt.second && 300 <= valueToInt.first && valueToInt.first < 600)
+					errorPages.insert(std::make_pair(valueToInt.first, params.back()));
 				else
 					; // error
 			}
@@ -282,13 +281,16 @@ std::ostream &operator<<(std::ostream &os, const AHttpConfigCore &conf)
 			os << std::endl;
 	}
 
+	os << "\t\tallow methods: ";
 	if (conf.getAllowMethods().size())
 	{
-		os << "\t\tallow methods: ";
-		for (size_t i = 0; i < conf.getAllowMethods().size(); i++)
-			os << conf.getAllowMethods()[i] << ", ";
+		for (std::set<std::string>::const_iterator it = conf.getAllowMethods().begin();
+			 it != conf.getAllowMethods().end(); it++)
+			os << *it << ", ";
 		os << std::endl;
 	}
+	else
+		os << "GET" << std::endl;
 
 	return os;
 }

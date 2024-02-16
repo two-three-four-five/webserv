@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:16:22 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/16 21:16:52 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #define HTTPCONFIG_HPP
 
 #include "Config/AConfig.hpp"
-#include "Config/ConfigException.hpp"
 #include "Config/AHttpConfigCore.hpp"
+#include "Config/ConfigException.hpp"
 #include "Config/ServerConfig.hpp"
 #include "File/ConfigFile.hpp"
 #include <string>
@@ -32,11 +32,9 @@ public:
 	HttpConfig &operator=(const HttpConfig &other);
 	~HttpConfig();
 
-	const ConfigFile::directives_t &getDirectives() const;
 	const std::vector<ServerConfig> &getServers() const;
 
 private:
-	ConfigFile::directives_t directives;
 	std::vector<ServerConfig> servers;
 };
 
