@@ -33,11 +33,12 @@ Response &Response::operator=(const Response &rhs)
 
 Response::~Response() {}
 
-void Response::makeBody(const LocationConfig &targetLocationConfig, const std::string &targetLocation)
+void Response::makeBody(const LocationConfig &targetLocationConfig, const std::string &targetResource)
 {
+	// targetResource = error/413.html
 	const std::multimap<std::string, std::string> &typeMap = targetLocationConfig.getTypes();
 	std::multimap<std::string, std::string>::const_iterator typeIt =
-		typeMap.find(targetLocation.substr(targetLocation.rfind('.') + 1));
+		typeMap.find(targetResource.substr(targetResource.rfind('.') + 1));
 	if (typeIt != typeMap.end())
 	{
 		std::string contentType = typeIt->second;
@@ -48,7 +49,7 @@ void Response::makeBody(const LocationConfig &targetLocationConfig, const std::s
 	else
 		addToHeaders("Content-Type", "application/octet-stream");
 
-	RegularFile targetFile(targetLocation);
+	RegularFile targetFile(targetResource);
 	body = targetFile.getContents();
 
 	std::ostringstream contentLengthOss;
@@ -93,9 +94,13 @@ void Response::setResponseBuffer()
 	responseBytes = responseBuffer.length();
 	writtenBytes = 0;
 	responseState = Ready;
+	// if (responseBytes < 100000)
+	// 	std::cout << "responseBuffer : \n" << responseBuffer;
 }
 
 void Response::addToHeaders(std::string key, std::string value) { headers.insert(std::make_pair(key, value)); }
+
+void Response::removeHeaders(std::string key) { headers.erase(key); }
 
 const int Response::getWrittenBytes() const { return writtenBytes; }
 

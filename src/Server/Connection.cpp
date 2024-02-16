@@ -50,7 +50,6 @@ bool Connection::readRequest(int fd)
 		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
 		{
 			statusCode = 413;
-			std::cout << "413" << std::endl;
 		}
 		buildResponseFromRequest();
 	}
@@ -201,7 +200,17 @@ void Connection::buildResponseFromRequest()
 			else if (request.getRequestTarget().getTargetURI() == "/")
 				buildErrorResponse(405);
 			else
+			{
+				// File targetFile(targetResource);
+
+				// if (!(targetFile.isRegularFile() && targetFile.isExecutable()))
+				// {
+				// 	statusCode = 200;
+				// 	buildErrorResponse(statusCode);
+				// }
+				// else buildCGIResponse(targetResource);
 				buildCGIResponse(targetResource);
+			}
 			response.setResponseBuffer();
 		}
 		else if (method == "DELETE")
@@ -248,14 +257,19 @@ void Connection::buildErrorResponse(int statusCode)
 	std::string startLine = "HTTP/1.1 " + util::string::itos(statusCode) + " " +
 							Webserv::getInstance().getStatusCodeMap().find(statusCode)->second;
 	response.setStatusLine(startLine);
+	// 제일 잘맞는 LocationConfig == targetLocationConfig
 	std::map<int, std::string> errorPages = targetLocationConfig.getErrorPages();
+	// found error page
 	std::map<int, std::string>::iterator targetIt = errorPages.find(statusCode);
+	// targetResource 실제 파일
 	std::string targetResource;
 	if (targetIt == errorPages.end())
 		targetResource = "error/" + util::string::itos(statusCode) + ".html";
 	else
 		targetResource = configureTargetResource(targetIt->second);
 	response.makeBody(targetLocationConfig, targetResource);
+	if (statusCode == 413)
+		response.removeHeaders("Content-Length");
 }
 
 void Connection::build301Response(const std::string &redirectTarget)
@@ -284,12 +298,6 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	char **envp = makeEnvp();
 	int outward_fd[2];
 	int inward_fd[2];
-	File target(scriptPath);
-
-	if (!(target.isRegularFile() && target.isExecutable()))
-	{
-		statusCode = 411;
-	}
 
 	pipe(outward_fd);
 	pipe(inward_fd);
@@ -298,6 +306,14 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	fcntl(outward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(inward_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(inward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	File target(scriptPath);
+
+	if (!(target.isRegularFile() && target.isExecutable()))
+	{
+		statusCode = 200;
+		buildErrorResponse(statusCode);
+		return;
+	}
 
 	cgiPID = fork();
 	if (cgiPID == 0)
@@ -307,7 +323,6 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		dup2(outward_fd[1], STDOUT_FILENO);
 		dup2(inward_fd[0], STDIN_FILENO);
 
-		struct stat fileStat;
 		if (target.isRegularFile() && target.isExecutable())
 		{
 			execve(argv[0], argv, envp);

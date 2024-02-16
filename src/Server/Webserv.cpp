@@ -28,6 +28,8 @@ Webserv::Webserv()
 	statusCodeMap[403] = "Forbidden";
 	statusCodeMap[404] = "Not Found";
 	statusCodeMap[405] = "Not Allowed";
+	statusCodeMap[411] = "Length Required";
+	statusCodeMap[413] = "Request Entity Too Large";
 	statusCodeMap[500] = "Internal Server Error";
 	statusCodeMap[501] = "Not Implemented";
 	statusCodeMap[505] = "HTTP Version Not Supported";
