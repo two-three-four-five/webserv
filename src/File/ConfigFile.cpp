@@ -33,7 +33,11 @@ ConfigFile::ConfigFile(const std::string &name) throw(ParseError) : RegularFile(
 		throw ParseError(getErrorMsg());
 
 	ConfigFile main = ConfigFile();
+	main.name = name;
+	main.errorCode = this->errorCode;
+	main.fileStat = this->fileStat;
 	main.blockDirective = "main";
+
 	subBlocks.push_back(main);
 
 	std::vector<std::vector<ConfigFile>::iterator> history;
@@ -41,6 +45,7 @@ ConfigFile::ConfigFile(const std::string &name) throw(ParseError) : RegularFile(
 
 	std::string remainder, front, value;
 	std::vector<std::string> waiting;
+	long long blockLevel = 1; // if new block appears, ++lv. main is lv1.
 	size_t min = -1;
 
 	for (remainder = contents; remainder.size(); remainder = remainder.substr(min + 1, remainder.size() - (min + 1)))
@@ -55,6 +60,7 @@ ConfigFile::ConfigFile(const std::string &name) throw(ParseError) : RegularFile(
 		case '{':
 			if (!front.empty())
 				waiting.push_back(front);
+
 			if (!waiting.empty())
 			{
 				ConfigFile newConfig = ConfigFile(*dynamic_cast<RegularFile *>(this));
@@ -66,6 +72,7 @@ ConfigFile::ConfigFile(const std::string &name) throw(ParseError) : RegularFile(
 				(*history.back()).subBlocks.push_back(newConfig);
 				history.push_back(--(*history.back()).subBlocks.end());
 			}
+			++blockLevel;
 			waiting.clear();
 			break;
 
@@ -74,10 +81,11 @@ ConfigFile::ConfigFile(const std::string &name) throw(ParseError) : RegularFile(
 				waiting.push_back(front + "}");
 			else if (!waiting.empty())
 				throw ParseError("unexpected \"}\"");
-			else if (history.size() == 1)
+			else if (blockLevel <= 1)
 				throw ParseError("unexpected \"}\"");
-			else
+			else if (blockLevel == history.size())
 				history.pop_back();
+			--blockLevel;
 			break;
 
 		case ';':
@@ -100,6 +108,8 @@ ConfigFile::ConfigFile(const std::string &name) throw(ParseError) : RegularFile(
 			break;
 		};
 	}
+	if (blockLevel != 1)
+		throw ParseError("expected \"}\"");
 }
 
 ConfigFile &ConfigFile::operator=(const ConfigFile &other)
@@ -130,6 +140,8 @@ void ConfigFile::include() throw(IncludeError)
 	{
 		std::string filename = this->name.substr(0, this->name.rfind('/') + 1) + (*incBegin).second;
 		RegularFile toInclude = RegularFile(filename);
+		std::cout << filename << std::endl;
+		std::cout << (*incBegin).second << std::endl;
 		if (toInclude.error())
 			throw IncludeError("include error : " + toInclude.getErrorMsg());
 		ConfigFile file = ConfigFile(toInclude.getName());
