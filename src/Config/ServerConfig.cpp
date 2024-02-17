@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 21:26:20 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/17 22:47:23 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 
 		if (subBlockName == "location")
 		{
-			LocationConfig conf = LocationConfig(block.getSubBlocks().at(i), core);
+			LocationConfig conf = LocationConfig(block.getSubBlocks().at(i), *this);
 			if (conf.getModifier() == "=")
 				locations[0].push_back(conf);
 			else if (conf.getModifier() == "$")

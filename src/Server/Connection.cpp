@@ -43,15 +43,23 @@ Connection::~Connection() {}
 
 bool Connection::readRequest(int fd)
 {
+	startTime = time(NULL);
 	statusCode = request.readRequest(fd);
-	if (request.getParseStatus() == End)
+
+	if (request.getParseStatus() >= Body)
 	{
-		targetServer = Webserv::getInstance().findTargetServer(port, request);
-		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
+		if (targetServer == NULL)
+		{
+			targetServer = Webserv::getInstance().findTargetServer(port, request);
+			targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
+		}
 		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
 		{
 			statusCode = 413;
 		}
+	}
+	if (request.getParseStatus() == End)
+	{
 		buildResponseFromRequest();
 	}
 
@@ -455,7 +463,11 @@ char **Connection::makeEnvp()
 	return envp;
 }
 
-void Connection::sendResponse() { response.send(socket); }
+void Connection::sendResponse()
+{
+	startTime = time(NULL);
+	response.send(socket);
+}
 
 void Connection::reset()
 {
