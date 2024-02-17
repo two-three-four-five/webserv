@@ -43,15 +43,23 @@ Connection::~Connection() {}
 
 bool Connection::readRequest(int fd)
 {
+	startTime = time(NULL);
 	statusCode = request.readRequest(fd);
-	if (request.getParseStatus() == End)
+
+	if (request.getParseStatus() >= Body)
 	{
-		targetServer = Webserv::getInstance().findTargetServer(port, request);
-		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
+		if (targetServer == NULL)
+		{
+			targetServer = Webserv::getInstance().findTargetServer(port, request);
+			targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
+		}
 		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
 		{
 			statusCode = 413;
 		}
+	}
+	if (request.getParseStatus() == End)
+	{
 		buildResponseFromRequest();
 	}
 
@@ -76,16 +84,19 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 	}
 
 	// $
-	const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
-	selectedIt = endLocations.end();
-
-	for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
+	if (request.getMethod() == "POST" || request.getMethod() == "DELETE")
 	{
-		const std::string &pattern = it->getPattern();
-		if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+		const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
+		selectedIt = endLocations.end();
+
+		for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
 		{
-			targetLocationConfig = *it;
-			return ("cgi-bin" + requestTarget);
+			const std::string &pattern = it->getPattern();
+			if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+			{
+				targetLocationConfig = *it;
+				return (it->getCgiPath());
+			}
 		}
 	}
 
@@ -409,6 +420,7 @@ char **Connection::makeEnvp()
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	envVec.push_back("PATH_INFO=/");
+	envVec.push_back("QUERY_STRING=" + request.getRequestTarget().getQueryString());
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);
@@ -452,7 +464,11 @@ char **Connection::makeEnvp()
 	return envp;
 }
 
-void Connection::sendResponse() { response.send(socket); }
+void Connection::sendResponse()
+{
+	startTime = time(NULL);
+	response.send(socket);
+}
 
 void Connection::reset()
 {

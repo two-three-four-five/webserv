@@ -174,7 +174,7 @@ void Webserv::runWebserv()
 				continue;
 			}
 		}
-		// checkTimeout();
+		checkTimeout();
 	}
 	closeServSocks();
 	close(kq);
@@ -279,7 +279,10 @@ Server *Webserv::findTargetServer(unsigned short port, const Request &request)
 
 std::string Webserv::getStatusMessage(int statusCode)
 {
-	return util::string::itos(statusCode) + " " + statusCodeMap.find(statusCode)->second;
+	if (statusCodeMap.find(statusCode) == statusCodeMap.end())
+		return util::string::itos(statusCode);
+	else
+		return util::string::itos(statusCode) + " " + statusCodeMap.find(statusCode)->second;
 }
 
 void Webserv::checkTimeout()
@@ -288,15 +291,9 @@ void Webserv::checkTimeout()
 	std::vector<int> timeoutSockets;
 	for (ConnectionMap::iterator it = Connections.begin(); it != Connections.end(); it++)
 	{
-		const Server *server = it->second.getTargetServer();
-		const LocationConfig targetConfig = it->second.getTargetLocationConfig();
 		if (it->second.getRequest().getParseStatus() < Body)
 		{
 			int headerTimeout = 60;
-			if (server != NULL)
-				headerTimeout = server->getServerConfig().getTimeout().clientHeader;
-			if (targetConfig.getTimeout().clientHeader > 0)
-				headerTimeout = targetConfig.getTimeout().clientHeader;
 			if (now - it->second.getStartTime() > headerTimeout)
 			{
 				timeoutSockets.push_back(it->first);
@@ -304,9 +301,13 @@ void Webserv::checkTimeout()
 		}
 		else if (it->second.getRequest().getParseStatus() == Body)
 		{
+			const Server *server = it->second.getTargetServer();
+			const LocationConfig targetConfig = it->second.getTargetLocationConfig();
 			int bodyTimeout = 60;
 			if (targetConfig.getTimeout().clientHeader > 0)
+			{
 				bodyTimeout = targetConfig.getTimeout().clientBody;
+			}
 			if (now - it->second.getStartTime() > bodyTimeout)
 			{
 				timeoutSockets.push_back(it->first);

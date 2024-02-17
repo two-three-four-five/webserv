@@ -6,9 +6,10 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/17 19:57:14 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/17 23:28:24 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include "Config/ServerConfig.hpp"
 
@@ -83,7 +84,7 @@ ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 
 		if (subBlockName == "location")
 		{
-			LocationConfig conf = LocationConfig(block.getSubBlocks().at(i), core);
+			LocationConfig conf = LocationConfig(block.getSubBlocks().at(i), *this);
 			size_t mIdx;
 			if (conf.getModifier() == "=")
 				mIdx = 0;
