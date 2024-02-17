@@ -10,9 +10,9 @@ def save_uploaded_file(fileitem):
     try:
         # Get the filename from the file item
         filename = os.path.basename(fileitem.filename)
-        
+
         # Specify the path to save the file (in the current working directory)
-        filepath = os.path.join(os.getcwd(), filename)
+        filepath = os.path.join(os.getcwd() + '/uploads/', filename)
 
         # Open the file for writing in binary mode
         with open(filepath, 'wb') as f:
@@ -24,7 +24,8 @@ def save_uploaded_file(fileitem):
         raise RuntimeError(f"Error saving the file: {e}")
 
 def main():
-    print("Content-type: text/html\n")
+    print("Status: 200 OK\r")
+    print("Content-type: text/html\r\n\r")
 
     # Create an instance of the FieldStorage class
     form = cgi.FieldStorage()
