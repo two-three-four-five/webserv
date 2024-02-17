@@ -140,8 +140,6 @@ void ConfigFile::include() throw(IncludeError)
 	{
 		std::string filename = this->name.substr(0, this->name.rfind('/') + 1) + (*incBegin).second;
 		RegularFile toInclude = RegularFile(filename);
-		std::cout << filename << std::endl;
-		std::cout << (*incBegin).second << std::endl;
 		if (toInclude.error())
 			throw IncludeError("include error : " + toInclude.getErrorMsg());
 		ConfigFile file = ConfigFile(toInclude.getName());
