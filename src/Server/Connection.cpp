@@ -66,6 +66,47 @@ bool Connection::readRequest(int fd)
 	return true;
 }
 
+std::string Connection::getTargetResource(std::string &requestTarget)
+{
+	std::string tempTargetResource;
+	const std::string &selectedPattern = targetLocationConfig.getPattern();
+	const std::string &selectedAlias = targetLocationConfig.getAlias();
+	if (!selectedAlias.empty())
+	{
+		if (selectedPattern.back() == '/')
+			tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length() - 1);
+		else
+			tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length());
+	}
+	else
+		tempTargetResource = targetLocationConfig.getRoot() + requestTarget;
+	if (tempTargetResource.back() == '/')
+	{
+		if (targetLocationConfig.getAutoIndex())
+		{
+			return tempTargetResource;
+		}
+		else
+		{
+			std::vector<std::string> indexes = targetLocationConfig.getIndexes();
+			std::string defaultTargetResource;
+			if (indexes.size() == 0)
+				defaultTargetResource = tempTargetResource + "index.html";
+			else
+				defaultTargetResource = tempTargetResource + indexes[0];
+			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
+			{
+				if (RegularFile(tempTargetResource + *it).valid())
+				{
+					return tempTargetResource + *it;
+				}
+			}
+			tempTargetResource = defaultTargetResource;
+		}
+	}
+	return tempTargetResource;
+}
+
 std::string Connection::configureTargetResource(std::string requestTarget)
 {
 	int depth = -1;
@@ -79,7 +120,7 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 		if (requestTarget == pattern)
 		{
 			targetLocationConfig = *it;
-			return (requestTarget);
+			return getTargetResource(requestTarget);
 		}
 	}
 
@@ -118,50 +159,8 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 			}
 		}
 	}
-
-	std::string tempTargetResource;
-	// root / is always presents in httpConfigCore
-	if (selectedIt != locations.end())
-	{
-		targetLocationConfig = *selectedIt;
-
-		const std::string &selectedPattern = selectedIt->getPattern();
-		const std::string &selectedAlias = selectedIt->getAlias();
-		if (!selectedAlias.empty())
-		{
-			if (selectedPattern.back() == '/')
-				tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length() - 1);
-			else
-				tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length());
-		}
-		else
-			tempTargetResource = selectedIt->getRoot() + requestTarget;
-		if (tempTargetResource.back() == '/')
-		{
-			if (selectedIt->getAutoIndex())
-			{
-				return tempTargetResource;
-			}
-			else
-			{
-				std::vector<std::string> indexes = selectedIt->getIndexes();
-				std::string defaultTargetResource;
-				if (indexes.size() == 0)
-					defaultTargetResource = tempTargetResource + "index.html";
-				else
-					defaultTargetResource = tempTargetResource + indexes[0];
-				for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
-				{
-					if (RegularFile(tempTargetResource + *it).valid())
-					{
-						return tempTargetResource + *it;
-					}
-				}
-				tempTargetResource = defaultTargetResource;
-			}
-		}
-	}
-	return tempTargetResource;
+	targetLocationConfig = *selectedIt;
+	return getTargetResource(requestTarget);
 }
 
 void Connection::buildResponseFromRequest()
