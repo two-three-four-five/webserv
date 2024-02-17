@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/16 20:59:36 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/17 23:24:17 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ public:
 
 	bool readRequest(int fd);
 	std::string configureTargetResource(std::string requestTarget);
+	std::string getTargetResource(std::string &requestTarget);
 
 	void buildResponseFromRequest();
 	void buildGetResponse();
