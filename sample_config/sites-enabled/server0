@@ -1,9 +1,7 @@
 server
 {
-	listen 8888;
+	listen 9999;
 	server_name localhost;
-
-	client_body_timeout 10;
 
 	include server.conf;
 }

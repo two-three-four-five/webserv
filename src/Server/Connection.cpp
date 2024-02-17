@@ -43,19 +43,68 @@ Connection::~Connection() {}
 
 bool Connection::readRequest(int fd)
 {
+	startTime = time(NULL);
 	statusCode = request.readRequest(fd);
-	if (request.getParseStatus() == End)
+
+	if (request.getParseStatus() >= Body)
 	{
-		targetServer = Webserv::getInstance().findTargetServer(port, request);
-		targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
+		if (targetServer == NULL)
+		{
+			targetServer = Webserv::getInstance().findTargetServer(port, request);
+			targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
+		}
 		if (targetLocationConfig.getClientMaxBodySize() < getRequest().getBodyLength())
 		{
 			statusCode = 413;
 		}
+	}
+	if (request.getParseStatus() == End)
+	{
 		buildResponseFromRequest();
 	}
 
 	return true;
+}
+
+std::string Connection::getTargetResource(std::string &requestTarget)
+{
+	std::string tempTargetResource;
+	const std::string &selectedPattern = targetLocationConfig.getPattern();
+	const std::string &selectedAlias = targetLocationConfig.getAlias();
+	if (!selectedAlias.empty())
+	{
+		if (selectedPattern.back() == '/')
+			tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length() - 1);
+		else
+			tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length());
+	}
+	else
+		tempTargetResource = targetLocationConfig.getRoot() + requestTarget;
+	if (tempTargetResource.back() == '/')
+	{
+		if (targetLocationConfig.getAutoIndex())
+		{
+			return tempTargetResource;
+		}
+		else
+		{
+			std::vector<std::string> indexes = targetLocationConfig.getIndexes();
+			std::string defaultTargetResource;
+			if (indexes.size() == 0)
+				defaultTargetResource = tempTargetResource + "index.html";
+			else
+				defaultTargetResource = tempTargetResource + indexes[0];
+			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
+			{
+				if (RegularFile(tempTargetResource + *it).valid())
+				{
+					return tempTargetResource + *it;
+				}
+			}
+			tempTargetResource = defaultTargetResource;
+		}
+	}
+	return tempTargetResource;
 }
 
 std::string Connection::configureTargetResource(std::string requestTarget)
@@ -71,21 +120,24 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 		if (requestTarget == pattern)
 		{
 			targetLocationConfig = *it;
-			return (requestTarget);
+			return getTargetResource(requestTarget);
 		}
 	}
 
 	// $
-	const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
-	selectedIt = endLocations.end();
-
-	for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
+	if (request.getMethod() == "POST" || request.getMethod() == "DELETE")
 	{
-		const std::string &pattern = it->getPattern();
-		if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+		const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
+		selectedIt = endLocations.end();
+
+		for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
 		{
-			targetLocationConfig = *it;
-			return ("cgi-bin" + requestTarget);
+			const std::string &pattern = it->getPattern();
+			if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+			{
+				targetLocationConfig = *it;
+				return (it->getCgiPath());
+			}
 		}
 	}
 
@@ -107,50 +159,8 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 			}
 		}
 	}
-
-	std::string tempTargetResource;
-	// root / is always presents in httpConfigCore
-	if (selectedIt != locations.end())
-	{
-		targetLocationConfig = *selectedIt;
-
-		const std::string &selectedPattern = selectedIt->getPattern();
-		const std::string &selectedAlias = selectedIt->getAlias();
-		if (!selectedAlias.empty())
-		{
-			if (selectedPattern.back() == '/')
-				tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length() - 1);
-			else
-				tempTargetResource = selectedAlias + requestTarget.substr(selectedPattern.length());
-		}
-		else
-			tempTargetResource = selectedIt->getRoot() + requestTarget;
-		if (tempTargetResource.back() == '/')
-		{
-			if (selectedIt->getAutoIndex())
-			{
-				return tempTargetResource;
-			}
-			else
-			{
-				std::vector<std::string> indexes = selectedIt->getIndexes();
-				std::string defaultTargetResource;
-				if (indexes.size() == 0)
-					defaultTargetResource = tempTargetResource + "index.html";
-				else
-					defaultTargetResource = tempTargetResource + indexes[0];
-				for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
-				{
-					if (RegularFile(tempTargetResource + *it).valid())
-					{
-						return tempTargetResource + *it;
-					}
-				}
-				tempTargetResource = defaultTargetResource;
-			}
-		}
-	}
-	return tempTargetResource;
+	targetLocationConfig = *selectedIt;
+	return getTargetResource(requestTarget);
 }
 
 void Connection::buildResponseFromRequest()
@@ -409,6 +419,7 @@ char **Connection::makeEnvp()
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	envVec.push_back("PATH_INFO=/");
+	envVec.push_back("QUERY_STRING=" + request.getRequestTarget().getQueryString());
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
 	envVec.push_back(requestMethod);
@@ -452,7 +463,11 @@ char **Connection::makeEnvp()
 	return envp;
 }
 
-void Connection::sendResponse() { response.send(socket); }
+void Connection::sendResponse()
+{
+	startTime = time(NULL);
+	response.send(socket);
+}
 
 void Connection::reset()
 {

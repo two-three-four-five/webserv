@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/22 22:19:48 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 17:11:24 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/17 19:53:28 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,13 @@ class DuplicateListenError : public std::logic_error
 public:
 	DuplicateListenError(const std::string &port) : std::logic_error("a duplicate listen 0.0.0.0:" + port){};
 	virtual ~DuplicateListenError() throw(){};
+};
+
+class DuplicateLocationError : public std::logic_error
+{
+public:
+	DuplicateLocationError(const std::string &pattern) : std::logic_error("duplicate location \"" + pattern + "\""){};
+	virtual ~DuplicateLocationError() throw(){};
 };
 
 class DisallowDirectiveError : public std::logic_error

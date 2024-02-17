@@ -7,7 +7,7 @@ using namespace Hafserv;
 
 int main(int argc, char *argv[])
 {
-	if (argc != 2)
+	if (argc > 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
 		return 1;
@@ -15,7 +15,8 @@ int main(int argc, char *argv[])
 
 	try
 	{
-		ConfigFile configFile = ConfigFile(argv[1]);
+		std::string confPath = (argc == 1) ? "./sample_config/default.conf" : std::string(argv[1]);
+		ConfigFile configFile = ConfigFile(confPath);
 		configFile.include();
 		WebservConfig config = WebservConfig(configFile);
 		Webserv &webserv = Webserv::getInstance();
