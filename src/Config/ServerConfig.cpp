@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 21:26:20 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/17 19:57:14 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,12 +84,17 @@ ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 		if (subBlockName == "location")
 		{
 			LocationConfig conf = LocationConfig(block.getSubBlocks().at(i), core);
+			size_t mIdx;
 			if (conf.getModifier() == "=")
-				locations[0].push_back(conf);
+				mIdx = 0;
 			else if (conf.getModifier() == "$")
-				locations[1].push_back(conf);
+				mIdx = 1;
 			else if (conf.getModifier() == "^")
-				locations[2].push_back(conf);
+				mIdx = 2;
+			for (size_t j = 0; j < locations[mIdx].size(); ++j)
+				if (locations[mIdx][j].getPattern() == conf.getPattern())
+					throw DuplicateLocationError(conf.getPattern());
+			locations[mIdx].push_back(conf);
 		}
 	}
 }
