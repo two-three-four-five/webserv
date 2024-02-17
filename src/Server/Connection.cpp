@@ -76,16 +76,19 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 	}
 
 	// $
-	const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
-	selectedIt = endLocations.end();
-
-	for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
+	if (request.getMethod() == "POST" || request.getMethod() == "DELETE")
 	{
-		const std::string &pattern = it->getPattern();
-		if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+		const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
+		selectedIt = endLocations.end();
+
+		for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
 		{
-			targetLocationConfig = *it;
-			return ("cgi-bin" + requestTarget);
+			const std::string &pattern = it->getPattern();
+			if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+			{
+				targetLocationConfig = *it;
+				return (it->getCgiPath());
+			}
 		}
 	}
 
