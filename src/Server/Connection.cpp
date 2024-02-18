@@ -48,7 +48,7 @@ bool Connection::readRequest(int fd)
 
 	if (request.getParseStatus() >= Body)
 	{
-		if (targetServer == NULL)
+		if (targetServer == NULL && !statusCode)
 		{
 			targetServer = Webserv::getInstance().findTargetServer(port, request);
 			targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
@@ -221,22 +221,23 @@ void Connection::buildResponseFromRequest()
 		else if (method == "POST")
 		{
 			File targetFile(targetResource);
-			if (!targetFile.exist())
+			// if (!targetFile.exist())
+			// {
+			// 	buildErrorResponse(404);
+			// 	response.setResponseBuffer();
+			// }
+			// else
+			// {
+			std::string cgiExecutable = getCGIExecutable();
+			if (cgiExecutable.size())
+				buildCGIResponse(cgiExecutable);
+			else // non CGI post
 			{
-				buildErrorResponse(404);
+				statusCode = 200;
+				buildErrorResponse(statusCode);
+				response.setResponseBuffer();
 			}
-			else
-			{
-				std::string cgiExecutable = getCGIExecutable();
-				if (cgiExecutable.size())
-					buildCGIResponse(cgiExecutable);
-				else // non CGI post
-				{
-					statusCode = 200;
-					buildErrorResponse(statusCode);
-				}
-			}
-			response.setResponseBuffer();
+			// }
 		}
 		else if (method == "DELETE")
 		{
@@ -437,8 +438,8 @@ char **Connection::makeEnvp()
 	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	envVec.push_back("PATH_INFO=/Users/jinhchoi/Github/webserv");
-	envVec.push_back("SCRIPT_NAME=/");
+	envVec.push_back("PATH_INFO=/" + targetResource);
+	// envVec.push_back("SCRIPT_NAME=/");
 	envVec.push_back("QUERY_STRING=" + request.getRequestTarget().getQueryString());
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
