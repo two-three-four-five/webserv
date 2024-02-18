@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/22 22:19:48 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/17 19:53:28 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 16:16:28 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,14 @@ public:
 	InvalidNumberArgumentError(const std::string &directive)
 		: std::logic_error("invalid number of arguments in \"" + directive + "\" directive"){};
 	virtual ~InvalidNumberArgumentError() throw(){};
+};
+
+class InvalidErrorCodeError : public std::logic_error
+{
+public:
+	InvalidErrorCodeError(const std::string &value)
+		: std::logic_error("value \"" + value + "\"must be between 300 and 599"){};
+	virtual ~InvalidErrorCodeError() throw(){};
 };
 
 class InvalidArgumentError : public std::logic_error
