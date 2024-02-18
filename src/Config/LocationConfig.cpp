@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 21:29:31 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:11:41 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,12 @@ LocationConfig::LocationConfig(const LocationConfig &other)
 {
 }
 
-LocationConfig::LocationConfig(const ConfigFile &block, const AHttpConfigCore &core)
+LocationConfig::LocationConfig(const AHttpConfigCore &core)
+	: AConfig(), AHttpConfigCore(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
+{
+}
+
+LocationConfig::LocationConfig(const ConfigFile &block, const AHttpConfigCore &core) throw(std::logic_error)
 	: AConfig(), AHttpConfigCore(core), modifier(), pattern(), alias(), proxyPass(), cgiPath()
 {
 	/* SAMPLE LOCATION BLOCK

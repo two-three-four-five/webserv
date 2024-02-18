@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:12 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/11 22:39:20 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:08:53 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class EventConfig : public AConfig
 public:
 	EventConfig();
 	EventConfig(const EventConfig &other);
-	EventConfig(const ConfigFile &block) throw(ParseError);
+	EventConfig(const ConfigFile &block) throw(std::logic_error);
 	EventConfig &operator=(const EventConfig &other);
 	~EventConfig();
 

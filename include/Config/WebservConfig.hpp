@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 21:16:49 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:12:56 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class WebservConfig : public AConfig
 public:
 	WebservConfig();
 	WebservConfig(const WebservConfig &other);
-	WebservConfig(const ConfigFile &configFile) throw(ParseError);
+	WebservConfig(const ConfigFile &configFile) throw(std::logic_error);
 	WebservConfig &operator=(const WebservConfig &other);
 	~WebservConfig();
 

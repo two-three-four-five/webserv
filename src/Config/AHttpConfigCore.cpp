@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 22:05:52 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:11:05 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ const bool AHttpConfigCore::isAllowedMethod(const std::string &method) const
 		return allowMethods.count(method) > 0;
 }
 
-void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directives)
+void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directives) throw(std::logic_error)
 {
 	std::vector<std::string> params;
 	size_t numToken;
@@ -217,7 +217,7 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 	}
 }
 
-void AHttpConfigCore::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks)
+void AHttpConfigCore::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks) throw()
 {
 	std::string subBlockName, type, extension;
 	for (size_t i = 0; i < subBlocks.size(); i++)

@@ -6,10 +6,9 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:00 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/17 23:28:24 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:11:46 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "Config/ServerConfig.hpp"
 
@@ -22,7 +21,7 @@ ServerConfig::ServerConfig(const ServerConfig &other)
 {
 }
 
-ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
+ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core) throw(std::logic_error)
 	: AConfig(), AHttpConfigCore(core), names(), ports(), locations(3)
 {
 	ports.insert(80);
@@ -97,6 +96,18 @@ ServerConfig::ServerConfig(const ConfigFile &block, const AHttpConfigCore &core)
 					throw DuplicateLocationError(conf.getPattern());
 			locations[mIdx].push_back(conf);
 		}
+	}
+
+	bool hasDefault = false;
+	for (size_t i = 0; i < locations[2].size(); ++i)
+		if (locations[2][i].getPattern() == "/")
+			hasDefault = true;
+	if (!hasDefault)
+	{
+		LocationConfig defaultLocationConfig(*this);
+		defaultLocationConfig.setModifier("^");
+		defaultLocationConfig.setPattern("/");
+		locations[2].push_back(defaultLocationConfig);
 	}
 }
 

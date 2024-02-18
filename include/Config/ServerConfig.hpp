@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 17:14:01 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:08:43 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class ServerConfig : public AConfig, public AHttpConfigCore
 public:
 	ServerConfig();
 	ServerConfig(const ServerConfig &other);
-	ServerConfig(const ConfigFile &block, const AHttpConfigCore &core);
+	ServerConfig(const ConfigFile &block, const AHttpConfigCore &core) throw(std::logic_error);
 	ServerConfig &operator=(const ServerConfig &other);
 	~ServerConfig();
 

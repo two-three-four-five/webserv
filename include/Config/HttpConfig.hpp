@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 21:16:52 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:08:51 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class HttpConfig : public AConfig, public AHttpConfigCore
 public:
 	HttpConfig();
 	HttpConfig(const HttpConfig &other);
-	HttpConfig(const ConfigFile &block) throw(ParseError);
+	HttpConfig(const ConfigFile &block) throw(std::logic_error);
 	HttpConfig &operator=(const HttpConfig &other);
 	~HttpConfig();
 

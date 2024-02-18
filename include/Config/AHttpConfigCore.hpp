@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 16:43:59 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:09:26 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,8 @@ public:
 
 	const bool isAllowedMethod(const std::string &method) const;
 
-	void setHttpConfigCore(const ConfigFile::directives_t &directives);
-	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks);
+	void setHttpConfigCore(const ConfigFile::directives_t &directives) throw(std::logic_error);
+	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks) throw();
 
 private:
 	long long clientMaxBodySize;

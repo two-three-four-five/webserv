@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 21:21:36 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:11:53 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ WebservConfig::WebservConfig() : AConfig(), event(), http() {}
 
 WebservConfig::WebservConfig(const WebservConfig &other) : AConfig(other), event(other.event), http(other.http) {}
 
-WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : AConfig(), event(), http()
+WebservConfig::WebservConfig(const ConfigFile &configFile) throw(std::logic_error) : AConfig(), event(), http()
 {
 	ConfigFile main = configFile.getSubBlocks().at(0);
 
@@ -64,6 +64,8 @@ WebservConfig::WebservConfig(const ConfigFile &configFile) throw(ParseError) : A
 			http = HttpConfig(subBlock);
 		}
 	}
+	if (!hasHttp)
+		throw ParseError("http block not found");
 }
 
 WebservConfig &WebservConfig::operator=(const WebservConfig &other)

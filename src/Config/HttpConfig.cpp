@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 21:27:02 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:11:34 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ HttpConfig::HttpConfig() : AConfig(), AHttpConfigCore(), servers() {}
 
 HttpConfig::HttpConfig(const HttpConfig &other) : AConfig(other), AHttpConfigCore(other), servers(other.servers) {}
 
-HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError) : AConfig(), AHttpConfigCore(), servers()
+HttpConfig::HttpConfig(const ConfigFile &block) throw(std::logic_error) : AConfig(), AHttpConfigCore(), servers()
 {
 	setHttpConfigCore(block.getDirectives());
 	setHttpConfigCore(block.getSubBlocks());
@@ -79,6 +79,9 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(ParseError) : AConfig(), A
 				servers.push_back(newServerConfig);
 		}
 	}
+
+	if (servers.empty())
+		throw ParseError("server block not found");
 }
 
 HttpConfig &HttpConfig::operator=(const HttpConfig &other)

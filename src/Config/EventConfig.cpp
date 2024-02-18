@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 21:24:40 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:11:23 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ EventConfig::EventConfig() : AConfig(), workerConnections(512) {}
 
 EventConfig::EventConfig(const EventConfig &other) : AConfig(other), workerConnections(other.workerConnections) {}
 
-EventConfig::EventConfig(const ConfigFile &block) throw(ParseError) : AConfig(), workerConnections(512)
+EventConfig::EventConfig(const ConfigFile &block) throw(std::logic_error) : AConfig(), workerConnections(512)
 {
 	std::vector<std::string> params;
 	size_t numToken;

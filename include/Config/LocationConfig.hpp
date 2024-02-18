@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:07:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/15 15:16:22 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 15:12:09 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #define LOCATIONCONFIG_HPP
 
 #include "Config/AConfig.hpp"
-#include "Config/ConfigException.hpp"
 #include "Config/AHttpConfigCore.hpp"
+#include "Config/ConfigException.hpp"
 #include "File/ConfigFile.hpp"
 #include <iostream>
 #include <string>
@@ -27,7 +27,8 @@ class LocationConfig : public AConfig, public AHttpConfigCore
 public:
 	LocationConfig();
 	LocationConfig(const LocationConfig &other);
-	LocationConfig(const ConfigFile &block, const AHttpConfigCore &core);
+	LocationConfig(const AHttpConfigCore &core);
+	LocationConfig(const ConfigFile &block, const AHttpConfigCore &core) throw(std::logic_error);
 	LocationConfig &operator=(const LocationConfig &other);
 	~LocationConfig();
 
