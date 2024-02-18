@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:43:53 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 20:55:20 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 16:11:29 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ bool hasSpace(const std::string &str);
 std::string toLower(const std::string &str);
 
 int hexStrToDecInt(const std::string &hex);
+
+bool isAllDigit(const std::string &str);
 
 } // namespace string
 } // namespace util

@@ -373,6 +373,12 @@ void Connection::writeToCGI(int fd)
 	int ret = write(fd, wrBuffer + written, bytesToWrite);
 	if (ret > 0)
 		written += ret;
+	else
+	{
+		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
+		buildErrorResponse(400);
+		response.setResponseBuffer();
+	}
 }
 
 void Connection::readFromCGI(int fd, bool eof)
@@ -381,7 +387,13 @@ void Connection::readFromCGI(int fd, bool eof)
 	char buffer[BUFFER_SIZE + 1];
 
 	bytes_read = read(fd, buffer, BUFFER_SIZE);
-	if (bytes_read > 0)
+	if (bytes_read < 0)
+	{
+		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
+		buildErrorResponse(400);
+		response.setResponseBuffer();
+	}
+	else if (bytes_read > 0)
 	{
 		CGIOutput.write(buffer, bytes_read);
 		readen += bytes_read;

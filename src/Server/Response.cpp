@@ -127,7 +127,12 @@ void Response::send(int fd)
 	const char *wrBuffer = responseBuffer.c_str();
 	size_t bytesToWrite = std::min(responseBytes - writtenBytes, (unsigned long)BUFFER_SIZE);
 	int ret = write(fd, wrBuffer + writtenBytes, bytesToWrite);
-	if (ret != -1)
+	if (ret < 1)
+	{
+		responseState = End;
+		return;
+	}
+	else
 		writtenBytes += ret;
 	if (writtenBytes == responseBytes)
 		responseState = End;

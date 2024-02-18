@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 15:47:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/16 20:55:28 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 16:09:41 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,4 +84,14 @@ int util::string::hexStrToDecInt(const std::string &hex)
 			decimalValue += (*it - 'a' + 10);
 	}
 	return (decimalValue);
+}
+
+bool util::string::isAllDigit(const std::string &str)
+{
+	for (int i = 0; i < str.length(); i++)
+	{
+		if (!std::isdigit(str[i]))
+			return (false);
+	}
+	return (true);
 }

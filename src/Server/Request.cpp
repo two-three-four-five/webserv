@@ -50,6 +50,12 @@ int Request::readRequest(const int fd)
 {
 	int idx;
 	int str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
+
+	if (str_len < 0)
+	{
+		parseStatus = End;
+		return 400;
+	}
 	buffer += std::string(charBuf, str_len);
 
 	if (parseStatus != Body)
@@ -153,7 +159,7 @@ int Request::parseHeaders(const std::string &fieldLine)
 	if (value.length() > HEADER_LIMIT)
 	{
 		parseStatus = End;
-		return 400;
+		return 431;
 	}
 	key = util::string::toLower(key);
 	std::map<std::string, std::string>::iterator it = headers.find(key);
@@ -206,23 +212,30 @@ void Request::setBodyParseFunction()
 int Request::checkHeaderField()
 {
 	std::map<std::string, std::string>::iterator transferEncodingIt = headers.find("transfer-encoding");
+	std::map<std::string, std::string>::iterator contentLengthIt = headers.find("content-length");
 	if (transferEncodingIt != headers.end())
 	{
 		std::vector<std::string> transferEncoding = parseTransferEncoding(transferEncodingIt->second);
 		std::vector<std::string>::iterator chunkedIt =
 			std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
 		if (chunkedIt == transferEncoding.end() || chunkedIt + 1 != transferEncoding.end() ||
-			headers.find("content-length") != headers.end())
+			contentLengthIt != headers.end())
 		{
 			parseStatus = End;
 			return 400;
 		}
 	}
 
-	if (method == "POST" && transferEncodingIt == headers.end() && headers.find("content-length") == headers.end())
+	if (method == "POST" && transferEncodingIt == headers.end() && contentLengthIt == headers.end())
 	{
 		parseStatus = End;
 		return 411;
+	}
+
+	if (contentLengthIt != headers.end() && !util::string::isAllDigit(contentLengthIt->second))
+	{
+		parseStatus = End;
+		return 400;
 	}
 
 	std::map<std::string, std::string>::iterator hostIt = headers.find("host");
@@ -335,6 +348,9 @@ int Request::parseByTransferEncoding(const int &fd)
 int Request::parseByContentLength(const int &fd)
 {
 	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
+
+	if (bytesRead < 1)
+		return (400);
 
 	if (bodyLength + bytesRead > contentLength)
 	{
