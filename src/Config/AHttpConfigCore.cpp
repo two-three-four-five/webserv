@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/18 15:11:05 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 16:16:41 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,7 +193,6 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 		}
 		else if (key == "error_page")
 		{
-			// what if error_page option duplicate?
 			if (params.size() == 1)
 				throw InvalidArgumentError(key, value);
 			for (size_t i = 0; i < params.size() - 1; i++)
@@ -202,7 +201,7 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 				if (valueToInt.second && 300 <= valueToInt.first && valueToInt.first < 600)
 					errorPages.insert(std::make_pair(valueToInt.first, params.back()));
 				else
-					; // error
+					throw InvalidErrorCodeError(params[i]);
 			}
 		}
 		else if (key == "allow_methods")
