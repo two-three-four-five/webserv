@@ -132,7 +132,7 @@ const ConfigFile::parameters_t &ConfigFile::getParameters() const { return param
 const ConfigFile::directives_t &ConfigFile::getDirectives() const { return directives; }
 const ConfigFile::subblocks_t &ConfigFile::getSubBlocks() const { return subBlocks; }
 
-void ConfigFile::include() throw(IncludeError)
+void ConfigFile::include() throw(IncludeError, ParseError)
 {
 	directives_t::iterator incBegin = this->directives.lower_bound("include");
 	directives_t::iterator incEnd = this->directives.upper_bound("include");

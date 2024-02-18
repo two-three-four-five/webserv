@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 17:08:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/13 15:57:11 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 14:10:09 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ public:
 	const directives_t &getDirectives() const;
 	const subblocks_t &getSubBlocks() const;
 
-	void include() throw(IncludeError);
+	void include() throw(IncludeError, ParseError);
 
 private:
 	static const std::string meta;
