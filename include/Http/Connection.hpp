@@ -6,7 +6,7 @@
 /*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/17 23:24:17 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/18 12:01:54 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ public:
 	void buildErrorResponse(int statusCode);
 	void build301Response(const std::string &redirectTarget);
 
+	std::string getCGIExecutable();
 	void buildCGIResponse(const std::string &scriptPath);
 	void writeToCGI(int fd);
 	void readFromCGI(int fd, bool eof);
