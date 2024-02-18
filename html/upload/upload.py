@@ -25,7 +25,7 @@ def save_uploaded_file(fileitem):
 
 def main():
     print("Status: 200 OK\r")
-    print("Content-type: text/html\r\n\r")
+    print("Content-type: text/html; charset=utf-8\r\n\r")
 
     # Create an instance of the FieldStorage class
     form = cgi.FieldStorage()

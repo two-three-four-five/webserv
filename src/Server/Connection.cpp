@@ -2,6 +2,7 @@
 
 #include "File/Directory.hpp"
 #include "File/File.hpp"
+#include <cstdio>
 #include <string>
 #include <sys/event.h>
 #include <sys/socket.h>
@@ -41,7 +42,7 @@ Connection &Connection::operator=(Connection &rhs)
 
 Connection::~Connection() {}
 
-bool Connection::readRequest(int fd)
+void Connection::readRequest(int fd)
 {
 	startTime = time(NULL);
 	statusCode = request.readRequest(fd);
@@ -62,8 +63,6 @@ bool Connection::readRequest(int fd)
 	{
 		buildResponseFromRequest();
 	}
-
-	return true;
 }
 
 std::string Connection::getTargetResource(std::string &requestTarget)
@@ -88,13 +87,13 @@ std::string Connection::getTargetResource(std::string &requestTarget)
 		}
 		else
 		{
-			std::vector<std::string> indexes = targetLocationConfig.getIndexes();
+			const std::vector<std::string> &indexes = targetLocationConfig.getIndexes();
 			std::string defaultTargetResource;
 			if (indexes.size() == 0)
 				defaultTargetResource = tempTargetResource + "index.html";
 			else
 				defaultTargetResource = tempTargetResource + indexes[0];
-			for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++)
+			for (std::vector<std::string>::const_iterator it = indexes.begin(); it != indexes.end(); it++)
 			{
 				if (RegularFile(tempTargetResource + *it).valid())
 				{
@@ -109,7 +108,6 @@ std::string Connection::getTargetResource(std::string &requestTarget)
 
 std::string Connection::configureTargetResource(std::string requestTarget)
 {
-	int depth = -1;
 	// =
 	const std::vector<LocationConfig> &equalLocations = targetServer->getServerConfig().getLocations().at(0);
 	std::vector<LocationConfig>::const_iterator selectedIt = equalLocations.end();
@@ -142,6 +140,7 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 	// }
 
 	// ^
+	int depth = -1;
 	const std::vector<LocationConfig> &locations = targetServer->getServerConfig().getLocations().at(2);
 	selectedIt = locations.end();
 
@@ -151,7 +150,9 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 		const std::string &pattern = it->getPattern();
 		if (requestTarget.find(pattern) == 0)
 		{
-			int currDepth = pattern == "/" ? 0 : std::count(pattern.begin(), pattern.end(), '/');
+			int currDepth = std::count(pattern.begin(), pattern.end(), '/');
+			if (pattern.back() == '/')
+				currDepth -= 1;
 			if (depth < currDepth)
 			{
 				depth = currDepth;
@@ -166,18 +167,15 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 std::string Connection::getCGIExecutable()
 {
 	// $
-	if (request.getMethod() == "POST" || request.getMethod() == "DELETE")
-	{
-		const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
+	const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
 
-		for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
+	for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
+	{
+		const std::string &requestTarget = request.getRequestTarget().getTargetURI();
+		const std::string &pattern = it->getPattern();
+		if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
 		{
-			const std::string &requestTarget = request.getRequestTarget().getTargetURI();
-			const std::string &pattern = it->getPattern();
-			if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
-			{
-				return (it->getCgiPath());
-			}
+			return (it->getCgiPath());
 		}
 	}
 	return std::string();
@@ -212,32 +210,33 @@ void Connection::buildResponseFromRequest()
 			else if (targetFile.isDirectory())
 				build301Response("http://" + request.getHeaders().find("host")->second +
 								 request.getRequestTarget().getTargetURI() + "/");
-			else if (targetFile.isRegularFile() || targetLocationConfig.getProxyPass().length() != 0)
+			else if (targetFile.isReadable() || targetLocationConfig.getProxyPass().length() != 0)
 				buildGetResponse();
-			else if (!targetFile.isRegularFile())
+			else if (!targetFile.isReadable())
 				buildErrorResponse(404);
 			response.setResponseBuffer();
 		}
 		else if (method == "POST")
 		{
-			File targetFile(targetResource);
-			// if (!targetFile.exist())
-			// {
-			// 	buildErrorResponse(404);
-			// 	response.setResponseBuffer();
-			// }
-			// else
-			// {
 			std::string cgiExecutable = getCGIExecutable();
 			if (cgiExecutable.size())
+			{
+				File file(cgiExecutable);
+
+				if (!file.isExecutable())
+				{
+					statusCode = 500;
+					buildErrorResponse(statusCode);
+					response.setResponseBuffer();
+					return;
+				}
 				buildCGIResponse(cgiExecutable);
+			}
 			else // non CGI post
 			{
-				statusCode = 200;
-				buildErrorResponse(statusCode);
+				buildGetResponse();
 				response.setResponseBuffer();
 			}
-			// }
 		}
 		else if (method == "DELETE")
 		{
@@ -253,17 +252,21 @@ void Connection::buildResponseFromRequest()
 
 void Connection::buildDeleteResponse()
 {
-	response.setStatusLine(std::string("HTTP/1.1 200 OK"));
-	response.makeBody(targetLocationConfig, targetResource);
-	std::remove(targetResource.c_str());
+	if (!std::remove(targetResource.c_str())) // success
+	{
+		response.setStatusLine(std::string("HTTP/1.1 200 OK"));
+		response.setBody("<html><body><h1>File deleted.</h1></body></html>");
+	}
+	else
+	{
+		buildErrorResponse(403);
+	}
 }
 
 void Connection::buildGetResponse()
 {
-	if (request.getHeaders().find("host") == request.getHeaders().end())
-		buildErrorResponse(400);
-	else if (targetLocationConfig.getProxyPass().length() != 0)
-		build301Response(targetLocationConfig.getProxyPass());
+	if (targetLocationConfig.getProxyPass().length() != 0)
+		build301Response(targetLocationConfig.getProxyPass() + request.getRequestTarget().getTargetURI());
 	else if (File(targetResource).getFileSize() > 2147483648)
 		buildErrorResponse(403);
 	else
@@ -289,13 +292,15 @@ void Connection::buildErrorResponse(int statusCode)
 	// found error page
 	std::map<int, std::string>::iterator targetIt = errorPages.find(statusCode);
 	// targetResource 실제 파일
-	std::string targetResource;
 	if (targetIt == errorPages.end())
 		response.makeErrorBody(statusCode);
 	else
 	{
-		targetResource = configureTargetResource(targetIt->second);
-		response.makeBody(targetLocationConfig, targetResource);
+		std::string targetResource = configureTargetResource(targetIt->second);
+		if (!File(targetResource).isReadable())
+			response.makeErrorBody(statusCode);
+		else
+			response.makeBody(targetLocationConfig, targetResource);
 	}
 	if (statusCode == 413)
 		response.removeHeaders("Content-Length");
@@ -308,12 +313,13 @@ void Connection::build301Response(const std::string &redirectTarget)
 	response.addToHeaders("Location", redirectTarget);
 	std::map<int, std::string> errorPages = targetLocationConfig.getErrorPages();
 	std::map<int, std::string>::iterator targetIt = errorPages.find(301);
-	std::string targetResource;
 	if (targetIt == errorPages.end())
-		targetResource = "error/301.html";
+		response.makeErrorBody(301);
 	else
-		targetResource = configureTargetResource(targetIt->second);
-	response.makeBody(targetLocationConfig, targetResource);
+	{
+		std::string targetResource = configureTargetResource(targetIt->second);
+		response.makeBody(targetLocationConfig, targetResource);
+	}
 }
 
 void Connection::buildCGIResponse(const std::string &scriptPath)
@@ -323,17 +329,7 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
 	// std::string queryString = "first=1&second=2";
 	*/
-	char *argv[] = {(char *)scriptPath.c_str(), (char *)targetResource.c_str(), NULL};
-	char **envp = makeEnvp();
 
-	File cgiExecutable(scriptPath);
-
-	if (!(cgiExecutable.isRegularFile() && cgiExecutable.isExecutable()))
-	{
-		statusCode = 200;
-		buildErrorResponse(statusCode);
-		return;
-	}
 	int outward_fd[2];
 	int inward_fd[2];
 
@@ -347,23 +343,14 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	cgiPID = fork();
 	if (cgiPID == 0)
 	{
+		char *argv[] = {(char *)scriptPath.c_str(), (char *)targetResource.c_str(), NULL};
+		char **envp = makeEnvp();
 		close(outward_fd[0]);
 		close(inward_fd[1]);
 		dup2(outward_fd[1], STDOUT_FILENO);
 		dup2(inward_fd[0], STDIN_FILENO);
-
-		if (cgiExecutable.isRegularFile() && cgiExecutable.isExecutable())
-		{
-			execve(argv[0], argv, envp);
-		}
-		else
-		{
-			std::cerr << scriptPath << std::endl;
-			std::cerr << "No authorization" << std::endl;
-			exit(1);
-		}
-		perror(scriptPath.c_str());
-		exit(1);
+		execve(argv[0], argv, envp);
+		std::exit(1);
 	}
 	else
 	{
@@ -396,7 +383,7 @@ void Connection::writeToCGI(int fd)
 	else
 	{
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
-		buildErrorResponse(400);
+		buildErrorResponse(500);
 		response.setResponseBuffer();
 	}
 }
@@ -410,7 +397,7 @@ void Connection::readFromCGI(int fd, bool eof)
 	if (bytes_read < 0)
 	{
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
-		buildErrorResponse(400);
+		buildErrorResponse(500);
 		response.setResponseBuffer();
 	}
 	else if (bytes_read > 0)
@@ -426,23 +413,29 @@ void Connection::readFromCGI(int fd, bool eof)
 	{
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
 
-		std::string returned = CGIOutput.str();
+		// std::string returned = CGIOutput.str();
 		std::string header;
+		// std::istringstream iss(CGIOutput.str());
+
 		while (true)
 		{
-			header = returned.substr(0, returned.find('\r'));
-			returned = returned.substr(returned.find('\n') + 1);
-
-			if (!header.size())
+			std::getline(CGIOutput, header);
+			if (!header.size() || header == "\r")
 				break;
-			std::string key = header.substr(0, header.find(':'));
-			std::string value = header.substr(header.find(':') + 2);
-			if (key == "Status")
+			if (header.back() == '\r')
+				header.erase(header.length() - 1);
+			std::istringstream iss(header);
+			std::string key, value;
+			std::getline(iss, key, ':');
+			std::getline(iss >> std::ws, value);
+			if (util::string::toLower(key) == "status")
 				response.setStatusLine("HTTP/1.1 " + value);
 			else
 				response.addToHeaders(key, value);
 		}
-		response.setBody(returned);
+		std::ostringstream body;
+		body << CGIOutput.rdbuf();
+		response.setBody(body.str());
 		response.setResponseBuffer();
 	}
 }
@@ -453,7 +446,6 @@ char **Connection::makeEnvp()
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	envVec.push_back("PATH_INFO=/" + targetResource);
-	// envVec.push_back("SCRIPT_NAME=/");
 	envVec.push_back("QUERY_STRING=" + request.getRequestTarget().getQueryString());
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
@@ -475,12 +467,6 @@ char **Connection::makeEnvp()
 		envVec.push_back(key + "=" + value);
 	}
 
-	if (request.getHeaders().find("content-type") != request.getHeaders().end())
-	{
-		std::string contentType("CONTENT_TYPE=");
-		contentType += request.getHeaders().find("content-type")->second;
-		envVec.push_back(contentType);
-	};
 	std::stringstream ss;
 	ss << request.getBody().length();
 	std::string contentLength("CONTENT_LENGTH=");
@@ -514,6 +500,7 @@ void Connection::reset()
 	request = Request();
 	response = Response();
 	CGIOutput.str("");
+	CGIOutput.clear();
 }
 
 const int &Connection::getStatusCode() const { return statusCode; }
@@ -527,3 +514,7 @@ const Server *Connection::getTargetServer() const { return targetServer; }
 const time_t &Connection::getStartTime() const { return startTime; }
 
 const LocationConfig &Connection::getTargetLocationConfig() const { return targetLocationConfig; }
+
+const int Connection::getReadPipe() const { return readPipe; }
+
+const int Connection::getWritePipe() const { return writePipe; }

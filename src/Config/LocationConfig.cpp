@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConfig.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:08:09 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/18 15:11:41 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/18 20:34:52 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@ LocationConfig::LocationConfig(const ConfigFile &block, const AHttpConfigCore &c
 	if (modifier != "=" && modifier != "$" && modifier != "^")
 		throw ParseError("unexpected location parameter: " + modifier);
 	pattern = block.getParameters().at(1);
+	if (modifier == "^" && pattern.front() != '/')
+		throw ParseError("pattern must start with '/'");
 
 	setHttpConfigCore(block.getDirectives());
 	setHttpConfigCore(block.getSubBlocks());

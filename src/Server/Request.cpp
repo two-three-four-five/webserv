@@ -49,14 +49,14 @@ Request::~Request() {}
 int Request::readRequest(const int fd)
 {
 	int idx;
-	int str_len = recv(fd, charBuf, BUFFER_SIZE, 0);
+	int readBytes = recv(fd, charBuf, BUFFER_SIZE, 0);
 
-	if (str_len < 0)
+	if (readBytes <= 0)
 	{
 		parseStatus = End;
 		return 400;
 	}
-	buffer += std::string(charBuf, str_len);
+	buffer += std::string(charBuf, readBytes);
 
 	if (parseStatus != Body)
 	{
@@ -154,8 +154,7 @@ int Request::parseHeaders(const std::string &fieldLine)
 		parseStatus = End;
 		return 400;
 	} // 400 Bad Request
-	std::getline(iss >> std::ws, value);
-	value = value.substr(0, value.find('\r'));
+	std::getline(iss >> std::ws, value, '\r');
 	if (value.length() > HEADER_LIMIT)
 	{
 		parseStatus = End;
@@ -181,7 +180,7 @@ void Request::setBodyParseFunction()
 	std::map<std::string, std::string>::iterator contentLengthIt = headers.find("content-length");
 	if (contentLengthIt != headers.end())
 	{
-		contentLength = stoi(contentLengthIt->second);
+		contentLength = util::string::stoi(contentLengthIt->second).first;
 		parseBody = &Request::parseByContentLength;
 	}
 
@@ -202,10 +201,7 @@ void Request::setBodyParseFunction()
 	std::map<std::string, std::string>::iterator transferEncodingIt = headers.find("transfer-encoding");
 	if (transferEncodingIt != headers.end())
 	{
-		std::vector<std::string> transferEncoding = parseTransferEncoding(transferEncodingIt->second);
-		std::vector<std::string>::iterator it = std::find(transferEncoding.begin(), transferEncoding.end(), "chunked");
-		if (it + 1 == transferEncoding.end())
-			parseBody = &Request::parseByTransferEncoding;
+		parseBody = &Request::parseByTransferEncoding;
 	}
 }
 
@@ -250,6 +246,7 @@ int Request::checkHeaderField()
 	{
 		connectionClose = true;
 	}
+
 	return 0;
 }
 
@@ -347,20 +344,19 @@ int Request::parseByTransferEncoding(const int &fd)
 
 int Request::parseByContentLength(const int &fd)
 {
-	ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
-
-	if (bytesRead < 1)
-		return (400);
-
-	if (bodyLength + bytesRead > contentLength)
+	// ssize_t bytesRead = read(fd, charBuf, BUFFER_SIZE);
+	if (bodyLength + buffer.length() > contentLength)
 	{
-		buffer += std::string(charBuf, contentLength - bodyLength);
+		// buffer += std::string(charBuf, contentLength - bodyLength);
+		oss.write(buffer.c_str(), contentLength - bodyLength);
+		buffer.clear();
 		bodyLength += (contentLength - bodyLength);
 	}
 	else
 	{
-		oss.write(charBuf, bytesRead);
-		bodyLength += bytesRead;
+		oss << buffer;
+		bodyLength += buffer.length();
+		buffer.clear();
 	}
 
 	if (bodyLength == contentLength)

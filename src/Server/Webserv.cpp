@@ -29,7 +29,7 @@ Webserv::Webserv()
 	statusCodeMap[404] = "Not Found";
 	statusCodeMap[405] = "Not Allowed";
 	statusCodeMap[411] = "Length Required";
-	statusCodeMap[413] = "Request Entity Too Large";
+	statusCodeMap[413] = "Content Too Large";
 	statusCodeMap[431] = "Request Header Fields Too Large";
 	statusCodeMap[500] = "Internal Server Error";
 	statusCodeMap[501] = "Not Implemented";
@@ -130,10 +130,7 @@ void Webserv::runWebserv()
 						Connection &conn = findConnectionByFd(eventFd);
 						if (conn.getRequest().getParseStatus() == End)
 							continue;
-						if (!conn.readRequest(eventFd))
-						{
-							disconnectClient(eventFd);
-						}
+						conn.readRequest(eventFd);
 					}
 					else if (event_list[i].filter == EVFILT_WRITE)
 					{
@@ -157,14 +154,13 @@ void Webserv::runWebserv()
 				}
 				else if (inCGISocks(eventFd))
 				{
+					Connection &conn = findConnectionByFd(cgiFdToConnectionFd.find(eventFd)->second);
 					if (event_list[i].filter == EVFILT_WRITE)
 					{
-						Connection &conn = findConnectionByFd(cgiFdToConnectionFd.find(eventFd)->second);
 						conn.writeToCGI(eventFd);
 					}
 					else if (event_list[i].filter == EVFILT_READ)
 					{
-						Connection &conn = findConnectionByFd(cgiFdToConnectionFd.find(eventFd)->second);
 						conn.readFromCGI(eventFd, event_list[i].flags & EV_EOF);
 					}
 				}
@@ -212,6 +208,10 @@ void Webserv::disconnectClient(int socketfd)
 	EV_SET(&event, socketfd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
 	close(socketfd);
+
+	Connection &conn = findConnectionByFd(socketfd);
+	if (conn.getResponse().getResponseState() == Response::BuildingCGI)
+		deleteCGIEvent(conn.getReadPipe(), conn.getWritePipe());
 
 	Connections.erase(socketfd);
 

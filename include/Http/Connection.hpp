@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/18 12:01:54 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/18 22:28:12 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ public:
 	Connection &operator=(Connection &rhs);
 	~Connection();
 
-	bool readRequest(int fd);
+	void readRequest(int fd);
 	std::string configureTargetResource(std::string requestTarget);
 	std::string getTargetResource(std::string &requestTarget);
 
@@ -59,6 +59,8 @@ public:
 	const Server *getTargetServer() const;
 	const time_t &getStartTime() const;
 	const LocationConfig &getTargetLocationConfig() const;
+	const int getReadPipe() const;
+	const int getWritePipe() const;
 
 private:
 	Request request;
@@ -77,7 +79,7 @@ private:
 	int writePipe;
 	size_t wrBytes;
 	size_t written;
-	std::ostringstream CGIOutput;
+	std::stringstream CGIOutput;
 	size_t readen;
 	bool end;
 };

@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 		std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
 		return 1;
 	}
+	Webserv &webserv = Webserv::getInstance();
 
 	try
 	{
@@ -19,7 +20,6 @@ int main(int argc, char *argv[])
 		ConfigFile configFile = ConfigFile(confPath);
 		configFile.include();
 		WebservConfig config = WebservConfig(configFile);
-		Webserv &webserv = Webserv::getInstance();
 
 		for (std::vector<ServerConfig>::const_iterator it = config.getHttpConfig().getServers().begin();
 			 it != config.getHttpConfig().getServers().end(); it++)
@@ -27,12 +27,14 @@ int main(int argc, char *argv[])
 			Server *server = new Server(*it);
 			webserv.addServer(server);
 		}
-
-		webserv.runWebserv();
 	}
 	catch (const std::exception &e)
 	{
 		std::cerr << "thrown: " << e.what() << '\n';
+		return 1;
 	}
+
+	webserv.runWebserv();
+
 	return 0;
 }
