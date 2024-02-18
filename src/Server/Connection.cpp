@@ -244,6 +244,8 @@ void Connection::buildGetResponse()
 		buildErrorResponse(400);
 	else if (targetLocationConfig.getProxyPass().length() != 0)
 		build301Response(targetLocationConfig.getProxyPass());
+	else if (File(targetResource).getFileSize() > 2147483648)
+		buildErrorResponse(403);
 	else
 	{
 		response.setStatusLine(std::string("HTTP/1.1 200 OK"));
