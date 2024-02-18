@@ -48,7 +48,7 @@ bool Connection::readRequest(int fd)
 
 	if (request.getParseStatus() >= Body)
 	{
-		if (targetServer == NULL)
+		if (targetServer == NULL && !statusCode)
 		{
 			targetServer = Webserv::getInstance().findTargetServer(port, request);
 			targetResource = configureTargetResource(request.getRequestTarget().getTargetURI());
@@ -125,21 +125,21 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 	}
 
 	// $
-	if (request.getMethod() == "POST" || request.getMethod() == "DELETE")
-	{
-		const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
-		selectedIt = endLocations.end();
+	// if (request.getMethod() == "POST" || request.getMethod() == "DELETE")
+	// {
+	// 	const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
+	// 	selectedIt = endLocations.end();
 
-		for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
-		{
-			const std::string &pattern = it->getPattern();
-			if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
-			{
-				targetLocationConfig = *it;
-				return (it->getCgiPath());
-			}
-		}
-	}
+	// 	for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
+	// 	{
+	// 		const std::string &pattern = it->getPattern();
+	// 		if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+	// 		{
+	// 			targetLocationConfig = *it;
+	// 			return (it->getCgiPath());
+	// 		}
+	// 	}
+	// }
 
 	// ^
 	const std::vector<LocationConfig> &locations = targetServer->getServerConfig().getLocations().at(2);
@@ -161,6 +161,26 @@ std::string Connection::configureTargetResource(std::string requestTarget)
 	}
 	targetLocationConfig = *selectedIt;
 	return getTargetResource(requestTarget);
+}
+
+std::string Connection::getCGIExecutable()
+{
+	// $
+	if (request.getMethod() == "POST" || request.getMethod() == "DELETE")
+	{
+		const std::vector<LocationConfig> &endLocations = targetServer->getServerConfig().getLocations().at(1);
+
+		for (std::vector<LocationConfig>::const_iterator it = endLocations.begin(); it != endLocations.end(); it++)
+		{
+			const std::string &requestTarget = request.getRequestTarget().getTargetURI();
+			const std::string &pattern = it->getPattern();
+			if (requestTarget.rfind(pattern) == requestTarget.length() - pattern.length())
+			{
+				return (it->getCgiPath());
+			}
+		}
+	}
+	return std::string();
 }
 
 void Connection::buildResponseFromRequest()
@@ -200,24 +220,24 @@ void Connection::buildResponseFromRequest()
 		}
 		else if (method == "POST")
 		{
-			if (targetLocationConfig.getCgiPath().size())
+			File targetFile(targetResource);
+			// if (!targetFile.exist())
+			// {
+			// 	buildErrorResponse(404);
+			// 	response.setResponseBuffer();
+			// }
+			// else
+			// {
+			std::string cgiExecutable = getCGIExecutable();
+			if (cgiExecutable.size())
+				buildCGIResponse(cgiExecutable);
+			else // non CGI post
 			{
-				buildCGIResponse(targetLocationConfig.getCgiPath());
-				return;
+				statusCode = 200;
+				buildErrorResponse(statusCode);
+				response.setResponseBuffer();
 			}
-			else
-			{
-				File targetFile(targetResource);
-
-				if (!(targetFile.isRegularFile() && targetFile.isExecutable()))
-				{
-					statusCode = 200;
-					buildErrorResponse(statusCode);
-				}
-				else
-					buildCGIResponse(targetResource);
-			}
-			response.setResponseBuffer();
+			// }
 		}
 		else if (method == "DELETE")
 		{
@@ -303,12 +323,12 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	// std::string scriptPath = home_path + "/cgi-bin/my_cgi.py";
 	// std::string queryString = "first=1&second=2";
 	*/
-	char *argv[] = {(char *)scriptPath.c_str(), NULL};
+	char *argv[] = {(char *)scriptPath.c_str(), (char *)targetResource.c_str(), NULL};
 	char **envp = makeEnvp();
 
-	File target(scriptPath);
+	File cgiExecutable(scriptPath);
 
-	if (!(target.isRegularFile() && target.isExecutable()))
+	if (!(cgiExecutable.isRegularFile() && cgiExecutable.isExecutable()))
 	{
 		statusCode = 200;
 		buildErrorResponse(statusCode);
@@ -332,7 +352,7 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		dup2(outward_fd[1], STDOUT_FILENO);
 		dup2(inward_fd[0], STDIN_FILENO);
 
-		if (target.isRegularFile() && target.isExecutable())
+		if (cgiExecutable.isRegularFile() && cgiExecutable.isExecutable())
 		{
 			execve(argv[0], argv, envp);
 		}
@@ -420,7 +440,8 @@ char **Connection::makeEnvp()
 	// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 	std::vector<std::string> envVec;
 	envVec.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	envVec.push_back("PATH_INFO=/");
+	envVec.push_back("PATH_INFO=/" + targetResource);
+	// envVec.push_back("SCRIPT_NAME=/");
 	envVec.push_back("QUERY_STRING=" + request.getRequestTarget().getQueryString());
 	std::string requestMethod("REQUEST_METHOD=");
 	requestMethod += request.getMethod();
