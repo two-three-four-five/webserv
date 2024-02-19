@@ -6,7 +6,7 @@
 /*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/19 17:30:08 by jukim2           ###   ########.fr       */
+/*   Updated: 2024/02/19 18:10:21 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,11 @@ public:
 
 	void buildResponseFromRequest();
 	void buildGetResponse();
+	void buildPostResponse();
 	void buildDirectoryResponse();
 	void buildDeleteResponse();
 	void buildErrorResponse(int statusCode);
-	void build301Response(const std::string &redirectTarget);
+	void buildRedirectResponse(const std::string &redirectTarget);
 
 	std::string getCGIExecutable();
 	void buildCGIResponse(const std::string &scriptPath);

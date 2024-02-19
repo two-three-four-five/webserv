@@ -223,25 +223,33 @@ void Webserv::disconnectClient(int socketfd)
 void Webserv::addCGIEvent(int connectionFd, int readPipe, int writePipe)
 {
 	struct kevent event;
+
 	EV_SET(&event, readPipe, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
-	EV_SET(&event, writePipe, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-	kevent(kq, &event, 1, NULL, 0, NULL);
 	cgiFdToConnectionFd[readPipe] = connectionFd;
-	cgiFdToConnectionFd[writePipe] = connectionFd;
+	if (writePipe)
+	{
+		EV_SET(&event, writePipe, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+		kevent(kq, &event, 1, NULL, 0, NULL);
+		cgiFdToConnectionFd[writePipe] = connectionFd;
+	}
 }
 
 void Webserv::deleteCGIEvent(int readPipe, int writePipe)
 {
 	struct kevent event;
+
 	EV_SET(&event, readPipe, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
-	EV_SET(&event, writePipe, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-	kevent(kq, &event, 1, NULL, 0, NULL);
 	cgiFdToConnectionFd.erase(readPipe);
-	cgiFdToConnectionFd.erase(writePipe);
 	close(readPipe);
-	close(writePipe);
+	if (writePipe)
+	{
+		EV_SET(&event, writePipe, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+		kevent(kq, &event, 1, NULL, 0, NULL);
+		cgiFdToConnectionFd.erase(writePipe);
+		close(writePipe);
+	}
 }
 
 Connection &Webserv::findConnectionByFd(int fd)

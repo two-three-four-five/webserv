@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Directory.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
+/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:05:07 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/13 20:16:03 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/19 17:25:07 by jinhchoi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ const std::string Directory::toHtml() const
 	{
 		html.append("<tr>");
 		html.append("<td><a href=\"" + contents[i].first + (S_ISDIR(contents[i].second.st_mode) ? "/" : "") + "\">" +
-					contents[i].first + "</a></td>");
+					contents[i].first + (S_ISDIR(contents[i].second.st_mode) ? "/" : "") + "</a></td>");
 		html.append("<td>January 1, 2024</td>");
 		html.append("<td>" + util::string::itos((int)contents[i].second.st_size) + "bytes</td>");
 		html.append("</tr>");

@@ -195,48 +195,28 @@ void Connection::buildResponseFromRequest()
 			response.setResponseBuffer();
 			return;
 		}
-		if (method == "GET")
-		{
-			File targetFile(targetResource);
-			if (targetFile.isDirectory() && targetLocationConfig.getAutoIndex() && targetResource.back() == '/')
-				buildDirectoryResponse();
-			else if (targetFile.isDirectory())
-				build301Response("http://" + request.getHeaders().find("host")->second +
-								 request.getRequestTarget().getTargetURI() + "/");
-			else if (targetFile.isReadable() || targetLocationConfig.getProxyPass().length() != 0)
-				buildGetResponse();
-			else if (!targetFile.isReadable())
-				buildErrorResponse(404);
-			response.setResponseBuffer();
-		}
-		else if (method == "POST")
-		{
-			std::string cgiExecutable = getCGIExecutable();
-			if (cgiExecutable.size())
-			{
-				File file(cgiExecutable);
 
-				if (!file.isExecutable())
-				{
-					statusCode = 500;
-					buildErrorResponse(statusCode);
-					response.setResponseBuffer();
-					return;
-				}
-				buildCGIResponse(cgiExecutable);
-			}
-			else // non CGI post
-			{
-				buildGetResponse();
-				response.setResponseBuffer();
-			}
-		}
-		else if (method == "DELETE")
+		std::string cgiExecutable = getCGIExecutable();
+		if (cgiExecutable.size()) // CGI exists
 		{
-			File targetFile(targetResource);
-			if (!targetFile.isRegularFile())
-				buildErrorResponse(404);
-			else
+			File cgiFile(cgiExecutable);
+
+			if (!cgiFile.isExecutable())
+			{
+				statusCode = 500;
+				buildErrorResponse(statusCode);
+				response.setResponseBuffer();
+				return;
+			}
+			buildCGIResponse(cgiExecutable);
+		}
+		else // non CGI
+		{
+			if (method == "GET")
+				buildGetResponse();
+			else if (method == "POST")
+				buildPostResponse();
+			else if (method == "DELETE")
 				buildDeleteResponse();
 			response.setResponseBuffer();
 		}
@@ -245,29 +225,45 @@ void Connection::buildResponseFromRequest()
 
 void Connection::buildDeleteResponse()
 {
-	if (!std::remove(targetResource.c_str())) // success
-	{
-		response.setStatusLine(std::string("HTTP/1.1 200 OK"));
-		response.setBody("<html><body><h1>File deleted.</h1></body></html>");
-	}
+	File targetFile(targetResource);
+
+	if (!targetFile.isRegularFile())
+		buildErrorResponse(404);
 	else
 	{
-		buildErrorResponse(403);
+		if (!std::remove(targetResource.c_str())) // delete success
+			response.setBody("<html><body><h1>File" + targetResource + " deleted.</h1></body></html>");
+		else // delete fails
+			buildErrorResponse(403);
 	}
 }
 
 void Connection::buildGetResponse()
 {
+	File targetFile(targetResource);
+
 	if (targetLocationConfig.getProxyPass().length() != 0)
-		build301Response(targetLocationConfig.getProxyPass() + request.getRequestTarget().getTargetURI());
-	else if (File(targetResource).getFileSize() > 2147483648)
-		buildErrorResponse(403);
+		buildRedirectResponse(targetLocationConfig.getProxyPass() + request.getRequestTarget().getTargetURI());
 	else
 	{
-		response.setStatusLine(std::string("HTTP/1.1 200 OK"));
-		response.makeBody(targetLocationConfig, targetResource);
+		if (targetFile.isDirectory())
+		{
+			if (targetLocationConfig.getAutoIndex() && targetResource.back() == '/')
+				buildDirectoryResponse();
+			else
+				buildRedirectResponse("http://" + request.getHeaders().find("host")->second +
+									  request.getRequestTarget().getTargetURI() + "/");
+		}
+		else if (!targetFile.isReadable())
+			buildErrorResponse(404);
+		else if (File(targetResource).getFileSize() > 2147483648)
+			buildErrorResponse(403);
+		else // readable
+			response.makeBody(targetLocationConfig, targetResource);
 	}
 }
+
+void Connection::buildPostResponse() {}
 
 void Connection::buildDirectoryResponse()
 {
@@ -299,7 +295,7 @@ void Connection::buildErrorResponse(int statusCode)
 		response.removeHeaders("Content-Length");
 }
 
-void Connection::build301Response(const std::string &redirectTarget)
+void Connection::buildRedirectResponse(const std::string &redirectTarget)
 {
 	std::string startLine = "HTTP/1.1 301 Moved Permanently";
 	response.setStatusLine(startLine);
@@ -380,9 +376,18 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		response.setResponseState(Response::BuildingCGI);
 		readen = 0;
 
-		readPipe = outward_fd[0];
-		writePipe = inward_fd[1];
-		Webserv::getInstance().addCGIEvent(socket, outward_fd[0], inward_fd[1]);
+		if (wrBytes > 0)
+		{
+			readPipe = outward_fd[0];
+			writePipe = inward_fd[1];
+		}
+		else
+		{
+			readPipe = outward_fd[0];
+			close(inward_fd[1]);
+			writePipe = 0;
+		}
+		Webserv::getInstance().addCGIEvent(socket, readPipe, writePipe);
 	}
 }
 
