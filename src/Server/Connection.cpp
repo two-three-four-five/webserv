@@ -333,14 +333,45 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	int outward_fd[2];
 	int inward_fd[2];
 
-	pipe(outward_fd);
-	pipe(inward_fd);
+	if (pipe(outward_fd) == -1)
+	{
+		buildErrorResponse(500);
+		response.setResponseBuffer();
+		return;
+	}
+	if (pipe(inward_fd) == -1)
+	{
+		buildErrorResponse(500);
+		close(outward_fd[0]);
+		close(outward_fd[1]);
+		response.setResponseBuffer();
+		return;
+	}
 
-	fcntl(outward_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-	fcntl(outward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-	fcntl(inward_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-	fcntl(inward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	if (fcntl(outward_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC) == -1 ||
+		fcntl(outward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC) == -1 ||
+		fcntl(inward_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC) == -1 ||
+		fcntl(inward_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC) == -1)
+	{
+		buildErrorResponse(500);
+		close(outward_fd[0]);
+		close(outward_fd[1]);
+		close(inward_fd[0]);
+		close(inward_fd[1]);
+		response.setResponseBuffer();
+		return;
+	}
 	cgiPID = fork();
+	if (cgiPID == -1)
+	{
+		buildErrorResponse(500);
+		close(outward_fd[0]);
+		close(outward_fd[1]);
+		close(inward_fd[0]);
+		close(inward_fd[1]);
+		response.setResponseBuffer();
+		return;
+	}
 	if (cgiPID == 0)
 	{
 		char *argv[] = {(char *)scriptPath.c_str(), (char *)targetResource.c_str(), NULL};
@@ -377,9 +408,18 @@ void Connection::writeToCGI(int fd)
 		bytesToWrite = BUFFER_SIZE;
 	if (!bytesToWrite)
 		return;
-	int ret = write(fd, wrBuffer + written, bytesToWrite);
-	if (ret > 0)
-		written += ret;
+	if (waitpid(cgiPID, NULL, WNOHANG) == 0)
+	{
+		int ret = write(fd, wrBuffer + written, bytesToWrite);
+		if (ret > 0)
+			written += ret;
+		else
+		{
+			Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
+			buildErrorResponse(500);
+			response.setResponseBuffer();
+		}
+	}
 	else
 	{
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);

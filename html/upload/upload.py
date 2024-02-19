@@ -18,7 +18,6 @@ def save_uploaded_file(fileitem):
         with open(filepath, 'wb') as f:
             # Write the file data
             f.write(fileitem.file.read())
-
         return filepath
     except Exception as e:
         raise RuntimeError(f"Error saving the file: {e}")
