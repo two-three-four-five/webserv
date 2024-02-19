@@ -10,7 +10,8 @@
 using namespace Hafserv;
 
 Connection::Connection(int socket, unsigned short port)
-	: socket(socket), port(port), statusCode(0), targetServer(NULL), end(false), connectionClose(false)
+	: socket(socket), port(port), statusCode(0), targetServer(NULL), readPipe(0), writePipe(0), end(false),
+	  connectionClose(false)
 {
 	startTime = time(NULL);
 }
@@ -18,8 +19,8 @@ Connection::Connection(int socket, unsigned short port)
 Connection::Connection(const Connection &other)
 	: request(other.request), response(other.response), socket(other.socket), port(other.port),
 	  statusCode(other.statusCode), startTime(other.startTime), targetServer(other.targetServer),
-	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource), end(other.end),
-	  connectionClose(other.connectionClose)
+	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource), readPipe(other.readPipe),
+	  writePipe(other.writePipe), end(other.end), connectionClose(other.connectionClose)
 {
 }
 
@@ -36,6 +37,8 @@ Connection &Connection::operator=(Connection &rhs)
 		targetServer = rhs.targetServer;
 		targetLocationConfig = rhs.targetLocationConfig;
 		targetResource = rhs.targetResource;
+		readPipe = rhs.readPipe;
+		writePipe = rhs.writePipe;
 		end = rhs.end;
 		connectionClose = rhs.connectionClose;
 	}
@@ -400,7 +403,8 @@ void Connection::writeToCGI(int fd)
 		bytesToWrite = BUFFER_SIZE;
 	if (!bytesToWrite)
 		return;
-	if (waitpid(cgiPID, NULL, WNOHANG) == 0)
+	int status = 0;
+	if (waitpid(cgiPID, &status, WNOHANG) == 0)
 	{
 		int ret = write(fd, wrBuffer + written, bytesToWrite);
 		if (ret > 0)
@@ -410,13 +414,15 @@ void Connection::writeToCGI(int fd)
 			Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
 			response.setResponseState(Response::End);
 			connectionClose = true;
+			return;
 		}
 	}
 	else
 	{
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
-		buildErrorResponse(500);
-		response.setResponseBuffer();
+		response.setResponseState(Response::End);
+		connectionClose = true;
+		return;
 	}
 }
 
@@ -466,6 +472,12 @@ void Connection::readFromCGI(int fd)
 		body << CGIOutput.rdbuf();
 		response.setBody(body.str());
 		response.setResponseBuffer();
+	}
+	if (WIFEXITED(status) && WEXITSTATUS(status))
+	{
+		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
+		response.setResponseState(Response::End);
+		connectionClose = true;
 	}
 }
 
@@ -549,3 +561,5 @@ int Connection::getReadPipe() const { return readPipe; }
 int Connection::getWritePipe() const { return writePipe; }
 
 int Connection::getConnectionClose() const { return connectionClose; }
+
+pid_t Connection::getCGIPid() const { return cgiPID; }

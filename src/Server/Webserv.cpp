@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 #include <iostream>
+#include <signal.h>
 #include <sys/event.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -209,7 +210,11 @@ void Webserv::disconnectClient(int socketfd)
 
 	Connection &conn = findConnectionByFd(socketfd);
 	if (conn.getResponse().getResponseState() == Response::BuildingCGI)
+	{
+		std::cout << "go!!";
+		kill(conn.getCGIPid(), SIGKILL);
 		deleteCGIEvent(conn.getReadPipe(), conn.getWritePipe());
+	}
 
 	Connections.erase(socketfd);
 
@@ -300,7 +305,7 @@ void Webserv::checkTimeout()
 	{
 		if (it->second.getRequest().getParseStatus() < Body)
 		{
-			int headerTimeout = 60;
+			int headerTimeout = 10;
 			if (now - it->second.getStartTime() > headerTimeout)
 			{
 				timeoutSockets.push_back(it->first);
