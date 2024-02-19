@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:26 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/18 16:16:41 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/19 11:10:43 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ AHttpConfigCore::AHttpConfigCore()
 	: clientMaxBodySize(2147483647), autoIndex(false), root("html"), indexes(), timeouts(), errorPages(),
 	  defaultType("text/plain"), types(), allowMethods()
 {
-	indexes.push_back("index.html");
 }
 
 AHttpConfigCore::AHttpConfigCore(const AHttpConfigCore &other)
@@ -52,44 +51,40 @@ AHttpConfigCore::~AHttpConfigCore() {}
 const int AHttpConfigCore::getClientMaxBodySize() const { return clientMaxBodySize; }
 const bool AHttpConfigCore::getAutoIndex() const { return autoIndex; }
 const std::string &AHttpConfigCore::getRoot() const { return root; }
-const std::vector<std::string> &AHttpConfigCore::getIndexes() const { return indexes; }
+const std::set<std::string> &AHttpConfigCore::getIndexes() const { return indexes; }
 const AHttpConfigCore::Timeout &AHttpConfigCore::getTimeout() const { return timeouts; }
 const std::map<int, std::string> &AHttpConfigCore::getErrorPages() const { return errorPages; }
 const std::string &AHttpConfigCore::getDefaultType() const { return defaultType; }
 const std::multimap<std::string, std::string> &AHttpConfigCore::getTypes() const { return types; }
 const std::set<std::string> &AHttpConfigCore::getAllowMethods() const { return allowMethods; }
 
-void AHttpConfigCore::setClientMaxBodySize(const int clientMaxBodySize) { this->clientMaxBodySize = clientMaxBodySize; }
+void AHttpConfigCore::setAllowMethods(const std::set<std::string> &allowMethods) { this->allowMethods = allowMethods; }
 void AHttpConfigCore::setAutoIndex(const bool autoIndex) { this->autoIndex = autoIndex; }
 void AHttpConfigCore::setRoot(const std::string &root) { this->root = root; }
-void AHttpConfigCore::setIndexes(const std::vector<std::string> &indexes) { this->indexes = indexes; }
+void AHttpConfigCore::setIndexes(const std::set<std::string> &indexes) { this->indexes = indexes; }
+void AHttpConfigCore::setErrorPages(const std::map<int, std::string> &errorPages) { this->errorPages = errorPages; }
 void AHttpConfigCore::setTimeouts(const Timeout &timeouts) { this->timeouts = timeouts; }
 void AHttpConfigCore::setClientHeaderTimeout(int timeout) { this->timeouts.clientHeader = timeout; }
 void AHttpConfigCore::setClientBodyTimeout(int timeout) { this->timeouts.clientBody = timeout; }
 void AHttpConfigCore::setKeepAliveTimeout(int timeout) { this->timeouts.keepAlive = timeout; }
 void AHttpConfigCore::setSendTimeout(int timeout) { this->timeouts.send = timeout; }
-void AHttpConfigCore::setErrorPages(const std::map<int, std::string> &errorPages) { this->errorPages = errorPages; }
 void AHttpConfigCore::setDefaultType(const std::string &defaultType) { this->defaultType = defaultType; }
 void AHttpConfigCore::setTypes(const std::multimap<std::string, std::string> &types) { this->types = types; }
-void AHttpConfigCore::setAllowMethods(const std::set<std::string> &allowMethods) { this->allowMethods = allowMethods; }
+void AHttpConfigCore::setClientMaxBodySize(const int clientMaxBodySize) { this->clientMaxBodySize = clientMaxBodySize; }
 
 void AHttpConfigCore::addErrorPage(int errorCode, const std::string &uri)
 {
 	errorPages.insert(std::make_pair(errorCode, uri));
 }
 
-void AHttpConfigCore::addIndex(const std::string &index)
-{
-	if (std::find(indexes.begin(), indexes.end(), index) != indexes.end())
-		indexes.push_back(index);
-}
+const bool AHttpConfigCore::addIndex(const std::string &index) { return indexes.insert(index).second; }
 
 void AHttpConfigCore::addType(const std::string &type, const std::string &extension)
 {
 	types.insert(std::make_pair(type, extension));
 }
 
-bool AHttpConfigCore::addAllowMethod(const std::string &method) { return allowMethods.insert(method).second; }
+const bool AHttpConfigCore::addAllowMethod(const std::string &method) { return allowMethods.insert(method).second; }
 
 const bool AHttpConfigCore::isAllowedMethod(const std::string &method) const
 {
@@ -150,10 +145,8 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::directives_t &directiv
 		else if (key == "index")
 		{
 			std::vector<std::string> newIndexes;
-			for (size_t i = 0; i < params.size(); i++)
-				newIndexes.push_back(params[i]);
-
-			indexes = newIndexes;
+			for (size_t i = 0; i < numToken; i++)
+				addIndex(params[i]);
 		}
 		else if (key == "client_header_timeout")
 		{
@@ -240,16 +233,21 @@ void AHttpConfigCore::setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks
 std::ostream &operator<<(std::ostream &os, const AHttpConfigCore &conf)
 {
 	os << "\t[AHttpConfigCore]" << std::endl;
-	os << "\t\tclient_max_body_size: " << conf.getClientMaxBodySize() << std::endl;
-	os << "\t\tdefault_types: " << conf.getDefaultType() << std::endl;
+	os << "\t\tallow methods: ";
+	if (conf.getAllowMethods().size())
+	{
+		for (std::set<std::string>::const_iterator it = conf.getAllowMethods().begin();
+			 it != conf.getAllowMethods().end(); ++it)
+			os << *it << ", ";
+		os << std::endl;
+	}
+	else
+		os << "GET" << std::endl;
 	os << "\t\tautoindex: " << (conf.getAutoIndex() ? "on" : "off") << std::endl;
 	os << "\t\troot: " << conf.getRoot() << std::endl;
 	os << "\t\tindexes: ";
-	for (size_t i = 0; i < conf.getIndexes().size(); i++)
-		os << conf.getIndexes().at(i) << " ";
-	os << std::endl;
-
-	os << conf.getTimeout();
+	for (std::set<std::string>::const_iterator it = conf.getIndexes().begin(); it != conf.getIndexes().end(); ++it)
+		os << (*it) << " ";
 	os << std::endl;
 
 	// errorPages
@@ -263,13 +261,17 @@ std::ostream &operator<<(std::ostream &os, const AHttpConfigCore &conf)
 			os << std::endl;
 	}
 
+	os << conf.getTimeout();
+	os << std::endl;
+
+	os << "\t\tdefault_types: " << conf.getDefaultType() << std::endl;
 	// types
 	if (conf.getTypes().size())
 	{
 		os << "\t\textension: ";
 		size_t i = 0;
 		std::map<std::string, std::string>::const_iterator it2 = conf.getTypes().begin();
-		for (; it2 != conf.getTypes().end() && i < 3; it2++)
+		for (; it2 != conf.getTypes().end() && i < 3; ++it2)
 		{
 			os << (*it2).first << "=" << (*it2).second << ", ";
 			i++;
@@ -279,17 +281,7 @@ std::ostream &operator<<(std::ostream &os, const AHttpConfigCore &conf)
 		else
 			os << std::endl;
 	}
-
-	os << "\t\tallow methods: ";
-	if (conf.getAllowMethods().size())
-	{
-		for (std::set<std::string>::const_iterator it = conf.getAllowMethods().begin();
-			 it != conf.getAllowMethods().end(); it++)
-			os << *it << ", ";
-		os << std::endl;
-	}
-	else
-		os << "GET" << std::endl;
+	os << "\t\tclient_max_body_size: " << conf.getClientMaxBodySize() << std::endl;
 
 	return os;
 }

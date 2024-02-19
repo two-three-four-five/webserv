@@ -87,13 +87,13 @@ std::string Connection::getTargetResource(std::string &requestTarget)
 		}
 		else
 		{
-			const std::vector<std::string> &indexes = targetLocationConfig.getIndexes();
+			const std::set<std::string> &indexes = targetLocationConfig.getIndexes();
 			std::string defaultTargetResource;
 			if (indexes.size() == 0)
 				defaultTargetResource = tempTargetResource + "index.html";
 			else
-				defaultTargetResource = tempTargetResource + indexes[0];
-			for (std::vector<std::string>::const_iterator it = indexes.begin(); it != indexes.end(); it++)
+				defaultTargetResource = tempTargetResource + *indexes.begin();
+			for (std::set<std::string>::const_iterator it = indexes.begin(); it != indexes.end(); it++)
 			{
 				if (RegularFile(tempTargetResource + *it).valid())
 				{

@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 16:26:35 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/18 15:09:26 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/19 11:02:38 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,34 +42,34 @@ public:
 	AHttpConfigCore &operator=(const AHttpConfigCore &other);
 	~AHttpConfigCore();
 
-	const int getClientMaxBodySize() const;
+	const std::set<std::string> &getAllowMethods() const;
 	const bool getAutoIndex() const;
 	const std::string &getRoot() const;
-	const std::vector<std::string> &getIndexes() const;
-	const Timeout &getTimeout() const;
+	const std::set<std::string> &getIndexes() const;
 	const std::map<int, std::string> &getErrorPages() const;
+	const Timeout &getTimeout() const;
 	const std::string &getDefaultType() const;
 	const std::multimap<std::string, std::string> &getTypes() const;
-	const std::set<std::string> &getAllowMethods() const;
+	const int getClientMaxBodySize() const;
 
-	void setClientMaxBodySize(const int clientMaxBodySize);
+	void setAllowMethods(const std::set<std::string> &allowMethods);
 	void setAutoIndex(const bool autoIndex);
 	void setRoot(const std::string &root);
-	void setIndexes(const std::vector<std::string> &indexes);
+	void setIndexes(const std::set<std::string> &indexes);
+	void setErrorPages(const std::map<int, std::string> &errorPages);
 	void setTimeouts(const Timeout &timeouts);
 	void setClientHeaderTimeout(int timeout);
 	void setClientBodyTimeout(int timeout);
 	void setKeepAliveTimeout(int timeout);
 	void setSendTimeout(int timeout);
-	void setErrorPages(const std::map<int, std::string> &errorPages);
 	void setDefaultType(const std::string &defaultType);
 	void setTypes(const std::multimap<std::string, std::string> &types);
-	void setAllowMethods(const std::set<std::string> &allowMethods);
+	void setClientMaxBodySize(const int clientMaxBodySize);
 
-	void addIndex(const std::string &index);
+	const bool addAllowMethod(const std::string &method);
+	const bool addIndex(const std::string &index);
 	void addErrorPage(int errorCode, const std::string &uri);
 	void addType(const std::string &type, const std::string &extension);
-	bool addAllowMethod(const std::string &method);
 
 	const bool isAllowedMethod(const std::string &method) const;
 
@@ -77,16 +77,17 @@ public:
 	void setHttpConfigCore(const ConfigFile::subblocks_t &subBlocks) throw();
 
 private:
-	long long clientMaxBodySize;
+	std::set<std::string> allowMethods;
+
 	bool autoIndex;
 	std::string root;
-	std::vector<std::string> indexes;
-	Timeout timeouts;
+	std::set<std::string> indexes;
 	std::map<int, std::string> errorPages; // value must be between 300 and 599
+
+	Timeout timeouts;
 	std::string defaultType;
 	std::multimap<std::string, std::string> types;
-
-	std::set<std::string> allowMethods;
+	long long clientMaxBodySize;
 };
 
 } // namespace Hafserv
