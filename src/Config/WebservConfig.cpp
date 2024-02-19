@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 22:46:15 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/18 15:11:53 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/19 14:30:27 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,67 +16,71 @@ using namespace Hafserv;
 
 WebservConfig::WebservConfig() : AConfig(), event(), http() {}
 
-WebservConfig::WebservConfig(const WebservConfig &other) : AConfig(other), event(other.event), http(other.http) {}
-
-WebservConfig::WebservConfig(const ConfigFile &configFile) throw(std::logic_error) : AConfig(), event(), http()
+WebservConfig::WebservConfig(const WebservConfig &other)
+    : AConfig(other), event(other.event), http(other.http)
 {
-	ConfigFile main = configFile.getSubBlocks().at(0);
+}
 
-	ConfigFile::directives_t::const_iterator it = main.getDirectives().begin();
-	for (; it != main.getDirectives().end(); it++)
-	{
-		const std::string &key = (*it).first;
-		const std::string &value = (*it).second;
+WebservConfig::WebservConfig(const ConfigFile &configFile) throw(
+    std::logic_error)
+    : AConfig(), event(), http()
+{
+    ConfigFile main = configFile.getSubBlocks().at(0);
 
-		if (allBlockDirectives.count(key))
-			throw NoBraceError(key);
-		else if (!allSimpleDirectives.count(key))
-			throw UnknownDirectiveError(key);
-		else if (!mainSimpleDirectives.count(key))
-			throw DisallowDirectiveError(key);
-	}
+    ConfigFile::directives_t::const_iterator it = main.getDirectives().begin();
+    for (; it != main.getDirectives().end(); it++)
+    {
+        const std::string &key = (*it).first;
 
-	bool hasEvent = false, hasHttp = false;
-	for (size_t i = 0; i < main.getSubBlocks().size(); i++)
-	{
-		const ConfigFile &subBlock = main.getSubBlocks().at(i);
-		const std::string &subBlockName = subBlock.getBlockDirective();
+        if (allBlockDirectives.count(key))
+            throw NoBraceError(key);
+        else if (!allSimpleDirectives.count(key))
+            throw UnknownDirectiveError(key);
+        else if (!mainSimpleDirectives.count(key))
+            throw DisallowDirectiveError(key);
+    }
 
-		if (allSimpleDirectives.count(subBlockName))
-			throw NoSemicolonError(subBlockName);
-		else if (!allBlockDirectives.count(subBlockName))
-			throw UnknownDirectiveError(subBlockName);
-		else if (!mainBlockDirectives.count(subBlockName))
-			throw DisallowDirectiveError(subBlockName);
+    bool hasEvent = false, hasHttp = false;
+    for (size_t i = 0; i < main.getSubBlocks().size(); i++)
+    {
+        const ConfigFile &subBlock = main.getSubBlocks().at(i);
+        const std::string &subBlockName = subBlock.getBlockDirective();
 
-		if (subBlockName == "events")
-		{
-			if (hasEvent)
-				throw DuplicateDirectiveError("events");
-			hasEvent = true;
-			event = EventConfig(subBlock);
-		}
-		else if (subBlockName == "http")
-		{
-			if (hasHttp)
-				throw DuplicateDirectiveError("http");
-			hasHttp = true;
-			http = HttpConfig(subBlock);
-		}
-	}
-	if (!hasHttp)
-		throw ParseError("http block not found");
+        if (allSimpleDirectives.count(subBlockName))
+            throw NoSemicolonError(subBlockName);
+        else if (!allBlockDirectives.count(subBlockName))
+            throw UnknownDirectiveError(subBlockName);
+        else if (!mainBlockDirectives.count(subBlockName))
+            throw DisallowDirectiveError(subBlockName);
+
+        if (subBlockName == "events")
+        {
+            if (hasEvent)
+                throw DuplicateDirectiveError("events");
+            hasEvent = true;
+            event = EventConfig(subBlock);
+        }
+        else if (subBlockName == "http")
+        {
+            if (hasHttp)
+                throw DuplicateDirectiveError("http");
+            hasHttp = true;
+            http = HttpConfig(subBlock);
+        }
+    }
+    if (!hasHttp)
+        throw ParseError("http block not found");
 }
 
 WebservConfig &WebservConfig::operator=(const WebservConfig &other)
 {
-	if (this != &other)
-	{
-		AConfig::operator=(other);
-		event = other.event;
-		http = other.http;
-	}
-	return *this;
+    if (this != &other)
+    {
+        AConfig::operator=(other);
+        event = other.event;
+        http = other.http;
+    }
+    return *this;
 }
 
 WebservConfig::~WebservConfig() {}
@@ -87,9 +91,9 @@ const EventConfig &WebservConfig::getEventConfig() const { return event; }
 
 std::ostream &operator<<(std::ostream &os, const WebservConfig &conf)
 {
-	os << "[WebservConfig]" << std::endl << std::endl;
-	os << conf.getEventConfig();
-	os << std::endl;
-	os << conf.getHttpConfig();
-	return os;
+    os << "[WebservConfig]" << std::endl << std::endl;
+    os << conf.getEventConfig();
+    os << std::endl;
+    os << conf.getHttpConfig();
+    return os;
 }

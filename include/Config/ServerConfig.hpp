@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/18 15:08:43 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/19 14:12:02 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,8 @@ public:
 	const std::set<unsigned short> &getPorts() const;
 	const std::vector<std::vector<LocationConfig> > &getLocations() const;
 
-	const bool hasName(const std::string &name) const;
-	const bool hasPort(const unsigned short port) const;
+	bool hasName(const std::string &name) const;
+	bool hasPort(const unsigned short port) const;
 
 private:
 	std::set<std::string> names;

@@ -26,7 +26,7 @@ bool readTransferCoding(std::vector<std::string> &vec, std::string &str, std::st
 bool readTokenOrQuote(std::vector<std::string> &vec, std::string &str, std::string::iterator &it);
 bool readToken(std::vector<std::string> &vec, std::string &str, std::string::iterator &it);
 bool isTokenChar(const char &ch);
-bool readQuote(std::vector<std::string> &vec, std::string &str, std::string::iterator &it);
+bool readQuote(std::vector<std::string> &vec, std::string::iterator &it);
 bool isQdtext(const unsigned char &ch);
 bool isQuotedPair(const unsigned char &ch);
 bool readParameters(std::vector<std::string> &vec, std::string &str, std::string::iterator &it);

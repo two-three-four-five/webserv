@@ -48,7 +48,7 @@ bool readTokenOrQuote(std::vector<std::string> &vec, std::string &str, std::stri
 {
 	if (*it == '\"')
 	{
-		return (readQuote(vec, str, ++it));
+		return (readQuote(vec, ++it));
 	}
 	else
 		return (readToken(vec, str, it));
@@ -72,9 +72,8 @@ bool isTokenChar(const char &ch)
 		return (false);
 }
 
-bool readQuote(std::vector<std::string> &vec, std::string &str, std::string::iterator &it)
+bool readQuote(std::vector<std::string> &vec, std::string::iterator &it)
 {
-	std::string::iterator initIt = it;
 	std::string quotedStr;
 
 	while (isQdtext(*it) || (*it == '\\' && isQuotedPair(*(++it))))

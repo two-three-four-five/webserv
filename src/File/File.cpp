@@ -6,7 +6,7 @@
 /*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 13:46:33 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/13 16:15:50 by gyoon            ###   ########.fr       */
+/*   Updated: 2024/02/19 14:39:35 by gyoon            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,51 +16,55 @@ using namespace Hafserv;
 
 File::File() : errorCode(FILE_NOT_EXIST), name(""), fileStat() {}
 
-File::File(const File &other) : errorCode(other.errorCode), name(other.name), fileStat(other.fileStat) {}
+File::File(const File &other)
+    : errorCode(other.errorCode), name(other.name), fileStat(other.fileStat)
+{
+}
 
 File::File(const std::string &name)
-	: errorCode((access(name.c_str(), F_OK) == 0 ? FILE_OK : FILE_NOT_EXIST)), name(name), fileStat()
+    : errorCode((access(name.c_str(), F_OK) == 0 ? FILE_OK : FILE_NOT_EXIST)),
+      name(name), fileStat()
 {
-	if (exist())
-		stat(name.c_str(), &fileStat); // TODO: error check?
+    if (exist())
+        stat(name.c_str(), &fileStat);
 }
 
 File &File::operator=(const File &other)
 {
-	if (this != &other)
-	{
-		errorCode = other.errorCode;
-		name = other.name;
-		fileStat = other.fileStat;
-	}
-	return *this;
+    if (this != &other)
+    {
+        errorCode = other.errorCode;
+        name = other.name;
+        fileStat = other.fileStat;
+    }
+    return *this;
 }
 
 File::~File() {}
 
-const bool File::exist() const { return errorCode != FILE_NOT_EXIST; }
+bool File::exist() const { return errorCode != FILE_NOT_EXIST; }
 
-const bool File::error() const { return errorCode != FILE_OK; }
+bool File::error() const { return errorCode != FILE_OK; }
 
-const bool File::valid() const { return !error(); }
+bool File::valid() const { return !error(); }
 
-const unsigned short File::getErrorCode() const { return errorCode; }
+unsigned short File::getErrorCode() const { return errorCode; }
 
 const std::string File::getErrorMsg() const
 {
-	switch (errorCode)
-	{
-	case FILE_NOT_EXIST:
-		return F_ERR_MSG_NOT_EXIST;
-	case FILE_NO_PERMISSION:
-		return F_ERR_MSG_NO_PERMISSION;
-	case FILE_TYPE_NOT_MATCHING:
-		return F_ERR_MSG_TYPE_NOT_MATCHING;
-	case FILE_UNKNOWN:
-		return F_ERR_MSG_UNKNOWN;
-	default:
-		return F_ERR_MSG_OK;
-	}
+    switch (errorCode)
+    {
+    case FILE_NOT_EXIST:
+        return F_ERR_MSG_NOT_EXIST;
+    case FILE_NO_PERMISSION:
+        return F_ERR_MSG_NO_PERMISSION;
+    case FILE_TYPE_NOT_MATCHING:
+        return F_ERR_MSG_TYPE_NOT_MATCHING;
+    case FILE_UNKNOWN:
+        return F_ERR_MSG_UNKNOWN;
+    default:
+        return F_ERR_MSG_OK;
+    }
 }
 
 const std::string &File::getName() const { return name; }
@@ -71,21 +75,33 @@ const mode_t &File::getFileMode() const { return fileStat.st_mode; }
 
 const off_t &File::getFileSize() const { return fileStat.st_size; }
 
-const bool File::isDirectory() const { return exist() && S_ISDIR(fileStat.st_mode); }
+bool File::isDirectory() const { return exist() && S_ISDIR(fileStat.st_mode); }
 
-const bool File::isRegularFile() const { return exist() && S_ISREG(fileStat.st_mode); }
+bool File::isRegularFile() const
+{
+    return exist() && S_ISREG(fileStat.st_mode);
+}
 
-const bool File::isSocket() const { return exist() && S_ISSOCK(fileStat.st_mode); }
+bool File::isSocket() const { return exist() && S_ISSOCK(fileStat.st_mode); }
 
-const bool File::isReadable() const { return exist() && (fileStat.st_mode & S_IRUSR); }
+bool File::isReadable() const
+{
+    return exist() && (fileStat.st_mode & S_IRUSR);
+}
 
-const bool File::isWritable() const { return exist() && (fileStat.st_mode & S_IWUSR); }
+bool File::isWritable() const
+{
+    return exist() && (fileStat.st_mode & S_IWUSR);
+}
 
-const bool File::isExecutable() const { return exist() && (fileStat.st_mode & S_IXUSR); }
+bool File::isExecutable() const
+{
+    return exist() && (fileStat.st_mode & S_IXUSR);
+}
 
 std::ostream &operator<<(std::ostream &os, const File &file)
 {
-	os << "error code: " << file.getErrorMsg() << std::endl;
-	os << "name: " << file.getName();
-	return os;
+    os << "error code: " << file.getErrorMsg() << std::endl;
+    os << "name: " << file.getName();
+    return os;
 }
