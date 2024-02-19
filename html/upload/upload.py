@@ -12,7 +12,9 @@ def save_uploaded_file(fileitem):
         filename = os.path.basename(fileitem.filename)
 
         # Specify the path to save the file (in the current working directory)
-        filepath = os.path.join(os.getcwd() + '/uploads/', filename)
+        if not os.path.exists(os.getcwd() + '/html/upload/'):
+            os.makedirs(os.getcwd() + '/html/upload/')
+        filepath = os.path.join(os.getcwd() + '/html/upload/', filename)
 
         # Open the file for writing in binary mode
         with open(filepath, 'wb') as f:
