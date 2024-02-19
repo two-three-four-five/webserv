@@ -253,7 +253,25 @@ void Connection::buildGetResponse()
 	}
 }
 
-void Connection::buildPostResponse() {}
+void Connection::buildPostResponse()
+{
+	std::ofstream ofs(targetResource, std::ios::binary);
+
+	if (!ofs.is_open())
+	{
+		buildErrorResponse(500);
+		return;
+	}
+	ofs << request.getBody();
+	if (ofs.fail())
+	{
+		buildErrorResponse(500);
+		ofs.close();
+		return;
+	}
+	ofs.close();
+	buildErrorResponse(201);
+}
 
 void Connection::buildDirectoryResponse()
 {
