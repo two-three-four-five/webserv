@@ -250,7 +250,9 @@ void Connection::buildGetResponse()
 		buildRedirectResponse(targetLocationConfig.getProxyPass() + request.getRequestTarget().getTargetURI());
 	else
 	{
-		if (targetFile.isDirectory())
+		if (!targetFile.exist())
+			buildErrorResponse(404);
+		else if (targetFile.isDirectory())
 		{
 			if (targetLocationConfig.getAutoIndex() && targetResource.back() == '/')
 				buildDirectoryResponse();
@@ -258,16 +260,32 @@ void Connection::buildGetResponse()
 				buildRedirectResponse("http://" + request.getHeaders().find("host")->second +
 									  request.getRequestTarget().getTargetURI() + "/");
 		}
-		else if (!targetFile.isReadable())
-			buildErrorResponse(404);
-		else if (File(targetResource).getFileSize() > 2147483648)
+		else if (!targetFile.isReadable() || targetFile.getFileSize() > 2147483648)
 			buildErrorResponse(403);
-		else // readable
+		else
 			response.makeBody(targetLocationConfig, targetResource);
 	}
 }
 
-void Connection::buildPostResponse() {}
+void Connection::buildPostResponse()
+{
+	File targetFile(targetResource);
+
+	if (!targetFile.exist())
+		buildErrorResponse(404);
+	else if (targetFile.isDirectory())
+	{
+		if (targetLocationConfig.getAutoIndex() && targetResource.back() == '/')
+			buildDirectoryResponse();
+		else
+			buildRedirectResponse("http://" + request.getHeaders().find("host")->second +
+								  request.getRequestTarget().getTargetURI() + "/");
+	}
+	else if (!targetFile.isReadable() || targetFile.getFileSize() > 2147483648)
+		buildErrorResponse(403);
+	else
+		response.makeBody(targetLocationConfig, targetResource);
+}
 
 void Connection::buildDirectoryResponse()
 {
