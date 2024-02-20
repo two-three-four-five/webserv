@@ -10,7 +10,7 @@
 using namespace Hafserv;
 
 Connection::Connection(int socket, unsigned short port)
-	: socket(socket), port(port), statusCode(0), targetServer(NULL), readPipe(0), writePipe(0), end(false),
+	: socket(socket), port(port), statusCode(0), targetServer(NULL), cgiPID(0), readPipe(0), writePipe(0), end(false),
 	  connectionClose(false)
 {
 	startTime = time(NULL);
@@ -19,8 +19,8 @@ Connection::Connection(int socket, unsigned short port)
 Connection::Connection(const Connection &other)
 	: request(other.request), response(other.response), socket(other.socket), port(other.port),
 	  statusCode(other.statusCode), startTime(other.startTime), targetServer(other.targetServer),
-	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource), readPipe(other.readPipe),
-	  writePipe(other.writePipe), end(other.end), connectionClose(other.connectionClose)
+	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource), cgiPID(0),
+	  readPipe(other.readPipe), writePipe(other.writePipe), end(other.end), connectionClose(other.connectionClose)
 {
 }
 
@@ -37,6 +37,7 @@ Connection &Connection::operator=(Connection &rhs)
 		targetServer = rhs.targetServer;
 		targetLocationConfig = rhs.targetLocationConfig;
 		targetResource = rhs.targetResource;
+		cgiPID = rhs.cgiPID;
 		readPipe = rhs.readPipe;
 		writePipe = rhs.writePipe;
 		end = rhs.end;
@@ -319,6 +320,7 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	int outward_fd[2];
 	int inward_fd[2];
 
+	response.setResponseState(Response::BuildingCGI);
 	if (pipe(outward_fd) == -1)
 	{
 		buildErrorResponse(500);
@@ -374,9 +376,9 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		close(outward_fd[1]);
 		close(inward_fd[0]);
 
+		response.setResponseState(Response::BuildingCGI);
 		wrBytes = request.getBody().length();
 		written = 0;
-		response.setResponseState(Response::BuildingCGI);
 		readen = 0;
 
 		if (wrBytes > 0)

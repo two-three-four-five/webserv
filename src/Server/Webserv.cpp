@@ -211,7 +211,6 @@ void Webserv::disconnectClient(int socketfd)
 	Connection &conn = findConnectionByFd(socketfd);
 	if (conn.getResponse().getResponseState() == Response::BuildingCGI)
 	{
-		std::cout << "go!!";
 		kill(conn.getCGIPid(), SIGKILL);
 		deleteCGIEvent(conn.getReadPipe(), conn.getWritePipe());
 	}
@@ -305,7 +304,7 @@ void Webserv::checkTimeout()
 	{
 		if (it->second.getRequest().getParseStatus() < Body)
 		{
-			int headerTimeout = 10;
+			int headerTimeout = 60;
 			if (now - it->second.getStartTime() > headerTimeout)
 			{
 				timeoutSockets.push_back(it->first);
@@ -320,6 +319,14 @@ void Webserv::checkTimeout()
 				bodyTimeout = targetConfig.getTimeout().clientBody;
 			}
 			if (now - it->second.getStartTime() > bodyTimeout)
+			{
+				timeoutSockets.push_back(it->first);
+			}
+		}
+		else if (it->second.getResponse().getResponseState() == Response::BuildingCGI)
+		{
+			int cgiTimeout = 60;
+			if (now - it->second.getStartTime() > cgiTimeout)
 			{
 				timeoutSockets.push_back(it->first);
 			}
