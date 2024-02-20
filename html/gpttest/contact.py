@@ -5,6 +5,8 @@ import cgi
 
 form = cgi.FieldStorage()
 
+while True:
+    a=1
 if "name" in form and "email" in form and "message" in form:
     name = form["name"].value
     email = form["email"].value

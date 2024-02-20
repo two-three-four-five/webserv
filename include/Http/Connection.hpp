@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jinhchoi <jinhchoi@student.42seoul.kr>     +#+  +:+       +#+        */
+/*   By: jukim2 <jukim2@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/09 19:58:13 by jinhchoi          #+#    #+#             */
-/*   Updated: 2024/02/19 17:20:43 by jinhchoi         ###   ########.fr       */
+/*   Updated: 2024/02/19 19:50:51 by jukim2           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ namespace Hafserv
 {
 
 #define BUFFER_SIZE 100000
+#define SYS_ERROR -1
 
 class Webserv;
 
@@ -62,6 +63,8 @@ public:
 	const LocationConfig &getTargetLocationConfig() const;
 	int getReadPipe() const;
 	int getWritePipe() const;
+	int getConnectionClose() const;
+	pid_t getCGIPid() const;
 
 private:
 	Request request;
@@ -83,6 +86,7 @@ private:
 	std::stringstream CGIOutput;
 	size_t readen;
 	bool end;
+	bool connectionClose;
 };
 
 } // namespace Hafserv

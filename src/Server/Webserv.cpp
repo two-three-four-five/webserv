@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 #include <iostream>
+#include <signal.h>
 #include <sys/event.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -139,7 +140,7 @@ void Webserv::runWebserv()
 							conn.sendResponse();
 						if (conn.getResponse().getResponseState() == Response::End)
 						{
-							if (conn.getStatusCode() || conn.getRequest().getConnectionClose())
+							if (conn.getStatusCode() || conn.getConnectionClose())
 							{
 								disconnectClient(eventFd);
 							}
@@ -209,7 +210,10 @@ void Webserv::disconnectClient(int socketfd)
 
 	Connection &conn = findConnectionByFd(socketfd);
 	if (conn.getResponse().getResponseState() == Response::BuildingCGI)
+	{
+		kill(conn.getCGIPid(), SIGKILL);
 		deleteCGIEvent(conn.getReadPipe(), conn.getWritePipe());
+	}
 
 	Connections.erase(socketfd);
 
@@ -315,6 +319,14 @@ void Webserv::checkTimeout()
 				bodyTimeout = targetConfig.getTimeout().clientBody;
 			}
 			if (now - it->second.getStartTime() > bodyTimeout)
+			{
+				timeoutSockets.push_back(it->first);
+			}
+		}
+		else if (it->second.getResponse().getResponseState() == Response::BuildingCGI)
+		{
+			int cgiTimeout = 60;
+			if (now - it->second.getStartTime() > cgiTimeout)
 			{
 				timeoutSockets.push_back(it->first);
 			}

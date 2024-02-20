@@ -10,7 +10,8 @@
 using namespace Hafserv;
 
 Connection::Connection(int socket, unsigned short port)
-	: socket(socket), port(port), statusCode(0), targetServer(NULL), end(false)
+	: socket(socket), port(port), statusCode(0), targetServer(NULL), cgiPID(0), readPipe(0), writePipe(0), end(false),
+	  connectionClose(false)
 {
 	startTime = time(NULL);
 }
@@ -18,7 +19,8 @@ Connection::Connection(int socket, unsigned short port)
 Connection::Connection(const Connection &other)
 	: request(other.request), response(other.response), socket(other.socket), port(other.port),
 	  statusCode(other.statusCode), startTime(other.startTime), targetServer(other.targetServer),
-	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource), end(other.end)
+	  targetLocationConfig(other.targetLocationConfig), targetResource(other.targetResource), cgiPID(0),
+	  readPipe(other.readPipe), writePipe(other.writePipe), end(other.end), connectionClose(other.connectionClose)
 {
 }
 
@@ -35,7 +37,11 @@ Connection &Connection::operator=(Connection &rhs)
 		targetServer = rhs.targetServer;
 		targetLocationConfig = rhs.targetLocationConfig;
 		targetResource = rhs.targetResource;
+		cgiPID = rhs.cgiPID;
+		readPipe = rhs.readPipe;
+		writePipe = rhs.writePipe;
 		end = rhs.end;
+		connectionClose = rhs.connectionClose;
 	}
 	return *this;
 }
@@ -47,6 +53,12 @@ void Connection::readRequest(int fd)
 	startTime = time(NULL);
 	statusCode = request.readRequest(fd);
 
+	if (statusCode == SYS_ERROR)
+	{
+		response.setResponseState(Response::End);
+		connectionClose = true;
+		return;
+	}
 	if (request.getParseStatus() >= Body)
 	{
 		if (targetServer == NULL && !statusCode)
@@ -58,6 +70,8 @@ void Connection::readRequest(int fd)
 		{
 			statusCode = 413;
 		}
+		if (request.getConnectionClose())
+			connectionClose = true;
 	}
 	if (request.getParseStatus() == End)
 	{
@@ -324,6 +338,7 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 	int outward_fd[2];
 	int inward_fd[2];
 
+	response.setResponseState(Response::BuildingCGI);
 	if (pipe(outward_fd) == -1)
 	{
 		buildErrorResponse(500);
@@ -379,9 +394,9 @@ void Connection::buildCGIResponse(const std::string &scriptPath)
 		close(outward_fd[1]);
 		close(inward_fd[0]);
 
+		response.setResponseState(Response::BuildingCGI);
 		wrBytes = request.getBody().length();
 		written = 0;
-		response.setResponseState(Response::BuildingCGI);
 		readen = 0;
 
 		if (wrBytes > 0)
@@ -408,7 +423,8 @@ void Connection::writeToCGI(int fd)
 		bytesToWrite = BUFFER_SIZE;
 	if (!bytesToWrite)
 		return;
-	if (waitpid(cgiPID, NULL, WNOHANG) == 0)
+	int status = 0;
+	if (waitpid(cgiPID, &status, WNOHANG) == 0)
 	{
 		int ret = write(fd, wrBuffer + written, bytesToWrite);
 		if (ret > 0)
@@ -416,15 +432,17 @@ void Connection::writeToCGI(int fd)
 		else
 		{
 			Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
-			buildErrorResponse(500);
-			response.setResponseBuffer();
+			response.setResponseState(Response::End);
+			connectionClose = true;
+			return;
 		}
 	}
 	else
 	{
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
-		buildErrorResponse(500);
-		response.setResponseBuffer();
+		response.setResponseState(Response::End);
+		connectionClose = true;
+		return;
 	}
 }
 
@@ -437,8 +455,8 @@ void Connection::readFromCGI(int fd)
 	if (bytes_read < 0)
 	{
 		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
-		buildErrorResponse(500);
-		response.setResponseBuffer();
+		response.setResponseState(Response::End);
+		connectionClose = true;
 	}
 	else if (bytes_read > 0)
 	{
@@ -474,6 +492,12 @@ void Connection::readFromCGI(int fd)
 		body << CGIOutput.rdbuf();
 		response.setBody(body.str());
 		response.setResponseBuffer();
+	}
+	if (WIFEXITED(status) && WEXITSTATUS(status))
+	{
+		Webserv::getInstance().deleteCGIEvent(readPipe, writePipe);
+		response.setResponseState(Response::End);
+		connectionClose = true;
 	}
 }
 
@@ -523,7 +547,8 @@ char **Connection::makeEnvp()
 void Connection::sendResponse()
 {
 	startTime = time(NULL);
-	response.send(socket);
+	if (!response.send(socket))
+		connectionClose = true;
 }
 
 void Connection::reset()
@@ -554,3 +579,7 @@ const LocationConfig &Connection::getTargetLocationConfig() const { return targe
 int Connection::getReadPipe() const { return readPipe; }
 
 int Connection::getWritePipe() const { return writePipe; }
+
+int Connection::getConnectionClose() const { return connectionClose; }
+
+pid_t Connection::getCGIPid() const { return cgiPID; }
