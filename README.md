@@ -11,7 +11,7 @@
 ### Environment
 - Our program uses `kqueue` to implement I/O Multiplexing.
 - Therefore, your operating system should compatible with `kqueue`.
-- We tested on Mac with Apple silicon and Intel chips.
+- We've tested on Mac with `Apple silicon` and `Intel chips`.
 
 ### Installation
 
