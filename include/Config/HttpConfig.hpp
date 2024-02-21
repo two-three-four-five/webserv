@@ -1,23 +1,12 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   HttpConfig.hpp                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/18 22:46:19 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/18 15:08:51 by gyoon            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef HTTPCONFIG_HPP
 #define HTTPCONFIG_HPP
 
 #include "Config/AConfig.hpp"
 #include "Config/AHttpConfigCore.hpp"
-#include "Config/ConfigException.hpp"
 #include "Config/ServerConfig.hpp"
 #include "File/ConfigFile.hpp"
+
+#include <iostream>
 #include <string>
 #include <vector>
 

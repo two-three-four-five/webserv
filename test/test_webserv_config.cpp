@@ -1,18 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   test_webserv_config.cpp                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/18 16:01:41 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/09 21:47:39 by gyoon            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+#include <iostream>
 
 #include "Config/WebservConfig.hpp"
 #include "File/ConfigFile.hpp"
-#include <iostream>
 
 int main(int argc, char **argv)
 {

@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ServerConfig.hpp                                   :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/18 13:46:10 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/19 14:12:02 by gyoon            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
@@ -17,9 +5,9 @@
 #include "Config/AHttpConfigCore.hpp"
 #include "Config/LocationConfig.hpp"
 #include "File/ConfigFile.hpp"
+
 #include <iostream>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 

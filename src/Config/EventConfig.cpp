@@ -1,16 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   EventConfig.cpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gyoon <gyoon@student.42seoul.kr>           +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/18 22:58:14 by gyoon             #+#    #+#             */
-/*   Updated: 2024/02/18 15:11:23 by gyoon            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "Config/EventConfig.hpp"
+
+#include "Config/ConfigException.hpp"
+#include "util/string.hpp"
 
 using namespace Hafserv;
 
