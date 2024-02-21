@@ -1,5 +1,7 @@
 #include "File/Directory.hpp"
 
+#include <iomanip>
+
 using namespace Hafserv;
 
 const std::string Directory::htmlHeader =

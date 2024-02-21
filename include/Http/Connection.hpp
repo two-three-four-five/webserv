@@ -4,7 +4,6 @@
 #include "Http/Request.hpp"
 #include "Http/Response.hpp"
 #include "Webserv.hpp"
-#include <sys/stat.h>
 
 namespace Hafserv
 {

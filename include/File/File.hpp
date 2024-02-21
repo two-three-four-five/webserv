@@ -1,14 +1,11 @@
 #ifndef FILE_HPP
 #define FILE_HPP
 
-#include <fcntl.h>
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <vector>
 
 #define F_ERR_MSG_OK "file is okay"
 #define F_ERR_MSG_NOT_EXIST "file does not exist."

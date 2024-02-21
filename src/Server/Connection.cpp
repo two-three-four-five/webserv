@@ -2,10 +2,10 @@
 
 #include "File/Directory.hpp"
 #include "File/File.hpp"
+
 #include <cstdio>
+#include <fcntl.h>
 #include <string>
-#include <sys/event.h>
-#include <sys/socket.h>
 
 using namespace Hafserv;
 

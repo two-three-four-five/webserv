@@ -1,8 +1,10 @@
 #include "Webserv.hpp"
+
 #include "Http/Request.hpp"
 #include "Http/Response.hpp"
 
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <iostream>
 #include <signal.h>
 #include <sys/event.h>

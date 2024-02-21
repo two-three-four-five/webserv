@@ -3,8 +3,7 @@
 
 #include "Config/ConfigException.hpp"
 #include "File/RegularFile.hpp"
-#include <algorithm>
-#include <list>
+
 #include <map>
 #include <string>
 #include <vector>

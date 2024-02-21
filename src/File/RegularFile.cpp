@@ -1,4 +1,6 @@
 #include "File/RegularFile.hpp"
+
+#include <fstream>
 #include <sstream>
 
 using namespace Hafserv;

@@ -2,10 +2,10 @@
 #define DIRECTORY_HPP
 
 #include "File/File.hpp"
-#include "dirent.h"
-#include <iomanip>
+#include "util/string.hpp"
+
+#include <dirent.h>
 #include <iostream>
-#include <util/string.hpp>
 #include <utility>
 #include <vector>
 

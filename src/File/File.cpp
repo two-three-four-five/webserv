@@ -1,5 +1,7 @@
 #include "File/File.hpp"
 
+#include <fcntl.h>
+
 using namespace Hafserv;
 
 File::File() : errorCode(FILE_NOT_EXIST), name(""), fileStat() {}
