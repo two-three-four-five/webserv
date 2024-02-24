@@ -4,6 +4,7 @@
 #include "Http/Response.hpp"
 
 #include <arpa/inet.h>
+#include <cstdlib>
 #include <fcntl.h>
 #include <iostream>
 #include <signal.h>
@@ -69,12 +70,12 @@ void Webserv::openPort(unsigned short port)
 		if (bind(socketFd, (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
 		{
 			std::cerr << "bind() error" << std::endl;
-			exit(1);
+			std::exit(1);
 		}
 		if (listen(socketFd, 1000) == -1)
 		{
 			std::cerr << "listen() error" << std::endl;
-			exit(1);
+			std::exit(1);
 		}
 
 		int ret;
@@ -92,7 +93,7 @@ void Webserv::initWebserv()
 	if (kq == -1)
 	{
 		std::cerr << "kqueue() error" << std::endl;
-		exit(1);
+		std::exit(1);
 	}
 }
 
