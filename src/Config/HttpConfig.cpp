@@ -42,7 +42,6 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(std::logic_error) : AConfi
 		{
 			ServerConfig newServerConfig = ServerConfig(block.getSubBlocks().at(i), *this);
 
-			bool isDuplicated = false;
 			std::set<std::string>::const_iterator it_names;
 			std::set<unsigned short>::const_iterator it_ports;
 
@@ -54,18 +53,14 @@ HttpConfig::HttpConfig(const ConfigFile &block) throw(std::logic_error) : AConfi
 				{
 					for (size_t j = 0; j < servers.size(); ++j)
 					{
-						if (servers[j].hasName(*it_names) && servers[j].hasPort(*it_ports))
+						if (servers[j].hasPort(*it_ports))
 						{
-							std::cout << "warning: conflicting server name \"" + *it_names;
-							std::cout << "\" on 0.0.0.0:" + util::string::itos(*it_ports) + ", ignored" << std::endl;
-							isDuplicated = true;
+							throw ParseError("duplicated port: " + util::string::itos(*it_ports));
 						}
 					}
 				}
 			}
-
-			if (!isDuplicated)
-				servers.push_back(newServerConfig);
+			servers.push_back(newServerConfig);
 		}
 	}
 

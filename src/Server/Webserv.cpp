@@ -55,36 +55,33 @@ void Webserv::addServer(Server *server)
 
 void Webserv::openPort(unsigned short port)
 {
-	if (portToServSock.find(port) == portToServSock.end())
+	struct sockaddr_in serv_adr;
+	struct kevent event;
+	int socketFd;
+
+	socketFd = socket(PF_INET, SOCK_STREAM, 0);
+	memset(&serv_adr, 0, sizeof(serv_adr));
+	serv_adr.sin_family = AF_INET;
+	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_adr.sin_port = htons(port);
+
+	if (bind(socketFd, (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
 	{
-		struct sockaddr_in serv_adr;
-		struct kevent event;
-		int socketFd;
-
-		socketFd = socket(PF_INET, SOCK_STREAM, 0);
-		memset(&serv_adr, 0, sizeof(serv_adr));
-		serv_adr.sin_family = AF_INET;
-		serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
-		serv_adr.sin_port = htons(port);
-
-		if (bind(socketFd, (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
-		{
-			std::cerr << "bind() error" << std::endl;
-			std::exit(1);
-		}
-		if (listen(socketFd, 1000) == -1)
-		{
-			std::cerr << "listen() error" << std::endl;
-			std::exit(1);
-		}
-
-		int ret;
-		EV_SET(&event, socketFd, EVFILT_READ, EV_ADD, 0, 0, NULL);
-		ret = kevent(kq, &event, 1, NULL, 0, NULL);
-
-		portToServSock[port] = socketFd;
-		servSockToPort[socketFd] = port;
+		std::cerr << "bind() error" << std::endl;
+		std::exit(1);
 	}
+	if (listen(socketFd, 1000) == -1)
+	{
+		std::cerr << "listen() error" << std::endl;
+		std::exit(1);
+	}
+
+	int ret;
+	EV_SET(&event, socketFd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	ret = kevent(kq, &event, 1, NULL, 0, NULL);
+
+	portToServSock[port] = socketFd;
+	servSockToPort[socketFd] = port;
 }
 
 void Webserv::initWebserv()
